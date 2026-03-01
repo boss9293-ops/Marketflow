@@ -336,6 +336,19 @@ class ValidationEngine:
 
         # Filter to requested window
         res = res[res.index >= pd.to_datetime(start_date)]
+
+        # Calibrate drawdown to window-start = 0%
+        # The 252-day rolling peak includes pre-window history, so the first day of a window
+        # can already show a non-zero drawdown (e.g. 2026 starts -3.4% from 2025 ATH).
+        # Subtracting the first-day offset makes each window read as
+        # "how much has the market moved since the start of this period."
+        if not res.empty:
+            dd0 = float(res["drawdown"].iloc[0]) if pd.notna(res["drawdown"].iloc[0]) else 0.0
+            res["drawdown"] = res["drawdown"] - dd0
+            if "tqqq_drawdown" in res.columns:
+                tqqq_dd0 = float(res["tqqq_drawdown"].iloc[0]) if pd.notna(res["tqqq_drawdown"].iloc[0]) else 0.0
+                res["tqqq_drawdown"] = res["tqqq_drawdown"] - tqqq_dd0
+
         return res
 
     def detect_events(self, df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:

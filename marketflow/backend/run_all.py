@@ -23,10 +23,11 @@ if sys.platform == "win32":
 SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "scripts")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
 
-DEFAULT_TIMEOUT = 300  # 5 minutes default
+DEFAULT_TIMEOUT = 600  # 10 minutes default
 
 # Scripts that need a longer timeout (SP500 bulk downloads etc.)
 SCRIPT_TIMEOUTS: dict[str, int] = {
+    "update_market_daily.py": 600,   # 10 min -- yfinance VIX/rates/FX
     "update_ohlcv.py":       3600,  # 60 min — 500 symbols × yfinance/stooq
     "update_indicators.py":  1800,  # 30 min — 500 symbols × indicator calc
     "build_daily_snapshot.py": 600, # 10 min — heavy join across all symbols

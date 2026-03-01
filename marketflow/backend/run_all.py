@@ -85,7 +85,8 @@ SCRIPTS = [
 def run_script(filename: str, description: str, index: int, total: int) -> tuple[bool, float]:
     script_path = os.path.join(SCRIPTS_DIR, filename)
     timeout = SCRIPT_TIMEOUTS.get(filename, DEFAULT_TIMEOUT)
-    print(f"\n[{index}/{total}] {description}")
+    pct = round(index / total * 100)
+    print(f"\n[{index}/{total}] {pct}%  {description}")
     print(f"     Running {filename}... (timeout={timeout}s)", flush=True)
 
     start = time.time()

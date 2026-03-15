@@ -153,7 +153,7 @@ export default function SmartMoneyView({
               </>
             ) : (
               <>
-                Smart <span style={{ color: '#00D9FF' }}>Money</span>
+                Smart <span style={{ color: '#00D9FF' }}>Flow</span> Index
               </>
             )}
           </h1>
@@ -195,7 +195,7 @@ export default function SmartMoneyView({
         <>
           {showOverview && (
           <section style={cardStyle()}>
-            <div style={{ color: '#f3f4f6', fontWeight: 800, marginBottom: 10 }}>오늘의 Smart Money Top 10</div>
+            <div style={{ color: '#f3f4f6', fontWeight: 800, marginBottom: 10 }}>오늘의 Smart Flow Index Top 10</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8 }}>
               {top.slice(0, 10).map((item) => (
                 <button

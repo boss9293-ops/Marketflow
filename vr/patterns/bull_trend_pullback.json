@@ -1,0 +1,33 @@
+{
+  "pattern_id": "bull_trend_pullback",
+  "category": "bull_market_correction",
+  "description": "Short-term pullback during a strong long-term bull trend.",
+  "signature": {
+    "duration_days": {
+      "min": 5,
+      "max": 15
+    },
+    "nasdaq_drawdown_range": {
+      "min": -0.07,
+      "max": -0.03
+    },
+    "tqqq_drawdown_range": {
+      "min": -0.2,
+      "max": -0.1
+    },
+    "trend_structure": "trend_pullback",
+    "ma200_behavior": "above",
+    "volatility_profile": "moderate",
+    "catalyst_type": "profit_taking"
+  },
+  "historical_refs": [
+    "2017 multiple pullbacks",
+    "2023 bull market corrections"
+  ],
+  "scenario_set": [
+    "trend_continuation",
+    "range_pause",
+    "trend_reversal"
+  ],
+  "playbook": {}
+}

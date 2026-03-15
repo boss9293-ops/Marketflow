@@ -1,0 +1,54 @@
+Anthropic narration failed, trying Gemini: Error: ANTHROPIC_API_KEY missing
+    at callAnthropicNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:50:24)
+    at generateMarketNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:135:22)
+    at HealthPage (webpack-internal:///(rsc)/./src/app/health/page.tsx:145:116)
+Gemini narration failed, using fallback: Error: Gemini API 429
+    at callGeminiNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:119:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async generateMarketNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:140:16)
+    at async HealthPage (webpack-internal:///(rsc)/./src/app/health/page.tsx:145:25)
+Anthropic narration failed, trying Gemini: Error: ANTHROPIC_API_KEY missing
+    at callAnthropicNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:50:24)
+    at generateMarketNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:135:22)
+    at HealthPage (webpack-internal:///(rsc)/./src/app/health/page.tsx:145:116)
+Gemini narration failed, using fallback: Error: Gemini API 429
+    at callGeminiNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:119:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async generateMarketNarration (webpack-internal:///(rsc)/./src/lib/generateMarketNarration.ts:140:16)
+    at async HealthPage (webpack-internal:///(rsc)/./src/app/health/page.tsx:145:25)
+ ⨯ ./src/components/crash/vr/VRSurvival.tsx
+Error: Failed to read source code from X:\marketflow\frontend\src\components\crash\vr\VRSurvival.tsx
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./src/components/crash/vr/VRSurvival.tsx
+ ⨯ ./src/components/crash/vr/VRSurvival.tsx
+Error: Failed to read source code from X:\marketflow\frontend\src\components\crash\vr\VRSurvival.tsx
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./src/components/crash/vr/VRSurvival.tsx
+./src/app/vr-survival/page.tsx
+ ⨯ ./src/components/crash/vr/VRSurvival.tsx
+Error: Failed to read source code from X:\marketflow\frontend\src\components\crash\vr\VRSurvival.tsx
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./src/components/crash/vr/VRSurvival.tsx
+./src/app/vr-survival/page.tsx
+ ⨯ ./src/components/crash/vr/VRSurvival.tsx
+Error: Failed to read source code from X:\marketflow\frontend\src\components\crash\vr\VRSurvival.tsx
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./src/components/crash/vr/VRSurvival.tsx
+./src/app/vr-survival/page.tsx
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload

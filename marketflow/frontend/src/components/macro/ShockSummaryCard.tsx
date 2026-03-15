@@ -1,5 +1,7 @@
 'use client'
 
+import InfoTip from '@/components/ui/InfoTip'
+
 function stateLabel(state: string, mode: 'ko' | 'en') {
   if (mode === 'en') {
     if (state === 'High') return 'High'
@@ -63,8 +65,15 @@ export default function ShockSummaryCard({
   return (
     <div className="rounded-2xl border border-white/10 bg-[#16181c] p-5 min-h-[240px]">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-2xl md:text-3xl text-slate-100 font-extrabold tracking-tight leading-tight">
+        <div className="text-2xl md:text-3xl text-slate-100 font-extrabold tracking-tight leading-tight flex items-center gap-2">
           {mode === 'ko' ? `단기 충격 위험: ${label}` : `Short-term Shock Risk: ${label}`}
+          <InfoTip
+            content={
+              mode === 'ko'
+                ? '변동성/신용/속도 지표를 결합한 단기 충격 위험 밴드입니다. 예측이 아니라 위험 강도 분류입니다.'
+                : 'A short-term shock risk band combining volatility, credit and speed signals. It is a classification, not a prediction.'
+            }
+          />
         </div>
         <span className={`px-2.5 py-1 rounded-full text-sm font-semibold border ${stateClass(derivedState)}`}>{label}</span>
       </div>

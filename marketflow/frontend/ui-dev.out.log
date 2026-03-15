@@ -1,0 +1,23 @@
+
+> marketflow-frontend@0.1.0 dev
+> next dev -p 3010
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3010
+
+ ✓ Starting...
+ ✓ Ready in 7.7s
+ ○ Compiling / ...
+ ✓ Compiled / in 8.8s (521 modules)
+ GET / 200 in 9844ms
+ ✓ Compiled in 1032ms (266 modules)
+ GET / 200 in 161ms
+ ○ Compiling /briefing ...
+ ✓ Compiled /briefing in 5.4s (1565 modules)
+ ✓ Compiled /top-picks in 506ms (1572 modules)
+ ○ Compiling /smart-money ...
+ ✓ Compiled /smart-money in 756ms (1581 modules)
+ ○ Compiling /risk ...
+ ✓ Compiled /risk in 656ms (1588 modules)
+ ○ Compiling /earnings ...
+[?25h

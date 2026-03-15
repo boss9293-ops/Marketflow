@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/data/sampleData.ts",
+    "src/lib/backtest/**/*.ts",
+    "src/components/vr-simulator/**/*.tsx",
+    "src/app/vr-simulator/page.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "C:/Temp/mf_next/types/**/*.ts",
+    "D:/Temp/mf_next/types/**/*.ts",
+    "../../../../../../Temp/mf_next/types/**/*.ts"
+  ]
+}

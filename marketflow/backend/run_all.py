@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import argparse
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 import requests
 
@@ -34,6 +34,7 @@ SCRIPT_TIMEOUTS: dict[str, int] = {
     "screener.py":           600,   # 10 min — scoring across all symbols
     "predictor_ml.py":       600,   # 10 min — ML inference
     "build_snapshots_120d.py": 600, # 10 min — 120-day rolling series
+    "backfill_macro_snapshots.py": 3600, # 60 min bootstrap on cold start
 }
 
 
@@ -48,12 +49,14 @@ SCRIPTS = [
     ("predictor_ml.py", "ML Direction Predictor"),
     ("regime_classifier.py", "Market Regime Classifier"),
     ("risk_calculator.py", "Portfolio Risk Calculator"),
-    ("sector_performance.py", "Sector Performance"),
     ("briefing_ai.py", "AI Market Briefing"),
     ("validate_kr_outputs.py", "KR Output Contract Validation"),
-    # DB/cache chain (order-sensitive)
-    ("update_market_daily.py", "Update Market Daily (QQQ/SPY/VIX/rates/FX/commodities)"),
+    # DB/cache chain (order-sensitive: ohlcv first, market_daily reads from ohlcv)
+    ("ensure_risk_universe.py", "Ensure Risk Engine Universe Symbols"),
     ("update_ohlcv.py", "Update OHLCV Daily"),
+    ("update_market_daily.py", "Update Market Daily (QQQ/SPY/VIX/rates/FX/commodities)"),
+    ("collect_macro_cache.py", "Collect Macro Cache (SQLite)"),
+    ("sector_performance.py", "Sector Performance"),
     ("update_indicators.py", "Update Indicators Daily"),
     ("build_daily_snapshot.py", "Build Daily Snapshot"),
     ("update_snapshot_alerts.py", "Update Snapshot Alerts"),
@@ -75,7 +78,8 @@ SCRIPTS = [
     ("build_context_news.py", "Build Context News Cache"),
     ("build_market_health.py", "Build Market Health 4-Score"),
     ("risk_engine.py",       "Compute Risk Engine Metrics"),
-    ("collect_macro_cache.py", "Collect Macro Cache (SQLite)"),
+    ("build_risk_v1.py",     "Build Risk v1 (Standard Risk System)"),
+    ("build_current_90d.py",  "Build Current 90-Day Playback (cur90)"),
     ("build_macro_snapshot.py", "Build Macro Layer v2 Snapshot"),
     ("build_validation_snapshot.py", "Build Macro Validation Auto-Guard Snapshot"),
     ("validate_cache.py",   "Validate Cache & Write healthcheck.json"),
@@ -119,6 +123,93 @@ def run_script(filename: str, description: str, index: int, total: int) -> tuple
     except Exception as e:
         print(f"     ERROR - {e}")
         return False, 0.0
+
+
+def run_script_args(
+    filename: str,
+    description: str,
+    extra_args: list[str] | None = None,
+    timeout: int | None = None,
+) -> tuple[bool, float]:
+    script_path = os.path.join(SCRIPTS_DIR, filename)
+    run_timeout = timeout or SCRIPT_TIMEOUTS.get(filename, DEFAULT_TIMEOUT)
+    cmd = [sys.executable, "-X", "utf8", script_path, *(extra_args or [])]
+    pretty_args = " ".join(extra_args or [])
+    print(f"\n[EXTRA] {description}")
+    print(f"     Running {filename}{(' ' + pretty_args) if pretty_args else ''}... (timeout={run_timeout}s)", flush=True)
+
+    start = time.time()
+    try:
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        env["PYTHONUTF8"] = "1"
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            timeout=run_timeout,
+            encoding="utf-8",
+            errors="replace",
+            env=env,
+        )
+        elapsed = time.time() - start
+
+        if result.returncode == 0:
+            output = result.stdout.strip()
+            print(f"     OK ({elapsed:.1f}s) - {output}")
+            return True, elapsed
+
+        err = result.stderr.strip().split("\n")[-1] if result.stderr else "Unknown error"
+        print(f"     FAIL ({elapsed:.1f}s) - {err}")
+        return False, elapsed
+    except subprocess.TimeoutExpired:
+        elapsed = time.time() - start
+        print(f"     TIMEOUT (>{run_timeout}s)")
+        return False, elapsed
+    except Exception as e:
+        print(f"     ERROR - {e}")
+        return False, 0.0
+
+
+def macro_snapshot_dir() -> str:
+    return os.path.join(os.path.dirname(__file__), "storage", "macro_snapshots")
+
+
+def _parse_snapshot_date(name: str) -> date | None:
+    stem, ext = os.path.splitext(name)
+    if ext.lower() != ".json":
+        return None
+    try:
+        return datetime.strptime(stem, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def inspect_macro_snapshot_cache(years: int) -> tuple[bool, str]:
+    target_dir = macro_snapshot_dir()
+    if not os.path.isdir(target_dir):
+        return True, f"macro_snapshots missing ({target_dir})"
+
+    snapshot_dates: list[date] = []
+    for name in os.listdir(target_dir):
+        parsed = _parse_snapshot_date(name)
+        if parsed is not None:
+            snapshot_dates.append(parsed)
+
+    if not snapshot_dates:
+        return True, "macro_snapshots empty"
+
+    snapshot_dates.sort()
+    today = date.today()
+    cutoff = today - timedelta(days=365 * years)
+    recent = [d for d in snapshot_dates if d >= cutoff]
+    latest = snapshot_dates[-1]
+    expected_recent_min = max(220, years * 220)
+
+    if latest < today - timedelta(days=7):
+        return True, f"latest snapshot stale ({latest.isoformat()})"
+    if len(recent) < expected_recent_min:
+        return True, f"recent snapshot coverage low ({len(recent)} < {expected_recent_min})"
+    return False, f"macro_snapshots ready ({len(recent)} recent, latest={latest.isoformat()})"
 
 
 def print_summary(results: list[tuple[str, str, bool, float]]) -> None:
@@ -219,6 +310,17 @@ def parse_args() -> argparse.Namespace:
         "--tabs",
         default="",
         help="(holdings mode) Comma-separated tab names to import (default: use selectable tabs, include Goal)",
+    )
+    parser.add_argument(
+        "--macro-bootstrap-years",
+        type=int,
+        default=3,
+        help="(full mode) Bootstrap macro snapshot cache when missing/incomplete (default: 3 years)",
+    )
+    parser.add_argument(
+        "--skip-macro-bootstrap",
+        action="store_true",
+        help="(full mode) Skip conditional macro snapshot bootstrap.",
     )
     return parser.parse_args()
 
@@ -326,7 +428,35 @@ def main() -> None:
         ok, elapsed = run_script(filename, desc, i, total)
         results.append((filename, desc, ok, elapsed))
 
+    bootstrap_summary: str | None = None
+
+    if not args.skip_macro_bootstrap:
+        bootstrap_years = max(1, int(args.macro_bootstrap_years))
+        should_bootstrap, bootstrap_reason = inspect_macro_snapshot_cache(bootstrap_years)
+        print(f"\n[CHECK] Macro snapshot bootstrap: {bootstrap_reason}")
+        if should_bootstrap:
+            ok, elapsed = run_script_args(
+                "backfill_macro_snapshots.py",
+                f"Bootstrap Macro Snapshots ({bootstrap_years}Y)",
+                ["--years", str(bootstrap_years)],
+                timeout=SCRIPT_TIMEOUTS.get("backfill_macro_snapshots.py", 3600),
+            )
+            results.append(
+                ("backfill_macro_snapshots.py", f"Bootstrap Macro Snapshots ({bootstrap_years}Y)", ok, elapsed)
+            )
+            bootstrap_summary = (
+                f"executed ({bootstrap_years}Y) - {'OK' if ok else 'FAIL'} - {bootstrap_reason}"
+            )
+        else:
+            bootstrap_summary = f"skipped - {bootstrap_reason}"
+            print(f"[SKIP] Macro snapshot bootstrap: {bootstrap_reason}")
+    else:
+        bootstrap_summary = "skipped by flag (--skip-macro-bootstrap)"
+        print("\n[SKIP] Macro snapshot bootstrap: skipped by flag (--skip-macro-bootstrap)")
+
     print_summary(results)
+    if bootstrap_summary:
+        print(f"  Macro bootstrap: {bootstrap_summary}")
     report = save_pipeline_report(results)
     notify_webhook_if_needed(report)
 

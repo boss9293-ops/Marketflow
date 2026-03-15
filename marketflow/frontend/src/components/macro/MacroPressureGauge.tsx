@@ -1,6 +1,8 @@
 'use client'
 
 import { HalfGauge } from '@/components/macro/PressureBar'
+import InfoTip from '@/components/ui/InfoTip'
+import { MACRO_TERM_COPY } from '@/lib/macroCopy'
 
 function levelText(v: number, mode: 'ko' | 'en') {
   if (mode === 'en') {
@@ -62,13 +64,20 @@ export default function MacroPressureGauge({
         : `${Math.round(ageMinutes)}m`
       : '—'
 
+  const langKey = mode === 'ko' ? 'KR' : 'EN'
+  const mpsTip = MACRO_TERM_COPY.MPS[langKey].body
+
   return (
     <div className="rounded-2xl border border-white/10 bg-[#16181c] p-5 min-h-[240px]">
-      <div className="text-xl md:text-2xl font-extrabold text-slate-100 tracking-tight">{mode === 'ko' ? '매크로 압박 레벨' : 'Macro Pressure Level'}</div>
+      <div className="text-xl md:text-2xl font-extrabold text-slate-100 tracking-tight flex items-center gap-2">
+        <span>{mode === 'ko' ? '매크로 압박 레벨' : 'Macro Pressure Level'}</span>
+        <InfoTip content={mpsTip} />
+      </div>
       <div className="mt-3 flex items-center justify-between gap-4">
         <div>
           <div className="text-4xl font-extrabold text-white">{levelText(mps, mode)}</div>
           <div className="mt-1 text-lg font-semibold text-slate-200">MPS {Math.round(mps)}/100</div>
+          <div className="mt-2 text-xs text-slate-400 leading-relaxed">{mpsTip}</div>
           <div className="mt-2 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-2.5 py-1">
             <span className="text-xs text-slate-400">{mode === 'ko' ? '지금 위치' : 'Current'}</span>
             <span className="text-sm font-semibold text-slate-100">{mode === 'ko' ? zoneKo : zoneEn} ({zone})</span>

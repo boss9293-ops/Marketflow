@@ -1,0 +1,44 @@
+
+> marketflow-frontend@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 6.2s
+ ○ Compiling /kr-market/ai-history ...
+ ✓ Compiled /kr-market in 21.9s (1556 modules)
+ GET /kr-market 200 in 16900ms
+ GET /kr-market/ai-history 200 in 22786ms
+ GET /kr-market 200 in 166ms
+ ○ Compiling /kr-market/signals ...
+ ✓ Compiled /kr-market/signals in 1270ms (1542 modules)
+ ○ Compiling /sectors ...
+ ✓ Compiled /sectors in 758ms (1552 modules)
+ ✓ Compiled in 1134ms (786 modules)
+ ✓ Compiled in 868ms (786 modules)
+ ✓ Compiled in 1183ms (1569 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 2s (1573 modules)
+ ○ Compiling /signals ...
+ ✓ Compiled /signals in 667ms (1580 modules)
+ ○ Compiling /calendar ...
+ ✓ Compiled /calendar in 579ms (1586 modules)
+ ○ Compiling /prediction ...
+ ✓ Compiled /prediction in 691ms (1593 modules)
+ ○ Compiling /regime ...
+ ✓ Compiled /regime in 594ms (1600 modules)
+ ✓ Compiled in 1113ms (801 modules)
+ ✓ Compiled in 328ms (801 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1525ms (1592 modules)
+ GET /regime 200 in 167ms
+ ✓ Compiled in 1428ms (1606 modules)
+ GET /regime 200 in 142ms
+ ○ Compiling /risk ...
+ ✓ Compiled /risk in 823ms (1599 modules)
+ ○ Compiling /groups ...
+ ✓ Compiled /groups in 676ms (1610 modules)
+ ✓ Compiled in 1327ms (1604 modules)
+ ✓ Compiled in 332ms (807 modules)

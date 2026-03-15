@@ -1,0 +1,33 @@
+{
+  "pattern_id": "leveraged_washout",
+  "category": "leverage_liquidation",
+  "description": "Rapid leveraged ETF liquidation phase triggered by volatility spikes and forced selling.",
+  "signature": {
+    "duration_days": {
+      "min": 3,
+      "max": 7
+    },
+    "nasdaq_drawdown_range": {
+      "min": -0.12,
+      "max": -0.07
+    },
+    "tqqq_drawdown_range": {
+      "min": -0.35,
+      "max": -0.25
+    },
+    "trend_structure": "liquidation_drop",
+    "ma200_behavior": "irrelevant",
+    "volatility_profile": "extreme",
+    "catalyst_type": "volatility_spike"
+  },
+  "historical_refs": [
+    "2018-02 volatility event",
+    "2020-03 early crash phase"
+  ],
+  "scenario_set": [
+    "panic_bottom",
+    "fast_recovery",
+    "secondary_liquidation"
+  ],
+  "playbook": {}
+}

@@ -1,0 +1,672 @@
+{
+  "version": "macro_policy_v1",
+  "lookback": {
+    "daily_points": 1260,
+    "weekly_points": 260
+  },
+  "series": {
+    "VIX": {
+      "frequency": "daily",
+      "stale_days": 2,
+      "min_samples": 252,
+      "display": "VIX"
+    },
+    "EFFR": {
+      "frequency": "daily",
+      "stale_days": 2,
+      "min_samples": 252,
+      "display": "EFFR"
+    },
+    "WALCL": {
+      "frequency": "weekly",
+      "stale_days": 10,
+      "min_samples": 52,
+      "display": "Fed Balance Sheet (WALCL)"
+    },
+    "RRP": {
+      "frequency": "daily",
+      "stale_days": 2,
+      "min_samples": 252,
+      "display": "Reverse Repo (RRP)"
+    },
+    "BTC": {
+      "frequency": "daily",
+      "stale_days": 2,
+      "min_samples": 252,
+      "display": "BTC"
+    },
+    "GOLD": {
+      "frequency": "daily",
+      "stale_days": 2,
+      "min_samples": 252,
+      "display": "Gold"
+    },
+    "QQQ": {
+      "frequency": "daily",
+      "stale_days": 2,
+      "min_samples": 252,
+      "display": "QQQ"
+    },
+    "M2SL": {
+      "frequency": "weekly",
+      "stale_days": 10,
+      "min_samples": 104,
+      "display": "M2 Money Stock (M2SL)"
+    },
+    "CPIAUCSL": {
+      "frequency": "monthly",
+      "stale_days": 45,
+      "min_samples": 36,
+      "display": "CPIAUCSL"
+    }
+  },
+  "winsorize": {
+    "low_pct": 1,
+    "high_pct": 99
+  },
+  "features": {
+    "vix_level": {
+      "series": "VIX",
+      "transform": {
+        "type": "level"
+      },
+      "direction": 1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "vix_5d_change_pct": {
+      "series": "VIX",
+      "transform": {
+        "type": "pct_change",
+        "window": 5
+      },
+      "direction": 1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "effr_level": {
+      "series": "EFFR",
+      "transform": {
+        "type": "level"
+      },
+      "direction": 1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "effr_1m_change_bp": {
+      "series": "EFFR",
+      "transform": {
+        "type": "bp_change",
+        "window": 21
+      },
+      "direction": 1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "walcl_8w_change_pct": {
+      "series": "WALCL",
+      "transform": {
+        "type": "pct_change",
+        "window": 8,
+        "frequency_hint": "weekly"
+      },
+      "direction": -1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "weekly_points"
+      }
+    },
+    "rrp_20d_change_pct": {
+      "series": "RRP",
+      "transform": {
+        "type": "pct_change",
+        "window": 20
+      },
+      "direction": -1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      },
+      "deprecated_for_lpi": true,
+      "note": "Do not use directional sign alone for pressure. Prefer abs shock or buffer-specific interpretation."
+    },
+    "btc_30d_return": {
+      "series": "BTC",
+      "transform": {
+        "type": "pct_change",
+        "window": 30
+      },
+      "direction": 0,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "gold_30d_return": {
+      "series": "GOLD",
+      "transform": {
+        "type": "pct_change",
+        "window": 30
+      },
+      "direction": 0,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "qqq_30d_return": {
+      "series": "QQQ",
+      "transform": {
+        "type": "pct_change",
+        "window": 30
+      },
+      "direction": 0,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      }
+    },
+    "rrp_20d_abs_change_pct": {
+      "series": "RRP",
+      "transform": {
+        "type": "pct_change",
+        "window": 20
+      },
+      "direction": 1,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "daily_points"
+      },
+      "postprocess": {
+        "abs": true
+      }
+    },
+    "m2_yoy_pct": {
+      "series": "M2SL",
+      "transform": {
+        "type": "pct_change",
+        "window": 52,
+        "frequency_hint": "weekly"
+      },
+      "direction": 0,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "weekly_points"
+      },
+      "status": "planned_default",
+      "note": "Primary M2 input should be YoY; 8W change is auxiliary only."
+    },
+    "m2_yoy_13w_slope": {
+      "series": "M2SL",
+      "transform": {
+        "type": "pct_change",
+        "window": 13,
+        "frequency_hint": "weekly"
+      },
+      "direction": 0,
+      "winsorize": true,
+      "percentile": {
+        "method": "rank",
+        "lookback_points_ref": "weekly_points"
+      },
+      "status": "planned_aux",
+      "note": "13W slope proxy for M2 YoY trend; formal implementation pending dedicated transform."
+    }
+  },
+  "indexes": {
+    "VRI": {
+      "label": "Volatility Regime Index",
+      "range": [
+        0,
+        100
+      ],
+      "components": [
+        {
+          "feature": "vix_level",
+          "weight": 0.6
+        },
+        {
+          "feature": "vix_5d_change_pct",
+          "weight": 0.4
+        }
+      ],
+      "state_bins": [
+        {
+          "state": "Compressed",
+          "max": 33
+        },
+        {
+          "state": "Normal",
+          "max": 66
+        },
+        {
+          "state": "Expanding",
+          "max": 100
+        }
+      ]
+    },
+    "RPI": {
+      "label": "Rates Pressure Index",
+      "range": [
+        0,
+        100
+      ],
+      "components": [
+        {
+          "feature": "effr_level",
+          "weight": 0.6
+        },
+        {
+          "feature": "effr_1m_change_bp",
+          "weight": 0.4
+        }
+      ],
+      "state_bins": [
+        {
+          "state": "Easing",
+          "max": 33
+        },
+        {
+          "state": "Stable",
+          "max": 66
+        },
+        {
+          "state": "Restrictive",
+          "max": 100
+        }
+      ]
+    },
+    "LPI": {
+      "label": "Liquidity Pressure Index",
+      "range": [
+        0,
+        100
+      ],
+      "components": [
+        {
+          "feature": "walcl_8w_change_pct",
+          "weight": 0.55
+        },
+        {
+          "feature": "rrp_20d_abs_change_pct",
+          "weight": 0.45
+        }
+      ],
+      "state_bins": [
+        {
+          "state": "Easy",
+          "max": 33
+        },
+        {
+          "state": "Neutral",
+          "max": 66
+        },
+        {
+          "state": "Tight",
+          "max": 100
+        }
+      ],
+      "notes": [
+        "RRP component uses ABS(20D % change) shock percentile to avoid directional over-claiming."
+      ]
+    }
+  },
+  "mps": {
+    "label": "Macro Pressure Score",
+    "components": [
+      {
+        "index": "LPI",
+        "weight": 0.4
+      },
+      {
+        "index": "RPI",
+        "weight": 0.3
+      },
+      {
+        "index": "VRI",
+        "weight": 0.3
+      }
+    ],
+    "state_bins": [
+      {
+        "state": "Calm",
+        "max": 25
+      },
+      {
+        "state": "Low",
+        "max": 45
+      },
+      {
+        "state": "Mixed",
+        "max": 65
+      },
+      {
+        "state": "High",
+        "max": 85
+      },
+      {
+        "state": "Extreme",
+        "max": 100
+      }
+    ],
+    "xconf_included": false
+  },
+  "confidence": {
+    "penalties": {
+      "stale": {
+        "daily_stale_days": 2,
+        "daily_penalty": 30,
+        "weekly_stale_days": 10,
+        "weekly_penalty": 25
+      },
+      "missing_feature_penalty": 35,
+      "data_limited_penalty": 25,
+      "noisy_penalty": 10
+    },
+    "noisy_rule": {
+      "series": "VIX",
+      "metric": "rolling_std",
+      "window": 10,
+      "threshold_percentile": 95
+    },
+    "min_confidence": 0,
+    "max_confidence": 100
+  },
+  "static_bands": {
+    "VIX": {
+      "unit": "",
+      "bands": [
+        {
+          "label": "Normal",
+          "min": 12,
+          "max": 20
+        },
+        {
+          "label": "Watch",
+          "min": 20,
+          "max": 25
+        },
+        {
+          "label": "Risk",
+          "min": 25,
+          "max": 100
+        }
+      ],
+      "note": "Reference-only. Use 5Y percentile for regime context.",
+      "direction_mode": "HIGH_BAD"
+    },
+    "VIX_5D_CHANGE_PCT": {
+      "unit": "%",
+      "bands": [
+        {
+          "label": "Normal",
+          "min": -999,
+          "max": 10
+        },
+        {
+          "label": "Watch",
+          "min": 10,
+          "max": 20
+        },
+        {
+          "label": "Risk",
+          "min": 20,
+          "max": 999
+        }
+      ],
+      "note": "Acceleration proxy. Not a crash predictor.",
+      "direction_mode": "HIGH_BAD"
+    },
+    "EFFR_LEVEL": {
+      "unit": "%",
+      "bands": [
+        {
+          "label": "Normal",
+          "min": 0,
+          "max": 3.0
+        },
+        {
+          "label": "Watch",
+          "min": 3.0,
+          "max": 4.5
+        },
+        {
+          "label": "Risk",
+          "min": 4.5,
+          "max": 20
+        }
+      ],
+      "note": "Context-only. High levels often increase duration/discount pressure.",
+      "direction_mode": "HIGH_BAD"
+    },
+    "EFFR_1M_CHANGE_BP": {
+      "unit": "bp",
+      "bands": [
+        {
+          "label": "Normal",
+          "min": -999,
+          "max": 20
+        },
+        {
+          "label": "Watch",
+          "min": 20,
+          "max": 50
+        },
+        {
+          "label": "Risk",
+          "min": 50,
+          "max": 999
+        }
+      ],
+      "note": "Short-rate shock proxy (1M change).",
+      "direction_mode": "BOTH_BAD"
+    },
+    "WALCL_8W_CHANGE_PCT": {
+      "unit": "%",
+      "bands": [
+        {
+          "label": "Normal",
+          "min": -2.0,
+          "max": 2.0
+        },
+        {
+          "label": "Watch",
+          "min": -5.0,
+          "max": -2.0
+        },
+        {
+          "label": "Risk",
+          "min": -999,
+          "max": -5.0
+        }
+      ],
+      "note": "Balance sheet contraction intensity (QT proxy).",
+      "direction_mode": "LOW_BAD"
+    },
+    "RRP_20D_CHANGE_PCT": {
+      "unit": "%",
+      "bands": [
+        {
+          "label": "Normal",
+          "min": -15,
+          "max": 15
+        },
+        {
+          "label": "Watch",
+          "min": -40,
+          "max": -15
+        },
+        {
+          "label": "Risk",
+          "min": -999,
+          "max": -40
+        }
+      ],
+      "note": "Cushion change proxy. Regime-dependent; interpret as pressure context only.",
+      "direction_mode": "BOTH_BAD"
+    },
+    "LPI_SCORE": {
+      "unit": "score",
+      "bands": [
+        {
+          "label": "Easy",
+          "min": 0,
+          "max": 33
+        },
+        {
+          "label": "Neutral",
+          "min": 33,
+          "max": 66
+        },
+        {
+          "label": "Tight",
+          "min": 66,
+          "max": 100
+        }
+      ],
+      "note": "Composite percentile-based index (0-100).",
+      "direction_mode": "HIGH_BAD"
+    },
+    "RPI_SCORE": {
+      "unit": "score",
+      "bands": [
+        {
+          "label": "Easing",
+          "min": 0,
+          "max": 33
+        },
+        {
+          "label": "Stable",
+          "min": 33,
+          "max": 66
+        },
+        {
+          "label": "Restrictive",
+          "min": 66,
+          "max": 100
+        }
+      ],
+      "note": "Composite percentile-based index (0-100).",
+      "direction_mode": "HIGH_BAD"
+    },
+    "VRI_SCORE": {
+      "unit": "score",
+      "bands": [
+        {
+          "label": "Compressed",
+          "min": 0,
+          "max": 33
+        },
+        {
+          "label": "Normal",
+          "min": 33,
+          "max": 66
+        },
+        {
+          "label": "Expanding",
+          "min": 66,
+          "max": 100
+        }
+      ],
+      "note": "Composite percentile-based index (0-100).",
+      "direction_mode": "HIGH_BAD"
+    },
+    "MPS_SCORE": {
+      "unit": "score",
+      "bands": [
+        {
+          "label": "Calm",
+          "min": 0,
+          "max": 39
+        },
+        {
+          "label": "Mixed",
+          "min": 40,
+          "max": 69
+        },
+        {
+          "label": "Pressure",
+          "min": 70,
+          "max": 84
+        },
+        {
+          "label": "Extreme",
+          "min": 85,
+          "max": 100
+        }
+      ],
+      "note": "Macro Pressure Score (0-100). Use as ceiling modifier only.",
+      "direction_mode": "HIGH_BAD"
+    }
+  },
+  "ui": {
+    "badges": {
+      "conf_ge_80": "Normal",
+      "conf_ge_50": "Data limited",
+      "conf_lt_50": "Partial"
+    },
+    "macro_detail_template": [
+      "Value",
+      "Static band",
+      "5Y Percentile",
+      "Last updated",
+      "Confidence"
+    ]
+  },
+  "quality_rules": {
+    "real_rate_proxy": {
+      "preferred_series": "DFII10",
+      "proxy_formula": "DGS10 - CPI_YOY_PROXY",
+      "quality_on_proxy": "Partial",
+      "tooltip": "Proxy used (DFII10 unavailable): DGS10 - CPI YoY proxy."
+    }
+  },
+  "xasset_relationship": {
+    "btc_m2_leadlag": {
+      "enabled": false,
+      "method": "max_corr_over_shifts",
+      "corr_window_days": 180,
+      "btc_series": "btc_30d_return",
+      "m2_series": "m2_yoy_pct",
+      "shift_days_range": [
+        0,
+        30
+      ],
+      "selection": "max_abs_corr",
+      "status_mapping": {
+        "align": "Align",
+        "mixed": "Mixed",
+        "stress": "Stress"
+      },
+      "note": "Planned relationship sensor; integrate after M2/BTC series pipeline is productionized."
+    }
+  },
+  "xconf": {
+    "separate_from_mps": true,
+    "allowed_uses": [
+      "tone_control",
+      "exposure_ceiling_modifier_strength",
+      "confidence_score"
+    ],
+    "mps_formula_note": "MPS = wL*LPI + wR*RPI + wV*VRI (XCONF excluded)"
+  }
+}

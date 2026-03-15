@@ -1,0 +1,32 @@
+{
+  "pattern_id": "slow_grind_correction",
+  "category": "structural_correction",
+  "description": "Extended correction characterized by persistent downward drift and repeated failed rallies.",
+  "signature": {
+    "duration_days": {
+      "min": 30,
+      "max": 90
+    },
+    "nasdaq_drawdown_range": {
+      "min": -0.2,
+      "max": -0.12
+    },
+    "tqqq_drawdown_range": {
+      "min": -0.5,
+      "max": -0.3
+    },
+    "trend_structure": "lower_high_sequence",
+    "ma200_behavior": "sustained_below",
+    "volatility_profile": "moderate",
+    "catalyst_type": "macro_tightening"
+  },
+  "historical_refs": [
+    "2022 bear market"
+  ],
+  "scenario_set": [
+    "macro_bottom",
+    "continued_decline",
+    "policy_pivot_recovery"
+  ],
+  "playbook": {}
+}

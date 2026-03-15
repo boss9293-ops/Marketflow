@@ -1,0 +1,571 @@
+{
+  "snapshot_date": "2023-04-25",
+  "sources": {
+    "fred": [
+      "VIXCLS",
+      "EFFR",
+      "WALCL",
+      "RRPONTSYD",
+      "M2SL",
+      "BAMLH0A0HYM2",
+      "DGS10",
+      "DGS2",
+      "DFII10",
+      "CPIAUCSL"
+    ],
+    "market_prices": [
+      "QQQ",
+      "BTC-USD",
+      "GLD",
+      "DX-Y.NYB",
+      "HYG",
+      "LQD",
+      "^PCCE"
+    ]
+  },
+  "computed": {
+    "LPI": {
+      "name": "Liquidity Pressure Index",
+      "value": 20.555994571451418,
+      "status": "Easy",
+      "ref_band": "Bands are 3Y percentiles. Normal <P66, Watch P66-P85, Risk >P85",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "WALCL 0.38 + RRP 0.30 + M2 0.17 + DXY_30D 0.15. DXY surge = tighter global liquidity.",
+      "dxy_30d_change": -0.5331211160367832,
+      "dxy_pressure": "NEUTRAL",
+      "dxy_data_available": true,
+      "lpi_weights": {
+        "WALCL": 0.38,
+        "RRP": 0.3,
+        "M2": 0.17,
+        "DXY": 0.15
+      },
+      "age_minutes": 1196.37,
+      "stale": false,
+      "quality_effective": "NA"
+    },
+    "RPI": {
+      "name": "Rates Pressure Index",
+      "value": 62.87458471760797,
+      "status": "Stable",
+      "ref_band": "Bands are 3Y percentiles. Normal <P66, Watch P66-P85, Risk >P85",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "EFFR_level 0.25 + EFFR_1m 0.15 + RealRate 0.40 + YieldCurve_10Y2Y 0.20.",
+      "yield_curve_spread": -0.45999999999999996,
+      "inversion_flag": true,
+      "inversion_severity": "INVERTED",
+      "yc_data_source": "DGS10-DGS2",
+      "rpi_weights": {
+        "EFFR_level": 0.25,
+        "EFFR_1m": 0.15,
+        "RealRate": 0.4,
+        "YC_Spread": 0.2
+      },
+      "age_minutes": 1196.37,
+      "stale": false,
+      "quality_effective": "NA"
+    },
+    "VRI": {
+      "name": "Volatility Regime Index",
+      "value": 26.161932192672992,
+      "status": "Compressed",
+      "ref_band": "Bands are 3Y percentiles. Normal <P66, Watch P66-P85, Risk >P85",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "VIX_level 0.55 + VIX_5D 0.30 + VolRatio 0.15, then 80% base + 20% Put/Call score.",
+      "vri_base": 32.3657149041409,
+      "vri_put_call_boost_weight": 0.2,
+      "age_minutes": 1196.37,
+      "stale": true,
+      "quality_effective": "NA"
+    },
+    "PUT_CALL": {
+      "name": "Put/Call Sentiment",
+      "value": 1.3468013468013469,
+      "status": "Normal",
+      "ref_band": "Bands are 3Y percentiles. Normal <P66, Watch P66-P85, Risk >P85",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "3Y percentile on Put/Call 5D moving average (HIGH_BAD).",
+      "pc_5d_ma": 1.1663000000000001,
+      "pc_30d_chg": -0.055199999999999916,
+      "p_pc": 1.3468013468013469,
+      "p_pc_chg": 42.142857142857146,
+      "score": 1.3468013468013469,
+      "state": "Normal",
+      "fear_label": "Neutral",
+      "source": "CBOE",
+      "series_id": "^PCCE",
+      "fallback_used": false,
+      "age_minutes": 1196.12,
+      "stale": false,
+      "quality_effective": "PARTIAL"
+    },
+    "CSI": {
+      "name": "Credit Spread Index",
+      "value": 43.25581395348837,
+      "status": "Normal",
+      "ref_band": "Bands are 3Y percentiles. Normal <P66, Watch P66-P85, Risk >P85",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "HY_OAS level 0.60 + HY_OAS 30D change 0.40 (percentile-based, HIGH_BAD).",
+      "hy_oas": 4.64,
+      "hy_oas_30d_change_bp": -0.39000000000000057,
+      "p_level": 57.80730897009967,
+      "p_chg": 21.428571428571427,
+      "state": "Normal",
+      "source": "FRED",
+      "series_id": "BAMLH0A0HYM2",
+      "fallback_used": false,
+      "age_minutes": 1196.37,
+      "stale": false,
+      "quality_effective": "NA"
+    },
+    "XCONF": {
+      "name": "BTC-M2 Liquidity Confirmation",
+      "value": null,
+      "status": "Mixed",
+      "ref_band": "Align > +0.2, Mixed [-0.2,+0.2] or divergence, Stress < -0.2 with joint downside",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "Lead/lag sensor uses max corr over lag 0..30d on 180d window.",
+      "age_minutes": 1196.37,
+      "stale": false,
+      "quality_effective": "NA"
+    },
+    "GHEDGE": {
+      "name": "Gold-RealRate Hedge Pressure",
+      "value": -0.832067479420851,
+      "status": "Normal",
+      "ref_band": "HedgeDemand if GLD_ret_30d>0 and RealRate_change_30d>0",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "Gold/real-rate relationship state; not a direction predictor.",
+      "age_minutes": 1196.37,
+      "stale": false,
+      "quality_effective": "NA"
+    },
+    "BTC_M2": {
+      "name": "BTC-M2 Liquidity Overlay (Aux)",
+      "value": 71.61451255667173,
+      "status": "Stress",
+      "ref_band": "Aux-only state: Normal | Watch | Stress by |BTC_90D_ROC - M2_YoY|",
+      "updated": "2023-04-25",
+      "quality": "NA",
+      "tooltip": "No-score auxiliary context. Not included in MPS/PHASE/DEFENSIVE/SHOCK.",
+      "aux_only": true,
+      "no_score": true,
+      "m2_yoy": -3.9618370729512353,
+      "m2_3m_roc": -1.6410864086070065,
+      "btc_30d_roc": 14.260677948733246,
+      "btc_90d_roc": 67.65267548372049,
+      "ratio": 1.3539732471530876,
+      "divergence": 71.61451255667173,
+      "state": "Stress",
+      "age_minutes": 1196.37,
+      "stale": false,
+      "quality_effective": "NA"
+    },
+    "MPS": {
+      "name": "Macro Pressure Score",
+      "value": 35.942099420601494,
+      "status": "Caution",
+      "ref_band": "MPS = 0.35*LPI + 0.25*RPI + 0.25*VRI + 0.15*CSI (XCONF/GHEDGE excluded from score)",
+      "updated": "2023-04-25",
+      "quality": "Stale",
+      "tooltip": "XCONF/GHEDGE affects tone and modifier intensity only.",
+      "age_minutes": 1196.37,
+      "stale": true,
+      "quality_effective": "NA"
+    },
+    "exposure_ceiling_modifier": {
+      "upper_cap_delta_pct": -5,
+      "reasons": [
+        "Yield Curve inverted"
+      ]
+    },
+    "quality_overall": "Stale",
+    "PHASE": {
+      "phase": "Expansion",
+      "progress": 0.0,
+      "gate_score": 38.49,
+      "drivers": [
+        "RPI",
+        "CSI",
+        "VRI"
+      ],
+      "contrib": {
+        "VRI": 7.85,
+        "CSI": 10.81,
+        "RPI": 15.72,
+        "LPI": 4.11
+      },
+      "stale_blocked": false,
+      "rules": {
+        "shock": "VRI>=90 OR (VRI>=80 AND CSI>=80)",
+        "contraction": "gate>=70",
+        "slowdown": "gate>=55",
+        "health_block": "any quality_effective==STALE -> forced Slowdown",
+        "weights": {
+          "VRI": 0.3,
+          "CSI": 0.25,
+          "RPI": 0.25,
+          "LPI": 0.2
+        }
+      },
+      "reasons": [
+        "Gate 38.49/100, progress 0.0%.",
+        "Drivers: RPI, CSI, VRI."
+      ]
+    },
+    "DEFENSIVE": {
+      "mode": "OFF",
+      "label": "OFF",
+      "recommended": true,
+      "reasons": [
+        "Phase=Expansion -> OFF."
+      ],
+      "gate": {
+        "phase": "Expansion",
+        "mps": 35.942099420601494,
+        "csi": 43.25581395348837,
+        "stale_blocked": false,
+        "thresholds": {
+          "mps_watch": 70,
+          "mps_on": 80,
+          "csi_watch": 70,
+          "csi_on": 80
+        }
+      }
+    },
+    "DEFENSIVE_TRIGGER": {
+      "trigger_level": "None",
+      "conditions_met": [
+        "yield_inverted"
+      ],
+      "conditions_all": {
+        "yield_inverted": true,
+        "cs_expanding": false,
+        "dxy_surge": false,
+        "vri_expanding": false,
+        "pc_fear": false
+      },
+      "inputs": {
+        "yield_curve_spread": -0.45999999999999996,
+        "hy_oas_30d_change_bp": -39.00000000000006,
+        "dxy_30d_change": -0.5331211160367832,
+        "vri_state": "Compressed",
+        "put_call_5d_ma": 1.1663000000000001
+      },
+      "rules": {
+        "L1": "yield_inverted AND cs_expanding AND dxy_surge",
+        "L2": "L1 AND vri_expanding AND pc_fear",
+        "thresholds": {
+          "credit_30d_change_bp": 60.0,
+          "dxy_30d_change_pct": 3.0,
+          "put_call_5d_ma": 1.2
+        }
+      }
+    }
+  },
+  "series": {
+    "VIX": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "EFFR": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "WALCL": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3968253968253968,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "W"
+    },
+    "RRP": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "M2": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.4246031746031746,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "M",
+      "source": "FRED",
+      "note": "M2SL monthly; daily views use step forward-fill"
+    },
+    "M2SL": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.4246031746031746,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "M",
+      "source": "FRED",
+      "note": "Monthly source series"
+    },
+    "HY_OAS": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "source": "FRED",
+      "series_id": "BAMLH0A0HYM2",
+      "quality": "OK",
+      "fallback_used": false,
+      "freq": "D"
+    },
+    "PUT_CALL": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": true,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "source": "CBOE",
+      "series_id": "^PCCE",
+      "quality": "OK",
+      "fallback_used": false,
+      "unit": "ratio",
+      "freq": "D"
+    },
+    "DGS10": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "DGS2": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "note": "2Y Treasury yield for yield curve",
+      "freq": "D"
+    },
+    "DFII10": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "CPI": {
+      "last_updated": null,
+      "coverage_lookback": 0.0,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "M"
+    },
+    "BTC": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "GLD": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 1.0,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "QQQ": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 1.0,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "freq": "D"
+    },
+    "DXY": {
+      "last_updated": "2023-04-25",
+      "coverage_lookback": 0.3994708994708995,
+      "stale_flag": false,
+      "revision_risk_flag": false,
+      "proxy_used_flag": false,
+      "note": "USD Index 30D momentum for LPI",
+      "freq": "D"
+    }
+  },
+  "health": {
+    "asof": "2023-04-25",
+    "series": {
+      "VIX": {
+        "age_minutes": 1196.37,
+        "stale": true,
+        "stale_rule": ">60m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "EFFR": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "WALCL": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">4320m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "RRP": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "M2": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">4320m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "M2SL": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">4320m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "HY_OAS": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "PUT_CALL": {
+        "age_minutes": 1196.12,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "PARTIAL",
+        "quality_effective": "PARTIAL",
+        "last_updated": "2026-03-12T01:17:33Z",
+        "source": "PROXY"
+      },
+      "DGS10": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "DGS2": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "DFII10": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "CPI": {
+        "age_minutes": null,
+        "stale": true,
+        "stale_rule": "meta_missing>2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "",
+        "source": "NA"
+      },
+      "BTC": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      },
+      "GLD": {
+        "age_minutes": 1196.3,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:22Z",
+        "source": "STOOQ"
+      },
+      "QQQ": {
+        "age_minutes": 1196.3,
+        "stale": true,
+        "stale_rule": ">60m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:22Z",
+        "source": "STOOQ"
+      },
+      "DXY": {
+        "age_minutes": 1196.37,
+        "stale": false,
+        "stale_rule": ">2880m",
+        "base_quality": "NA",
+        "quality_effective": "NA",
+        "last_updated": "2026-03-12T01:17:18Z",
+        "source": "FRED"
+      }
+    },
+    "summary": {
+      "stale_count": 3,
+      "any_stale": true
+    }
+  }
+}

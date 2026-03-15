@@ -232,12 +232,12 @@ def main() -> int:
         print("Run: python backend/scripts/init_db.py")
         return 1
 
-    conn = sqlite3.connect(path)
+    from db_utils import db_connect
+    conn = db_connect(path)
     error_symbols: List[Tuple[str, str]] = []
     total_upserted = 0
 
     try:
-        conn.execute("PRAGMA foreign_keys = ON;")
         validate_required_tables(conn)
         symbols = get_symbols(conn, args.limit)
         print(f"[INFO] Symbols to update: {len(symbols)}")

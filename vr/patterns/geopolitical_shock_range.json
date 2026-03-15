@@ -1,0 +1,34 @@
+{
+  "pattern_id": "geopolitical_shock_range",
+  "category": "geopolitical_event",
+  "description": "Market range driven by geopolitical uncertainty and commodity price shocks.",
+  "signature": {
+    "duration_days": {
+      "min": 15,
+      "max": 30
+    },
+    "nasdaq_drawdown_range": {
+      "min": -0.12,
+      "max": -0.08
+    },
+    "tqqq_drawdown_range": {
+      "min": -0.3,
+      "max": -0.25
+    },
+    "trend_structure": "range_market",
+    "ma200_behavior": "test_or_breach",
+    "volatility_profile": "elevated",
+    "catalyst_type": "geopolitical_event"
+  },
+  "historical_refs": [
+    "2019 Iran tensions",
+    "2022 Ukraine war",
+    "2026 oil shock"
+  ],
+  "scenario_set": [
+    "range_continuation",
+    "support_breakdown",
+    "relief_rally_breakout"
+  ],
+  "playbook": {}
+}

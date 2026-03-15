@@ -1,0 +1,144 @@
+{
+  "events": [
+    {
+      "event_id": "2026-02",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "geopolitical_shock_range",
+        "ma200_status": "breached",
+        "leverage_stress": "high",
+        "recovery_quality": "weak",
+        "tags": ["event_driven_box", "range_market", "headline_driven", "ma200_breach"],
+        "lesson": "Headline-driven reversals amplified leveraged drawdowns and reduced rebound reliability.",
+        "scenario_bias": ["range_continuation", "support_breakdown", "relief_rally_breakout"],
+        "playbook_bias": ["maintain_pool_bias", "trial_entries_only", "avoid_chasing_strength"]
+      }
+    },
+    {
+      "event_id": "2025-01",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "seasonal_correction",
+        "ma200_status": "tested",
+        "leverage_stress": "medium",
+        "recovery_quality": "mixed",
+        "tags": ["slow_bleed", "correction_phase", "rebound_uncertain"],
+        "lesson": "Moderate index weakness still produced meaningful leveraged stress without confirming a full crash regime.",
+        "scenario_bias": ["gradual_recovery", "dead_cat_bounce", "extended_correction"],
+        "playbook_bias": ["wait_for_confirmation", "trial_entries_only", "maintain_pool_bias"]
+      }
+    },
+    {
+      "event_id": "2024-07",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "range_compression",
+        "ma200_status": "above",
+        "leverage_stress": "medium",
+        "recovery_quality": "mixed",
+        "tags": ["sideways", "volatility_contraction", "direction_pending"],
+        "lesson": "Tighter consolidation after correction required patience because direction had not yet resolved.",
+        "scenario_bias": ["breakout_up", "breakdown_down", "extended_range"],
+        "playbook_bias": ["observe_mid_range", "wait_for_confirmation", "reduce_chase"]
+      }
+    },
+    {
+      "event_id": "2024-04",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "seasonal_correction",
+        "ma200_status": "breached",
+        "leverage_stress": "high",
+        "recovery_quality": "mixed",
+        "tags": ["ma200_breach", "correction_phase", "slow_bleed"],
+        "lesson": "A standard-looking correction still became materially painful for leveraged exposure once MA200 was lost.",
+        "scenario_bias": ["gradual_recovery", "extended_correction", "dead_cat_bounce"],
+        "playbook_bias": ["maintain_pool_bias", "trial_entries_only", "wait_for_confirmation"]
+      }
+    },
+    {
+      "event_id": "2023-10",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "slow_grind_correction",
+        "ma200_status": "sustained_below",
+        "leverage_stress": "high",
+        "recovery_quality": "improving",
+        "tags": ["liquidity_pressure", "persistent_down", "late_cycle_weakness"],
+        "lesson": "Prolonged weakness below major trend support punished leverage even without a vertical crash.",
+        "scenario_bias": ["macro_bottom", "continued_decline", "recovery_confirming"],
+        "playbook_bias": ["preserve_capital", "controlled_rebuild_only", "wait_for_confirmation"]
+      }
+    },
+    {
+      "event_id": "2021-12",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "bull_trend_pullback",
+        "ma200_status": "tested",
+        "leverage_stress": "medium",
+        "recovery_quality": "mixed",
+        "tags": ["trend_pullback", "growth_rotation", "confirmation_needed"],
+        "lesson": "Even healthy bull-trend pullbacks can generate uncomfortable leverage stress before trend continuation becomes clear.",
+        "scenario_bias": ["trend_continuation", "range_pause", "deeper_correction"],
+        "playbook_bias": ["wait_for_confirmation", "reduce_chase", "controlled_rebuild_only"]
+      }
+    },
+    {
+      "event_id": "2021-03",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "bull_trend_pullback",
+        "ma200_status": "above",
+        "leverage_stress": "medium",
+        "recovery_quality": "strong",
+        "tags": ["sentiment_reset", "countertrend_rally", "rotation_shock"],
+        "lesson": "Leverage stress faded relatively quickly once trend structure remained intact and recovery quality improved.",
+        "scenario_bias": ["trend_continuation", "range_pause", "recovery_confirming"],
+        "playbook_bias": ["controlled_rebuild_only", "wait_for_confirmation", "reduce_chase"]
+      }
+    },
+    {
+      "event_id": "2020-09",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "dead_cat_bounce",
+        "ma200_status": "tested",
+        "leverage_stress": "high",
+        "recovery_quality": "weak",
+        "tags": ["failed_follow_through", "rebound_trap", "correction_reset"],
+        "lesson": "The first rebound was not enough to confirm recovery and leveraged entries required tighter discipline.",
+        "scenario_bias": ["lower_low", "sideways_reset", "true_recovery_attempt"],
+        "playbook_bias": ["trial_entries_only", "avoid_aggressive_buying", "wait_for_confirmation"]
+      }
+    },
+    {
+      "event_id": "2020-02",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "crash_cascade",
+        "ma200_status": "breached",
+        "leverage_stress": "extreme",
+        "recovery_quality": "weak",
+        "tags": ["liquidity_shock", "vertical_drop", "panic_regime"],
+        "lesson": "Crash-speed declines created leverage damage far beyond normal correction assumptions.",
+        "scenario_bias": ["panic_bottom", "dead_cat_bounce", "secondary_crash"],
+        "playbook_bias": ["defensive_posture", "preserve_capital", "avoid_aggressive_buying"]
+      }
+    },
+    {
+      "event_id": "2018-10",
+      "vr_support_status": "ready",
+      "vr_analysis": {
+        "pattern_type": "ma200_breach_correction",
+        "ma200_status": "breached",
+        "leverage_stress": "high",
+        "recovery_quality": "mixed",
+        "tags": ["ma200_breach", "failed_recovery", "macro_uncertainty"],
+        "lesson": "Once MA200 broke, leverage risk rose faster than many users expected and rebound quality required much stricter confirmation.",
+        "scenario_bias": ["support_recovery", "sideways_range", "extended_bear_move"],
+        "playbook_bias": ["maintain_pool_bias", "trial_entries_only", "wait_for_confirmation"]
+      }
+    }
+  ]
+}

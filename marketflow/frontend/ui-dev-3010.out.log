@@ -1,0 +1,95 @@
+
+> marketflow-frontend@0.1.0 dev
+> next dev -p 3010
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3010
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 4.7s
+ ○ Compiling /risk-v1 ...
+ ✓ Compiled /risk-v1 in 17.5s (1602 modules)
+ GET /risk-v1 200 in 19668ms
+ ✓ Compiled in 2.5s (799 modules)
+ GET /risk-v1 200 in 325ms
+ ✓ Compiled in 2.8s (1584 modules)
+ ✓ Compiled in 2.5s (1584 modules)
+ ✓ Compiled in 2.3s (1584 modules)
+ GET /risk-v1 200 in 897ms
+ GET /risk-v1 200 in 302ms
+ ○ Compiling /context ...
+ ✓ Compiled /context in 1950ms (1598 modules)
+ ○ Compiling /health ...
+ ✓ Compiled /health in 869ms (1603 modules)
+ ○ Compiling /macro ...
+ ✓ Compiled /macro in 6.2s (2152 modules)
+ ○ Compiling /api/live-brief ...
+ ✓ Compiled /api/live-brief in 1377ms (1121 modules)
+ ✓ Compiled (1258 modules)
+[live-brief] openai request start
+ ○ Compiling /sectors ...
+ ✓ Compiled /sectors in 930ms (2339 modules)
+[live-brief] openai response ok
+ POST /api/live-brief 200 in 11801ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1135ms (2372 modules)
+ POST /api/macro-live/refresh 200 in 24449ms
+ GET /dashboard 200 in 559ms
+ ○ Compiling /chart ...
+ ✓ Compiled /chart in 1188ms (2396 modules)
+ ○ Compiling /my-holdings ...
+ ✓ Compiled /my-holdings in 915ms (2384 modules)
+ ○ Compiling /portfolio ...
+ ✓ Compiled /portfolio in 806ms (2386 modules)
+ ○ Compiling /my ...
+ ✓ Compiled /my in 1311ms (2405 modules)
+ ✓ Compiled /health in 304ms (855 modules)
+ ✓ Compiled /context in 308ms (853 modules)
+ ○ Compiling /state ...
+ ✓ Compiled /state in 823ms (1968 modules)
+ ✓ Compiled /macro in 493ms (1122 modules)
+ ○ Compiling /api/live-brief ...
+ ✓ Compiled /api/live-brief in 531ms (1287 modules)
+[live-brief] openai request start
+ ○ Compiling /briefing ...
+ ✓ Compiled /briefing in 919ms (2400 modules)
+[live-brief] openai response ok
+ POST /api/live-brief 200 in 8627ms
+ ○ Compiling /vr-survival ...
+ ✓ Compiled /vr-survival in 1010ms (2395 modules)
+ ○ Compiling /risk-v1 ...
+ ✓ Compiled /risk-v1 in 644ms (1279 modules)
+ GET /risk-v1 200 in 769ms
+ GET /risk-v1 200 in 674ms
+ GET /risk-v1 200 in 290ms
+ ✓ Compiled in 3.5s (2222 modules)
+ GET /risk-v1 200 in 661ms
+ GET /risk-v1 200 in 519ms
+ ✓ Compiled in 1211ms (1123 modules)
+ GET /risk-v1 200 in 319ms
+ ○ Compiling /_error ...
+ GET /_next/static/webpack/0f3ccc6bf35993b6.webpack.hot-update.json 500 in 3862ms
+ GET /vr-survival 500 in 142ms
+ GET /vr-survival 500 in 145ms
+ ✓ Compiled /_not-found in 5.3s (2432 modules)
+ GET /vr-survival 200 in 2629ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.9s (2423 modules)
+ GET /vr-survival 404 in 362ms
+ ○ Compiling /vr-survival ...
+ ✓ Compiled /vr-survival in 3.7s (2432 modules)
+ ✓ Compiled in 2.6s (2443 modules)
+ ✓ Compiled in 1729ms (2443 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1372ms (2432 modules)
+ GET /risk-v1 404 in 311ms
+ GET /_next/static/css/app/layout.css?v=1773427318073 404 in 245ms
+ GET /_next/static/chunks/main-app.js?v=1773427318073 404 in 284ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 210ms
+ GET /_next/static/chunks/app/layout.js 404 in 197ms
+ GET /risk-v1 404 in 119ms
+ GET /_next/static/css/app/layout.css?v=1773427391365 404 in 250ms
+ GET /_next/static/chunks/main-app.js?v=1773427391365 404 in 289ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 283ms
+ GET /_next/static/chunks/app/layout.js 404 in 281ms

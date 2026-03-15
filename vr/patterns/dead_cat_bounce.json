@@ -1,0 +1,48 @@
+{
+  "pattern_id": "dead_cat_bounce",
+  "category": "failed_rebound",
+  "signature": {
+    "duration_days": {
+      "min": 8,
+      "max": 20
+    },
+    "nasdaq_drawdown_pct": {
+      "min": -18,
+      "max": -10
+    },
+    "tqqq_drawdown_pct": {
+      "min": -45,
+      "max": -20
+    },
+    "ma200_status": "breached",
+    "volatility_level": "high",
+    "trend_direction": "down",
+    "event_catalyst": "rebound_failure"
+  },
+  "historical_refs": [
+    "2022-01 Risk Event"
+  ],
+  "scenario_set": [
+    {
+      "id": "A",
+      "title": "Bounce fails",
+      "posture": "reduce risk"
+    },
+    {
+      "id": "B",
+      "title": "Higher low attempt",
+      "posture": "small trial only"
+    },
+    {
+      "id": "C",
+      "title": "Trend resumes down",
+      "posture": "defensive posture"
+    }
+  ],
+  "playbook": {
+    "support": "small trial only",
+    "mid_range": "observe",
+    "resistance": "reduce risk",
+    "breakdown": "defensive posture"
+  }
+}

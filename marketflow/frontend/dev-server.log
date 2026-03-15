@@ -1,0 +1,121 @@
+
+> marketflow-frontend@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 7s
+ ○ Compiling /kr-market ...
+ ✓ Compiled /kr-market in 13.4s (1558 modules)
+ GET /kr-market 200 in 14206ms
+ ○ Compiling /kr-market/signals ...
+ ✓ Compiled /kr-market/signals in 11.6s (1546 modules)
+ GET /kr-market/signals 200 in 11140ms
+ ○ Compiling /kr-market/ai-history ...
+ ✓ Compiled /kr-market/ai-history in 658ms (1548 modules)
+ GET /kr-market/ai-history 200 in 937ms
+ ○ Compiling /kr-market/performance ...
+ ✓ Compiled /kr-market/performance in 593ms (1550 modules)
+ GET /kr-market/performance 200 in 852ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1550ms (1039 modules)
+ GET / 200 in 1914ms
+ ○ Compiling /kr-market ...
+ ✓ Compiled /kr-market in 647ms (785 modules)
+ ✓ Compiled /kr-market/signals in 327ms (787 modules)
+ ✓ Compiled in 3.3s (1578 modules)
+ ✓ Compiled in 1282ms (1578 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 559ms (1567 modules)
+ GET /_next/static/css/app/layout.css?v=1771225073492 404 in 1063ms
+ ⨯ Error: Cannot find module './241.js'
+Require stack:
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\webpack-runtime.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\app\_not-found\page.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\require.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\load-components.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\build\utils.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\dev\hot-middleware.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\router-server.js
+- D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at __webpack_require__.f.require (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\webpack-runtime.js:198:28)
+    at D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\webpack-runtime.js:162:22)
+    at D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\app\kr-market\page.js:1:2208
+    at Object.<anonymous> (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\.next\server\app\kr-market\page.js:1:2259)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\require.js:109:84)
+    at D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\base-server.js:1917:24)
+    at async DevServer.renderToResponseImpl (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\base-server.js:1969:32)
+    at async DevServer.pipeImpl (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\base-server.js:920:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\base-server.js:816:17)
+    at async D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\router-server.js:353:24)
+    at async requestHandlerImpl (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (D:\Youtube_pro\000-Code_develop\주식분석\us_market_complete\marketflow\frontend\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\.next\\server\\webpack-runtime.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\.next\\server\\app\\_not-found\\page.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\require.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\load-components.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\build\\utils.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\frontend\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/kr-market'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.7s (1788 modules)
+ GET /kr-market 500 in 4623ms
+ GET /kr-market/signals 200 in 582ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 594ms (1791 modules)
+ GET /_next/static/css/app/layout.css?v=1771225285398 404 in 918ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 830ms
+ GET /_next/static/chunks/main-app.js?v=1771225285398 404 in 838ms
+ GET /_next/static/chunks/app/layout.js 404 in 829ms
+ GET /_next/static/chunks/app/kr-market/signals/page.js 404 in 825ms
+ GET / 200 in 85ms
+ GET /_next/static/css/app/layout.css?v=1771225290417 404 in 94ms
+ GET /_next/static/chunks/main-app.js?v=1771225290417 404 in 173ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 168ms
+ GET /_next/static/chunks/app/page.js 404 in 166ms
+ GET /_next/static/chunks/app/layout.js 404 in 164ms
+[?25h

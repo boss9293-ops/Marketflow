@@ -4,3 +4,48 @@ node_modules/
 __pycache__/
 *.db
 *.json.bak
+# Python
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / Next
+node_modules/
+.next/
+.next_backup_*/
+out/
+
+# Env / local config
+.env
+.env.local
+**/.env
+**/.env.local
+.claude/
+.vscode/
+
+# Logs / outputs / caches
+logs/
+output/
+tmp/
+cache/
+
+# Backups
+_backup/
+backup/
+**/backup/
+**/_backup/
+
+# Data files you probably do NOT want in git
+marketflow_data/
+marketflow/data/
+marketflow/db/
+
+# OS
+.DS_Store
+Thumbs.db
+# secrets
+marketflow/backend/config/google_sa.json
+.env
+.env.local

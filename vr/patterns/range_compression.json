@@ -1,0 +1,33 @@
+{
+  "pattern_id": "range_compression",
+  "category": "volatility_contraction",
+  "description": "Market enters a tight consolidation range following a correction.",
+  "signature": {
+    "duration_days": {
+      "min": 10,
+      "max": 40
+    },
+    "nasdaq_drawdown_range": {
+      "min": -0.05,
+      "max": -0.02
+    },
+    "tqqq_drawdown_range": {
+      "min": -0.15,
+      "max": -0.08
+    },
+    "trend_structure": "sideways",
+    "ma200_behavior": "above_or_near",
+    "volatility_profile": "declining",
+    "catalyst_type": "uncertainty_pause"
+  },
+  "historical_refs": [
+    "2019 mid-cycle consolidation",
+    "2023 pre-rally compression"
+  ],
+  "scenario_set": [
+    "trend_breakout",
+    "trend_breakdown",
+    "extended_range"
+  ],
+  "playbook": {}
+}

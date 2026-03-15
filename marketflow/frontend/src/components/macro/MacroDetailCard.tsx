@@ -1,5 +1,6 @@
 'use client'
 
+import InfoTip from '@/components/ui/InfoTip'
 import { pickLang, useLangMode } from '@/lib/useLangMode'
 
 type Props = {
@@ -8,6 +9,9 @@ type Props = {
   value: string
   statusLabel: string
   refText: string
+  titleTip?: string
+  subtitleTip?: string
+  refTip?: string
   updated: string
   quality: string
   ageMinutes?: number | null
@@ -194,8 +198,16 @@ export default function MacroDetailCard(props: Props) {
     <div className={`bg-[#1a1a1a] rounded-2xl p-4 border ${partialQuality || partialQualityEff ? 'border-dashed border-sky-400/40' : 'border-[#2a2a2a]'}`}>
       <div className="flex items-center justify-between gap-2">
         <div>
-          <div className="text-xl md:text-2xl font-extrabold leading-tight tracking-tight text-slate-100">{props.title}</div>
-          {props.subtitle ? <div className="mt-1 text-xs md:text-sm text-slate-400 leading-relaxed">{props.subtitle}</div> : null}
+          <div className="text-xl md:text-2xl font-extrabold leading-tight tracking-tight text-slate-100 flex items-center gap-2">
+            <span>{props.title}</span>
+            {props.titleTip ? <InfoTip content={props.titleTip} /> : null}
+          </div>
+          {props.subtitle ? (
+            <div className="mt-1 text-xs md:text-sm text-slate-400 leading-relaxed flex items-start gap-2">
+              <span>{props.subtitle}</span>
+              {props.subtitleTip ? <InfoTip content={props.subtitleTip} /> : null}
+            </div>
+          ) : null}
         </div>
         <div className="flex items-center gap-1.5">
           <span className={`text-[10px] inline-flex items-center gap-1 ${props.stale ? 'text-amber-200' : 'text-slate-400'}`}>
@@ -261,8 +273,9 @@ export default function MacroDetailCard(props: Props) {
           ))}
         </div>
       ) : null}
-      <div className="mt-2 text-xs md:text-sm text-slate-300 leading-relaxed" title={props.tooltip || ''}>
-        {props.refText}
+      <div className="mt-2 text-xs md:text-sm text-slate-300 leading-relaxed flex items-start gap-2" title={props.tooltip || ''}>
+        <span>{props.refText}</span>
+        {props.refTip ? <InfoTip content={props.refTip} /> : null}
       </div>
       <div className="mt-1 text-[11px] text-slate-500" title={props.tooltip || ''}>
         {pickLang(mode, '왜 중요한가', 'Why this matters')}

@@ -610,6 +610,32 @@ export default async function Dashboard() {
         ? ((tailSigma ?? 0) >= 3 ? 'ELEVATED' : (tailSigma ?? 0) >= 2 ? 'MODERATE' : 'BENIGN')
         : p.value,
   }))
+  const sectorLeaders = sectorTop3.map((s) => s.key).join(', ') || '--'
+  const sectorLaggards = sectorBottom3.map((s) => s.key).join(', ') || '--'
+  const momentumKo = momentumState === 'Pos' ? '상승' : momentumState === 'Neg' ? '약세' : '보합'
+  const momentumEn = momentumState === 'Pos' ? 'positive' : momentumState === 'Neg' ? 'negative' : 'flat'
+  const vixLevelText = typeof vixLast === 'number' ? vixLast.toFixed(1) : '--'
+  const vixChangeText = fmtPct(vixChg, 2)
+  const shockText = shockProb30d != null ? `${shockProb30d}%` : '--'
+  const tailText = tailSigma != null ? tailSigma.toFixed(1) : '--'
+  const todayChanges = [
+    {
+      ko: `섹터 순환: 강세 ${sectorLeaders} · 약세 ${sectorLaggards}`,
+      en: `Sector rotation: leaders ${sectorLeaders} · laggards ${sectorLaggards}`,
+    },
+    {
+      ko: `브레드스: ${breadthStateMap.ko} · 모멘텀 ${momentumKo}`,
+      en: `Breadth: ${breadthStateMap.en} · Momentum ${momentumEn}`,
+    },
+    {
+      ko: `VIX ${vixLevelText}${vixChangeText ? ` (${vixChangeText})` : ''}`,
+      en: `VIX ${vixLevelText}${vixChangeText ? ` (${vixChangeText})` : ''}`,
+    },
+    {
+      ko: `리스크 드라이버: 충격확률 ${shockText}, 꼬리 ${tailText}, 방어모드 ${defensiveTriggerOn ? 'ON' : 'OFF'}`,
+      en: `Risk drivers: Shock ${shockText}, Tail ${tailText}, Defensive ${defensiveTriggerOn ? 'ON' : 'OFF'}`,
+    },
+  ]
 
   return (
     <div
@@ -731,7 +757,38 @@ export default async function Dashboard() {
         </div>
 
         {/* PORTAL BLOCK 2: Cross-Asset Strip */}
-        <CrossAssetStripCompact items={Array.isArray(marketTape.items) ? marketTape.items : []} />
+        <CrossAssetStripCompact items={Array.isArray(marketTape.items) ? marketTape.items : []} defaultTab="All" />
+
+        {/* PORTAL BLOCK 2.5: Today Changes */}
+        <section
+          style={{
+            background: '#0B0F14',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 14,
+            padding: '0.95rem 1.05rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.6rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ color: '#F8FAFC', fontSize: '0.85rem', fontWeight: 800, letterSpacing: '0.06em' }}>Today Changes</div>
+              <div style={{ color: '#94A3B8', fontSize: '0.7rem', marginTop: 2 }}>
+                <BilLabel ko="시장 변화 요약" en="Market change summary" variant="micro" />
+              </div>
+            </div>
+            <span style={{ color: '#D8E6F5', fontSize: '0.72rem' }}>{alertsEvidence.asOfDate || '--'}</span>
+          </div>
+          <div style={{ display: 'grid', gap: '0.4rem' }}>
+            {todayChanges.map((line, idx) => (
+              <div key={`${line.en}-${idx}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: '#D8E6F5', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                <span style={{ width: 6, height: 6, marginTop: 6, borderRadius: 999, background: '#D7FF37', boxShadow: '0 0 0 2px rgba(215,255,55,0.15)' }} />
+                <BilLabel ko={line.ko} en={line.en} variant="micro" />
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* PORTAL BLOCK 3 + 4: AI Brief | Decision Panel */}
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-4" style={{ minWidth: 0, alignItems: 'stretch' }}>

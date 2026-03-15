@@ -1,0 +1,48 @@
+{
+  "pattern_id": "seasonal_correction",
+  "category": "correction",
+  "signature": {
+    "duration_days": {
+      "min": 10,
+      "max": 25
+    },
+    "nasdaq_drawdown_pct": {
+      "min": -9,
+      "max": -4
+    },
+    "tqqq_drawdown_pct": {
+      "min": -24,
+      "max": -12
+    },
+    "ma200_status": "tested",
+    "volatility_level": "medium",
+    "trend_direction": "sideways",
+    "event_catalyst": "seasonal"
+  },
+  "historical_refs": [
+    "2018-10 Risk Event"
+  ],
+  "scenario_set": [
+    {
+      "id": "A",
+      "title": "Range continuation",
+      "posture": "observe"
+    },
+    {
+      "id": "B",
+      "title": "Support breakdown",
+      "posture": "defensive posture"
+    },
+    {
+      "id": "C",
+      "title": "Relief rally",
+      "posture": "trial entries"
+    }
+  ],
+  "playbook": {
+    "support": "trial entries",
+    "mid_range": "observe",
+    "resistance": "reduce risk",
+    "breakdown": "defensive posture"
+  }
+}

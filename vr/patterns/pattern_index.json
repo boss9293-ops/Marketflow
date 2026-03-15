@@ -1,0 +1,14 @@
+{
+  "patterns": [
+    "seasonal_correction",
+    "crash_cascade",
+    "dead_cat_bounce",
+    "ma200_breach_correction",
+    "leveraged_washout",
+    "slow_grind_correction",
+    "range_compression",
+    "relief_rally",
+    "bull_trend_pullback",
+    "geopolitical_shock_range"
+  ]
+}

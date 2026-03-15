@@ -63,10 +63,11 @@ class ValidationEngine:
         Load market proxy price from local SQLite DB.
 
         Priority (highest wins on overlapping dates):
-          1. market_daily table  — most recent, highest quality (2021-02-16~)
-          2. ticker_history_daily table — long history from CSV import (e.g. QQQ from 1999-03-10)
+          1. ticker_history_daily — long history from CSV import (e.g. QQQ from 1999-03-10)
+          2. ohlcv_daily          — maintained daily by update_ohlcv.py (DB-first accumulation)
+          3. market_daily         — most recent, highest quality for QQQ/SPY (2021-02-16~)
 
-        For tickers not in market_daily (non QQQ/SPY), falls back to ticker_history_daily only.
+        All sources are merged so later sources override earlier ones on overlapping dates.
         Returns a pd.Series indexed by date, or None if no data found.
         """
         if not DB_PATH.exists():
@@ -76,50 +77,56 @@ class ValidationEngine:
             con = sqlite3.connect(str(DB_PATH))
 
             # --- Source 1: ticker_history_daily (long history) ---
-            hist_sql = (
+            df_hist = pd.read_sql_query(
                 "SELECT date, close FROM ticker_history_daily "
                 "WHERE symbol = ? AND close IS NOT NULL AND date >= ? AND date <= ? "
-                "ORDER BY date ASC"
+                "ORDER BY date ASC",
+                con, params=(ticker.upper(), start_date, end_date),
             )
-            df_hist = pd.read_sql_query(hist_sql, con, params=(ticker.upper(), start_date, end_date))
 
-            # --- Source 2: market_daily (recent, highest quality) ---
+            # --- Source 2: ohlcv_daily (DB-maintained, most up-to-date) ---
+            df_ohlcv = pd.read_sql_query(
+                "SELECT date, close FROM ohlcv_daily "
+                "WHERE symbol = ? AND close IS NOT NULL AND date >= ? AND date <= ? "
+                "ORDER BY date ASC",
+                con, params=(ticker.upper(), start_date, end_date),
+            )
+
+            # --- Source 3: market_daily (recent, highest quality for QQQ/SPY) ---
             df_md = pd.DataFrame()
             if col in ("qqq", "spy"):
-                md_sql = (
+                df_md = pd.read_sql_query(
                     f"SELECT date, {col} AS close FROM market_daily "
                     f"WHERE {col} IS NOT NULL AND date >= ? AND date <= ? "
-                    f"ORDER BY date ASC"
+                    f"ORDER BY date ASC",
+                    con, params=(start_date, end_date),
                 )
-                df_md = pd.read_sql_query(md_sql, con, params=(start_date, end_date))
 
             con.close()
 
-            # Merge: ticker_history_daily as base, market_daily overrides overlapping dates
-            frames = []
-            if not df_hist.empty:
-                df_hist["date"] = pd.to_datetime(df_hist["date"])
-                frames.append(df_hist.set_index("date")["close"])
-            if not df_md.empty:
-                df_md["date"] = pd.to_datetime(df_md["date"])
-                frames.append(df_md.set_index("date")["close"])
+            def _to_series(df: pd.DataFrame) -> Optional[pd.Series]:
+                if df.empty:
+                    return None
+                df["date"] = pd.to_datetime(df["date"])
+                return df.set_index("date")["close"]
 
-            if not frames:
-                return None
-            if len(frames) == 1:
-                return frames[0].rename(ticker)
+            s1 = _to_series(df_hist)
+            s2 = _to_series(df_ohlcv)
+            s3 = _to_series(df_md)
 
-            # Combine: start with history, then merge market_daily
-            # - overlapping dates → market_daily wins (higher quality)
-            # - market_daily-only dates (e.g. Dec 18+ when CSV ends Dec 17) → appended
-            base = frames[0].copy()
-            override = frames[1].copy()
-            # Add dates from override that don't exist in base
-            extra = override[~override.index.isin(base.index)]
-            combined = pd.concat([base, extra]).sort_index()
-            # Now update overlapping dates with override values
-            combined.update(override)
-            return combined.rename(ticker)
+            # Layer merge: start with base, apply each higher-priority source
+            combined: Optional[pd.Series] = None
+            for s in (s1, s2, s3):
+                if s is None:
+                    continue
+                if combined is None:
+                    combined = s.copy()
+                else:
+                    extra = s[~s.index.isin(combined.index)]
+                    combined = pd.concat([combined, extra]).sort_index()
+                    combined.update(s)
+
+            return combined.rename(ticker) if combined is not None else None
 
         except Exception:
             return None
@@ -129,12 +136,11 @@ class ValidationEngine:
         Fetches all necessary data for the validation range.
         Includes a 5Y lookback buffer for accurate percentile calculation.
 
-        Market proxy strategy (hybrid):
-          1. Load QQQ/SPY from local SQLite DB (market_daily) where available.
-          2. Load FRED SP500 for the full range as a fallback/gap-filler.
-          3. Scale FRED SP500 to match the local DB series at their first overlap date
-             so the combined series is continuous.
-          4. Use local DB prices for dates covered by the DB; scaled SP500 elsewhere.
+        Market proxy strategy (DB-first):
+          1. Load QQQ from local DB (ticker_history_daily + ohlcv_daily + market_daily).
+          2. FRED SP500 is used ONLY for dates before the DB series starts (e.g. pre-1999
+             if QQQ CSV import didn't cover that far). Scaled to match QQQ at first overlap.
+          3. Recent gaps use the DB series directly — never SP500 for modern dates.
         """
         s_dt = pd.to_datetime(start_date)
 
@@ -148,39 +154,38 @@ class ValidationEngine:
             "RRP": "RRPONTSYD",
             "EFFR": "EFFR",
             "VIX": "VIXCLS",   # CBOE VIX Close (same as ^VIX)
-            "SP500": "SP500",  # S&P 500 as market proxy fallback
+            "SP500": "SP500",  # S&P 500 used only for pre-DB-start dates
         }
         df_fred = self.fred.get_multiple_series(fred_map, fetch_start, fetch_end)
 
-        # --- Build market proxy column (hybrid: local DB + FRED SP500) ---
+        # --- Build market proxy column (DB-first: QQQ from local DB) ---
         db_series = self._load_market_proxy_from_db(market_proxy, fetch_start, fetch_end)
 
         sp500_series = df_fred["SP500"].dropna() if "SP500" in df_fred.columns else None
 
-        if db_series is not None and not db_series.empty and sp500_series is not None and not sp500_series.empty:
-            # Find overlap: first date where both series have data
-            overlap = db_series.index.intersection(sp500_series.index)
-            if len(overlap) > 0:
-                splice_date = overlap[0]
-                db_val = float(db_series.loc[splice_date])
-                sp_val = float(sp500_series.loc[splice_date])
-                scale = db_val / sp_val if sp_val != 0 else 1.0
-                sp500_scaled = sp500_series * scale
-
-                # Combine: use DB data where available, scaled SP500 for the rest
-                combined = sp500_scaled.copy()
-                combined.update(db_series)
-                market_series = combined.rename(market_proxy)
+        if db_series is not None and not db_series.empty:
+            # DB-first: use QQQ directly from DB.
+            # Prepend scaled SP500 ONLY for dates before DB coverage starts.
+            if sp500_series is not None and not sp500_series.empty:
+                overlap = db_series.index.intersection(sp500_series.index)
+                if len(overlap) > 0:
+                    scale = (
+                        float(db_series.loc[overlap[0]]) / float(sp500_series.loc[overlap[0]])
+                        if float(sp500_series.loc[overlap[0]]) != 0 else 1.0
+                    )
+                    sp500_scaled = sp500_series * scale
+                    # Only pre-pend SP500 for dates strictly before DB data begins
+                    pre_db = sp500_scaled[sp500_scaled.index < db_series.index[0]]
+                    if not pre_db.empty:
+                        market_series = pd.concat([pre_db, db_series]).rename(market_proxy)
+                    else:
+                        market_series = db_series.rename(market_proxy)
+                else:
+                    market_series = db_series.rename(market_proxy)
             else:
-                # No overlap: DB is entirely after SP500 or vice versa — just concatenate
-                market_series = pd.concat([sp500_series.rename(market_proxy), db_series.rename(market_proxy)])
-                market_series = market_series[~market_series.index.duplicated(keep="last")]
-                market_series.name = market_proxy
-        elif db_series is not None and not db_series.empty:
-            # DB only (no FRED SP500 available)
-            market_series = db_series.rename(market_proxy)
+                market_series = db_series.rename(market_proxy)
         elif sp500_series is not None and not sp500_series.empty:
-            # FRED SP500 only (DB unavailable)
+            # No DB data at all — fall back to FRED SP500
             market_series = sp500_series.rename(market_proxy)
         else:
             market_series = pd.Series(dtype=float, name=market_proxy)
@@ -327,6 +332,23 @@ class ValidationEngine:
         if "TQQQ" in df.columns:
             df["tqqq_peak"] = df["TQQQ"].rolling(window=252, min_periods=1).max()
             df["tqqq_drawdown"] = (df["TQQQ"] / df["tqqq_peak"]) - 1.0
+
+        # YTD returns (calendar year baseline) for display
+        def _calc_ytd(series: pd.Series) -> pd.Series:
+            if series is None or series.empty:
+                return series
+            ytd = series.copy()
+            for year, idxs in series.groupby(series.index.year).groups.items():
+                base = series.loc[idxs].iloc[0]
+                if pd.isna(base) or base == 0:
+                    ytd.loc[idxs] = np.nan
+                else:
+                    ytd.loc[idxs] = series.loc[idxs] / base - 1.0
+            return ytd
+
+        df["ytd_return"] = _calc_ytd(df[market_proxy])
+        if "TQQQ" in df.columns:
+            df["tqqq_ytd_return"] = _calc_ytd(df["TQQQ"])
 
         res = df.copy()
         res["VRI"] = vri
@@ -508,6 +530,8 @@ class ValidationEngine:
                 "QQQ": df_computed[market_proxy].tolist() if market_proxy == "QQQ" else None,
                 "drawdown": df_computed["drawdown"].tolist(),
                 "tqqq_drawdown": df_computed["tqqq_drawdown"].tolist() if has_tqqq else None,
+                "ytd_return": df_computed["ytd_return"].tolist() if "ytd_return" in df_computed.columns else None,
+                "tqqq_ytd_return": df_computed["tqqq_ytd_return"].tolist() if "tqqq_ytd_return" in df_computed.columns else None,
                 "is_mps_ge_70": (df_computed["MPS"] >= 70).tolist(),
                 "is_vix_ge_25": (df_computed["VIX"] >= 25).tolist(),
                 "is_dd_le_neg10": (df_computed["drawdown"] <= -0.10).tolist(),

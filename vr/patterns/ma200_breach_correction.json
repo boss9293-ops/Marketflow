@@ -1,0 +1,34 @@
+{
+  "pattern_id": "ma200_breach_correction",
+  "category": "technical_breakdown",
+  "description": "A correction pattern where Nasdaq falls below the 200-day moving average and tests lower support levels.",
+  "signature": {
+    "duration_days": {
+      "min": 10,
+      "max": 30
+    },
+    "nasdaq_drawdown_range": {
+      "min": -0.15,
+      "max": -0.08
+    },
+    "tqqq_drawdown_range": {
+      "min": -0.4,
+      "max": -0.25
+    },
+    "trend_structure": "breakdown_retest",
+    "ma200_behavior": "breach",
+    "volatility_profile": "elevated",
+    "catalyst_type": "macro_uncertainty"
+  },
+  "historical_refs": [
+    "2018-12",
+    "2022-04",
+    "2026-02"
+  ],
+  "scenario_set": [
+    "support_recovery",
+    "sideways_range",
+    "extended_bear_move"
+  ],
+  "playbook": {}
+}

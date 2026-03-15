@@ -1,0 +1,255 @@
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Capital OS Design System: CSS Variables ─────────────────────────────── */
+
+:root {
+  /* Background Tokens */
+  --bg-main:     #000000;   /* Capital black                      */
+  --bg-panel:    #1a1a1a;   /* capital-gray-800                   */
+  --bg-elevated: #2a2a2a;   /* capital-gray-700                   */
+
+  /* Text Tokens */
+  --text-primary:   #ffffff;   /* pure white                      */
+  --text-secondary: #b9c9dd;   /* brighter subtitle blue-gray     */
+  --text-muted:     #8ea1b9;   /* brighter muted for readability  */
+
+  /* Capital OS Accent */
+  --accent-lime:  #c4ff0d;   /* capital-lime — primary CTA        */
+  --accent-green: #22c55e;   /* capital-green — success / bull    */
+  --accent-red:   #ef4444;   /* capital-red — danger / bear       */
+  --accent-amber: #f59e0b;   /* transition / caution              */
+
+  /* Market State Colors (aligned to Capital OS) */
+  --state-bull:       #22c55e;   /* capital-green                 */
+  --state-transition: #f59e0b;   /* amber                         */
+  --state-defensive:  #ef4444;   /* capital-red                   */
+  --state-shock:      #dc2626;   /* deep red                      */
+  --state-neutral:    #6b7280;   /* capital-gray-500              */
+  --state-warn:       #f59e0b;   /* same as transition            */
+  --state-accent:     #c4ff0d;   /* capital-lime (was blue)       */
+  --state-blue:       #3b82f6;   /* kept for phase/trigger use    */
+
+  /* Risk Zone Colors */
+  --risk-green:  #22c55e;
+  --risk-amber:  #f59e0b;
+  --risk-orange: #f97316;
+  --risk-red:    #ef4444;
+
+  /* Unified Risk Palette (separate from P/L colors) */
+  --risk-0: #38BDF8; /* Calm */
+  --risk-1: #22C55E; /* Low */
+  --risk-2: #F59E0B; /* Caution */
+  --risk-3: #F97316; /* High */
+  --risk-4: #EF4444; /* Extreme */
+
+  --risk-bg-0: rgba(56,189,248,0.10);
+  --risk-bg-1: rgba(34,197,94,0.10);
+  --risk-bg-2: rgba(245,158,11,0.10);
+  --risk-bg-3: rgba(249,115,22,0.10);
+  --risk-bg-4: rgba(239,68,68,0.10);
+
+  --risk-border-0: rgba(56,189,248,0.28);
+  --risk-border-1: rgba(34,197,94,0.28);
+  --risk-border-2: rgba(245,158,11,0.28);
+  --risk-border-3: rgba(249,115,22,0.28);
+  --risk-border-4: rgba(239,68,68,0.28);
+
+  --risk-accent-cooling: #60A5FA;
+  --risk-accent-neutral: #94A3B8;
+  --risk-accent-warning: #FACC15;
+  --risk-accent-stress: #FB7185;
+
+  /* Component sizing */
+  --font-base: 16px;
+  --font-ui-sans: "Satoshi", var(--font-ui-latin), "Pretendard", "Noto Sans KR", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: #000000;
+  color: #ffffff;
+  font-family: var(--font-ui-sans);
+}
+select option,
+select optgroup {
+  color: #111111;
+  background: #ffffff;
+}
+
+html[data-lang-mode='ko'] .mf-bil-en {
+  display: none !important;
+}
+
+html[data-lang-mode='en'] .mf-bil-ko {
+  display: none !important;
+}
+
+html[data-lang-mode='en'] .mf-bil-en {
+  color: var(--text-secondary) !important;
+}
+
+/* ── Capital OS Component Utilities ─────────────────────────────────────── */
+
+@layer components {
+  .capital-card {
+    @apply bg-capital-gray-800 rounded-2xl border border-capital-gray-700;
+    @apply hover:border-capital-lime transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-white text-black font-semibold px-6 py-3 rounded-lg;
+    @apply hover:bg-[#c4ff0d] transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-capital-gray-800 text-white font-medium px-4 py-2 rounded-lg;
+    @apply border border-capital-gray-700 hover:border-capital-lime;
+    @apply transition-colors duration-200;
+  }
+
+  .section-title {
+    @apply text-xs uppercase tracking-wider text-capital-gray-500;
+  }
+
+  .card-title {
+    @apply text-3xl font-bold text-white;
+  }
+
+  .metric-label {
+    @apply text-xs uppercase tracking-wider text-capital-gray-500 mb-1;
+  }
+}
+
+/* ── Existing component styles ───────────────────────────────────────────── */
+
+.briefingPreview {
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.briefingPreview:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.mf-dashboard-root {
+  font-size: var(--font-base);
+  line-height: 1.45;
+  font-family: var(--font-ui-sans);
+}
+.mf-dashboard-root button,
+.mf-dashboard-root input,
+.mf-dashboard-root select {
+  font-size: inherit;
+}
+.mf-dashboard-root select option,
+.mf-dashboard-root select optgroup {
+  color: #111111;
+  background: #ffffff;
+}
+
+.mf-macro-strip::-webkit-scrollbar { display: none; }
+.mf-macro-strip { -ms-overflow-style: none; scrollbar-width: none; }
+
+.mf-macro-edge-fade {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 48px;
+  pointer-events: none;
+  z-index: 1;
+}
+.mf-macro-edge-fade.left {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-panel), rgba(26,26,26,0));
+}
+.mf-macro-edge-fade.right {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-panel), rgba(26,26,26,0));
+}
+
+.mf-drawer-panel {
+  background: var(--bg-panel);
+}
+
+@media (max-width: 639px) {
+  .mf-drawer-panel {
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    max-height: min(82vh, 820px);
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.5) !important;
+  }
+}
+
+/* ── Capital OS: Entrance animations ─────────────────────────────────────── */
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up-fade 0.5s ease-out both;
+}
+
+@keyframes live-ping {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(1.4); }
+}
+.animate-live-ping {
+  animation: live-ping 1.4s ease-in-out infinite;
+}

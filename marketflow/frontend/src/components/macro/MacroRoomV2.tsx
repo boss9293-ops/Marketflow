@@ -6,8 +6,10 @@ import PublicMacroContext from '@/components/macro/PublicMacroContext'
 import RealTimeTab from '@/components/macro/tabs/RealTimeTab'
 import EarlyWarningTab from '@/components/macro/tabs/EarlyWarningTab'
 import LanguageModeToggle from '@/components/LanguageModeToggle'
+import InfoTip from '@/components/ui/InfoTip'
 import { refreshMacroStore, useMacroStore } from '@/stores/macroStore'
 import { pickLang, useLangMode } from '@/lib/useLangMode'
+import { MACRO_TERM_COPY } from '@/lib/macroCopy'
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -218,12 +220,20 @@ function aggregateWeeklyTerminal(rows: Array<Record<string, any>>) {
     const key = weekBucket(String(row.date))
     map.set(key, { ...row, date: key }) // keep last row in same week
   }
-  return [...map.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)))
+  return Array.from(map.values()).sort((a, b) => String(a.date).localeCompare(String(b.date)))
 }
 
 export default function MacroRoomV2() {
   const state = useMacroStore()
   const mode = useLangMode()
+  const langKey = mode === 'ko' ? 'KR' : 'EN'
+  const bandsTip = MACRO_TERM_COPY.BANDS_PERCENTILES[langKey].body
+  const driversTip = mode === 'ko'
+    ? 'Drivers는 해당 지표를 구성하는 입력 지표들의 목록입니다. 숫자들의 방향성과 강도를 반영합니다.'
+    : 'Drivers are the input sources used to build the metric. They reflect direction and intensity of inputs.'
+  const impactTip = mode === 'ko'
+    ? '각 지표가 어떤 입력(Drivers)으로 계산되는지와 압력 점수에 어떻게 반영되는지 보여줍니다.'
+    : 'Shows how each metric is built from its drivers and how it maps into pressure scores.'
   const [viewTab, setViewTab] = useState<'realtime' | 'context' | 'early_warning' | 'history' | 'debug'>('realtime')
   const [historyRange, setHistoryRange] = useState<'1M' | '3M' | '6M' | '1Y' | '3Y' | 'ALL'>('1Y')
   const [zoomSpan, setZoomSpan] = useState<number | null>(null)
@@ -315,15 +325,15 @@ export default function MacroRoomV2() {
   const data = state.data
   const c = data.computed || {}
   const series = (data.series || {}) as Record<string, any>
-  const health = (data.health?.series || {}) as Record<string, any>
+  const health = ((data as any).health?.series || {}) as Record<string, any>
 
   const lpi = typeof c?.LPI?.value === 'number' ? c.LPI.value : 0
   const rpi = typeof c?.RPI?.value === 'number' ? c.RPI.value : 0
   const vri = typeof c?.VRI?.value === 'number' ? c.VRI.value : 0
   const csi = typeof c?.CSI?.value === 'number' ? c.CSI.value : 0
   const mps = typeof c?.MPS?.value === 'number' ? c.MPS.value : 0
-  const mpsQuality = String(c?.MPS?.quality_effective || c?.MPS?.quality || data?.quality_summary?.overall || '')
-  const mpsUpdatedAt = String(c?.MPS?.updated || data?.asof || '')
+  const mpsQuality = String(c?.MPS?.quality_effective || c?.MPS?.quality || (data as any)?.quality_summary?.overall || '')
+  const mpsUpdatedAt = String(c?.MPS?.updated || (data as any)?.asof || '')
   const mpsAgeMinutes = (() => {
     const keys = ['WALCL', 'M2SL', 'RRP', 'EFFR', 'DFII10', 'VIX', 'HY_OAS']
     const ages = keys
@@ -354,10 +364,10 @@ export default function MacroRoomV2() {
   const btcM2M2Yoy = typeof btcM2?.m2_yoy === 'number' ? btcM2.m2_yoy : null
   const btcM2Ratio = typeof btcM2?.ratio === 'number' ? btcM2.ratio : null
   const m2Freq = String(series?.M2?.freq || series?.M2SL?.freq || 'M').toUpperCase()
-  const qqqAge = typeof data?.meta?.data_age_summary?.QQQ === 'number' ? data.meta.data_age_summary.QQQ : null
-  const tqqqAge = typeof data?.meta?.data_age_summary?.TQQQ === 'number' ? data.meta.data_age_summary.TQQQ : null
+  const qqqAge = typeof (data as any)?.meta?.data_age_summary?.QQQ === 'number' ? (data as any).meta.data_age_summary.QQQ : null
+  const tqqqAge = typeof (data as any)?.meta?.data_age_summary?.TQQQ === 'number' ? (data as any).meta.data_age_summary.TQQQ : null
   const tqqqHasSeries = Boolean(data?.series?.TQQQ?.latest?.date)
-  const tqqqConnected = tqqqHasSeries && (tqqqAge !== null || typeof data?.meta?.sensor_latency_ms?.TQQQ === 'number')
+  const tqqqConnected = tqqqHasSeries && (tqqqAge !== null || typeof (data as any)?.meta?.sensor_latency_ms?.TQQQ === 'number')
 
   const publicRows = (c?.PUBLIC_CONTEXT?.rows || []) as any[]
 
@@ -384,7 +394,7 @@ export default function MacroRoomV2() {
       // history payload is typically desc by date; keep first (latest) row per day.
       if (!byDate.has(d)) byDate.set(d, row)
     }
-    return [...byDate.values()]
+    return Array.from(byDate.values())
   })()
   const historyAsc = [...historyDedup].sort((a, b) => String(a.snapshot_date).localeCompare(String(b.snapshot_date)))
   const historyDesc = [...historyDedup].sort((a, b) => String(b.snapshot_date).localeCompare(String(a.snapshot_date)))
@@ -479,7 +489,7 @@ export default function MacroRoomV2() {
   }))
   const historyPriceByDate = new Map(
     macroChartData
-      .map((r) => ({ date: String(r.date), price: (typeof r.BTC === 'number' ? r.BTC : (typeof r.QQQ === 'number' ? r.QQQ : null)) }))
+      .map((r) => ({ date: String(r.date), price: (typeof r.BTC === 'number' ? r.BTC : (typeof (r as any).QQQ === 'number' ? (r as any).QQQ : null)) }))
       .filter((r) => typeof r.price === 'number')
       .map((r) => [r.date, r.price as number])
   )
@@ -762,7 +772,7 @@ export default function MacroRoomV2() {
       ticks.push(String(best.date))
       cur.setMonth(cur.getMonth() + step)
     }
-    return [...new Set(ticks)]
+    return Array.from(new Set(ticks))
   })()
 
   const handleTerminalWheel = (e: any) => {
@@ -982,7 +992,10 @@ export default function MacroRoomV2() {
           </div>
 
           <div className="bg-[#16181c] rounded-2xl p-4 border border-white/10">
-            <h3 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-100">{pickLang(mode, '영향 매핑', 'Impact Mapping')}</h3>
+            <h3 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-100 flex items-center gap-2">
+              {pickLang(mode, '영향 매핑', 'Impact Mapping')}
+              <InfoTip content={impactTip} />
+            </h3>
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
               <div className="rounded-xl border border-white/10 bg-black/15 px-3 py-2 flex items-center justify-between gap-2">
                 <div className="text-slate-300">{pickLang(mode, '정책금리 · 10년물 · 2s10s → RPI', 'Fed Rate · 10Y · 2s10s → RPI')}</div>
@@ -1046,44 +1059,58 @@ export default function MacroRoomV2() {
             </div>
           </div>
 
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <MacroDetailCard
               title={pickLang(mode, '유동성 (LPI)', 'Liquidity (LPI)')}
-              subtitle={pickLang(mode, '시중 유동성 압박의 상대 강도 · Drivers: M2, WALCL, RRP', 'Relative pressure in market liquidity · Drivers: M2, WALCL, RRP')}
+              titleTip={MACRO_TERM_COPY.LPI[langKey].body}
+              subtitle={pickLang(mode, '시장 유동성 압박 정도 - Drivers: M2, WALCL, RRP', 'Relative pressure in market liquidity - Drivers: M2, WALCL, RRP')}
+              subtitleTip={driversTip}
               value={fmt(lpi)}
               statusLabel={bandFromValue(lpi)}
-              refText="Bands are 3Y percentiles. Normal <P66, Watch P66–P85, Risk >P85"
+              refTip={bandsTip}
+              refText={pickLang(mode, 'Bands는 3Y 퍼센타일 기준입니다. Normal <P66, Watch P66-85, Risk >P85', 'Bands are 3Y percentiles. Normal <P66, Watch P66-85, Risk >P85')}
               updated={String(c?.LPI?.updated || '—')}
               quality={String(c?.LPI?.quality_effective || c?.LPI?.quality || 'NA')}
             />
             <MacroDetailCard
               title={pickLang(mode, '금리 (RPI)', 'Rates (RPI)')}
-              subtitle={pickLang(mode, '금리·실질금리 부담의 상대 강도 · Drivers: Fed Funds, 10Y, 2s10s', 'Relative pressure from policy and real rates · Drivers: Fed Funds, 10Y, 2s10s')}
+              titleTip={MACRO_TERM_COPY.RPI[langKey].body}
+              subtitle={pickLang(mode, '금리/실질금리 부담 - Drivers: Fed Funds, 10Y, 2s10s', 'Relative pressure from policy and real rates - Drivers: Fed Funds, 10Y, 2s10s')}
+              subtitleTip={driversTip}
               value={fmt(rpi)}
               statusLabel={bandFromValue(rpi)}
-              refText="Bands are 3Y percentiles. Normal <P66, Watch P66–P85, Risk >P85"
+              refTip={bandsTip}
+              refText={pickLang(mode, 'Bands는 3Y 퍼센타일 기준입니다. Normal <P66, Watch P66-85, Risk >P85', 'Bands are 3Y percentiles. Normal <P66, Watch P66-85, Risk >P85')}
               updated={String(c?.RPI?.updated || '—')}
               quality={String(c?.RPI?.quality_effective || c?.RPI?.quality || 'NA')}
             />
             <MacroDetailCard
               title={pickLang(mode, '변동성 (VRI)', 'Volatility (VRI)')}
-              subtitle={pickLang(mode, '시장 변동성 체제의 확장/압축 정도 · Drivers: VIX, Put/Call', 'Regime pressure from market volatility · Drivers: VIX, Put/Call')}
+              titleTip={MACRO_TERM_COPY.VRI[langKey].body}
+              subtitle={pickLang(mode, '시장 변동성 체계 - Drivers: VIX, Put/Call', 'Regime pressure from market volatility - Drivers: VIX, Put/Call')}
+              subtitleTip={driversTip}
               value={fmt(vri)}
               statusLabel={bandFromValue(vri)}
-              refText="Bands are 3Y percentiles. Normal <P66, Watch P66–P85, Risk >P85"
+              refTip={bandsTip}
+              refText={pickLang(mode, 'Bands는 3Y 퍼센타일 기준입니다. Normal <P66, Watch P66-85, Risk >P85', 'Bands are 3Y percentiles. Normal <P66, Watch P66-85, Risk >P85')}
               updated={String(c?.VRI?.updated || '—')}
               quality={String(c?.VRI?.quality_effective || c?.VRI?.quality || 'NA')}
             />
             <MacroDetailCard
-              title={pickLang(mode, '신용스프레드 (CSI)', 'Credit Spread (CSI)')}
-              subtitle={pickLang(mode, '신용시장 스트레스의 상대 강도 · Driver: HY OAS', 'Relative stress in credit spreads · Driver: HY OAS')}
+              title={pickLang(mode, '신용 스프레드 (CSI)', 'Credit Spread (CSI)')}
+              titleTip={MACRO_TERM_COPY.CSI[langKey].body}
+              subtitle={pickLang(mode, '신용시장 스트레스 - Driver: HY OAS', 'Relative stress in credit spreads - Driver: HY OAS')}
+              subtitleTip={driversTip}
               value={fmt(csi)}
               statusLabel={bandFromValue(csi)}
-              refText="Bands are 3Y percentiles. Normal <P66, Watch P66–P85, Risk >P85"
+              refTip={bandsTip}
+              refText={pickLang(mode, 'Bands는 3Y 퍼센타일 기준입니다. Normal <P66, Watch P66-85, Risk >P85', 'Bands are 3Y percentiles. Normal <P66, Watch P66-85, Risk >P85')}
               updated={String(c?.CSI?.updated || '—')}
               quality={String(c?.CSI?.quality_effective || c?.CSI?.quality || 'NA')}
             />
           </div>
+
         </div>
       )}
 

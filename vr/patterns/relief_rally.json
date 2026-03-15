@@ -1,0 +1,33 @@
+{
+  "pattern_id": "relief_rally",
+  "category": "rebound",
+  "description": "Temporary rebound following a sharp decline.",
+  "signature": {
+    "duration_days": {
+      "min": 5,
+      "max": 15
+    },
+    "nasdaq_rebound_range": {
+      "min": 0.06,
+      "max": 0.12
+    },
+    "tqqq_rebound_range": {
+      "min": 0.15,
+      "max": 0.3
+    },
+    "trend_structure": "countertrend_rally",
+    "ma200_behavior": "below",
+    "volatility_profile": "high",
+    "catalyst_type": "sentiment_reversal"
+  },
+  "historical_refs": [
+    "2008 multiple rallies",
+    "2022 bear market rallies"
+  ],
+  "scenario_set": [
+    "dead_cat_bounce",
+    "trend_reversal",
+    "range_market"
+  ],
+  "playbook": {}
+}

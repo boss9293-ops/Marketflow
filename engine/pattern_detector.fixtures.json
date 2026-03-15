@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "name": "Geopolitical range correction",
+      "market_state": {
+        "nasdaq_drawdown": -0.1,
+        "tqqq_drawdown": -0.27,
+        "duration_days": 20,
+        "ma200_relation": "tested",
+        "volatility_regime": "elevated",
+        "price_structure": "range_market",
+        "catalyst_type": "geopolitical_event",
+        "rebound_behavior": "mixed",
+        "trend_persistence": "sideways"
+      },
+      "expected_top_patterns": [
+        "geopolitical_shock_range",
+        "seasonal_correction"
+      ]
+    },
+    {
+      "name": "Fast crash cascade",
+      "market_state": {
+        "nasdaq_drawdown": -0.18,
+        "tqqq_drawdown": -0.48,
+        "duration_days": 6,
+        "ma200_relation": "breach",
+        "volatility_regime": "extreme",
+        "price_structure": "liquidation_drop",
+        "catalyst_type": "volatility_spike",
+        "rebound_behavior": "none",
+        "trend_persistence": "down"
+      },
+      "expected_top_patterns": [
+        "crash_cascade",
+        "leveraged_washout"
+      ]
+    },
+    {
+      "name": "Seasonal correction slow bleed",
+      "market_state": {
+        "nasdaq_drawdown": -0.09,
+        "tqqq_drawdown": -0.23,
+        "duration_days": 22,
+        "ma200_relation": "tested",
+        "volatility_regime": "medium",
+        "price_structure": "sideways",
+        "catalyst_type": "seasonal",
+        "rebound_behavior": "weak",
+        "trend_persistence": "sideways"
+      },
+      "expected_top_patterns": [
+        "seasonal_correction",
+        "slow_grind_correction"
+      ]
+    }
+  ]
+}

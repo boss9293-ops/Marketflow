@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import MacroClimateBanner from '@/components/macro/MacroClimateBanner'
 import PressureTriptych from '@/components/macro/PressureTriptych'
 import MacroPressureGauge from '@/components/macro/MacroPressureGauge'
 import ShockSummaryCard from '@/components/macro/ShockSummaryCard'
 import ActionGuidanceBox from '@/components/macro/ActionGuidanceBox'
 import { realtimeExplainScript, realtimeTone, sensorStatusLabel } from '@/lib/macroRealtimeCopy'
+import { MACRO_TERM_COPY, type MacroTermKey } from '@/lib/macroCopy'
 
 export default function RealTimeTab({
   mode,
@@ -56,6 +58,10 @@ export default function RealTimeTab({
   const rpiText = sensorStatusLabel(rpi, 'rpi', mode)
   const riskText = sensorStatusLabel(riskMix, 'risk', mode)
   const script = realtimeExplainScript(mode, lpiText, rpiText, riskText, drivers)
+  const [glossaryOpen, setGlossaryOpen] = useState(false)
+  const [glossaryKey, setGlossaryKey] = useState<MacroTermKey | null>(null)
+  const glossaryLang = mode === 'ko' ? 'KR' : 'EN'
+  const glossaryKeys = Object.keys(MACRO_TERM_COPY) as MacroTermKey[]
 
   const posture = (() => {
     if (defensiveMode === 'ON' || phase === 'Shock' || (shockProb ?? 0) >= 50) return 'defense'
@@ -175,9 +181,72 @@ export default function RealTimeTab({
         />
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-[#14171b] px-4 py-3 text-sm text-slate-300">
-        <span className="text-slate-400">{mode === 'ko' ? '왜 이렇게 나왔나' : 'Why now'}:</span>{' '}
-        <span className="text-slate-100">{top3Text}</span>
+      <div className="rounded-2xl border border-white/10 bg-[#14171b] p-4">
+        <div className="text-sm md:text-base font-semibold text-slate-100">
+          {mode === 'ko' ? '압력 구조 해설' : 'Pressure Explanation'}
+        </div>
+        <div className="mt-2 grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm text-slate-300">
+          <div className="rounded-lg border border-white/10 bg-black/15 px-3 py-2">
+            <div className="text-xs uppercase tracking-wider text-slate-400">{mode === 'ko' ? '거시 압력 구조' : 'Macro Pressure Structure'}</div>
+            <ul className="mt-2 space-y-1">
+              <li>{mode === 'ko' ? 'VRI(변동성 체계): 변동성 확장은 레버리지 민감도를 키웁니다.' : 'VRI (Volatility Regime Index): Expanding volatility raises leverage sensitivity.'}</li>
+              <li>{mode === 'ko' ? 'CSI(신용 스프레드): 신용 스트레스는 주식 약세로 이어지는 경우가 많습니다.' : 'CSI (Credit Spread Index): Credit stress often leads equity weakness.'}</li>
+              <li>{mode === 'ko' ? 'REALIZED_VOL: 실현변동성 상승은 속도 위험을 키웁니다.' : 'REALIZED_VOL: Rising realized volatility signals speed risk and fragility.'}</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-black/15 px-3 py-2">
+            <div className="text-xs uppercase tracking-wider text-slate-400">{mode === 'ko' ? '해석 프레임워크' : 'Interpretation Framework'}</div>
+            <ul className="mt-2 space-y-1">
+              <li>{mode === 'ko' ? 'VRI + CSI 상승 -> 방어적 속도 조절' : 'VRI + CSI rising -> Defensive speed control'}</li>
+              <li>{mode === 'ko' ? 'VRI 상승만 -> 단기 불안정' : 'VRI rising alone -> Short-term instability'}</li>
+              <li>{mode === 'ko' ? 'CSI 상승만 -> 구조적 취약성 위험' : 'CSI rising alone -> Structural fragility risk'}</li>
+              <li>{mode === 'ko' ? 'LPI 낮음 + VRI 상승 -> 유동성-변동성 압축 위험' : 'Low LPI + Rising VRI -> Liquidity-volatility compression risk'}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-[#14171b] p-4">
+        <button
+          type="button"
+          onClick={() => {
+            setGlossaryOpen((v) => {
+              if (v) setGlossaryKey(null)
+              return !v
+            })
+          }}
+          className="w-full flex items-center justify-between text-left"
+        >
+          <div className="text-sm md:text-base font-semibold text-slate-100">
+            {mode === 'ko' ? '용어 사전 (Glossary)' : 'Mini Glossary'}
+          </div>
+          <div className="text-xs text-slate-400">{glossaryOpen ? (mode === 'ko' ? '접기' : 'Hide') : (mode === 'ko' ? '열기' : 'Show')}</div>
+        </button>
+        {glossaryOpen && (
+          <div className="mt-3 divide-y divide-white/10">
+            {glossaryKeys.map((key) => {
+              const open = glossaryKey === key
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setGlossaryKey((prev) => (prev === key ? null : key))}
+                  className="w-full text-left py-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-slate-100">{MACRO_TERM_COPY[key][glossaryLang].title}</div>
+                    <span className="text-[10px] text-slate-400">{open ? (mode === 'ko' ? '닫기' : 'Collapse') : (mode === 'ko' ? '설명' : 'Expand')}</span>
+                  </div>
+                  {open && (
+                    <div className="mt-2 text-xs text-slate-300 leading-relaxed">
+                      {MACRO_TERM_COPY[key][glossaryLang].body}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <ActionGuidanceBox mode={mode} phase={phase} defensiveMode={defensiveMode} confirmPoints={drivers.slice(0, 2)} />

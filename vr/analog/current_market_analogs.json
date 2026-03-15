@@ -1,0 +1,25 @@
+{
+  "as_of_date": "2026-03-12",
+  "analog_events": [
+    {
+      "event_id": "2021-12",
+      "pattern_type": "bull_trend_pullback",
+      "similarity_score": 78,
+      "summary": "Even healthy bull-trend pullbacks can generate uncomfortable leverage stress before trend continuation becomes clear."
+    },
+    {
+      "event_id": "2021-03",
+      "pattern_type": "bull_trend_pullback",
+      "similarity_score": 72,
+      "summary": "Leverage stress faded relatively quickly once trend structure remained intact and recovery quality improved."
+    },
+    {
+      "event_id": "2024-07",
+      "pattern_type": "range_compression",
+      "similarity_score": 63,
+      "summary": "Tighter consolidation after correction required patience because direction had not yet resolved."
+    }
+  ],
+  "top_pattern_summary": "Bull Trend Pullback / Range Compression",
+  "context_note": "These analogs suggest bull-trend pullback conditions are still more relevant than a clean panic washout."
+}

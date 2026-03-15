@@ -1,0 +1,16 @@
+flask
+flask-cors
+yfinance
+pandas
+numpy
+scikit-learn
+xgboost
+requests
+beautifulsoup4
+ta
+pytz
+google-genai
+openai
+python-dotenv
+apscheduler
+pytest

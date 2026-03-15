@@ -1,0 +1,50 @@
+{
+  "shock_weights": {
+    "VRI": 0.35,
+    "CSI": 0.30,
+    "RV20": 0.20,
+    "DD_VEL": 0.15
+  },
+  "shock_prob_caps": {
+    "min": 5,
+    "max": 65
+  },
+  "shock_state_thresholds": {
+    "low": 15,
+    "moderate": 30,
+    "elevated": 50
+  },
+  "mps_weights": {
+    "LPI": 0.35,
+    "RPI": 0.25,
+    "VRI": 0.25,
+    "CSI": 0.15
+  },
+  "phase_weights": {
+    "VRI": 0.30,
+    "CSI": 0.25,
+    "RPI": 0.25,
+    "LPI": 0.20
+  },
+  "phase_thresholds": {
+    "slowdown_gate": 55,
+    "contraction_gate": 70,
+    "shock_vri": 90,
+    "shock_combo_vri": 80,
+    "shock_combo_csi": 80
+  },
+  "defensive_thresholds": {
+    "mps_watch": 70,
+    "mps_on": 80,
+    "csi_watch": 70,
+    "csi_on": 80
+  },
+  "sensor_state_thresholds": {
+    "watch": 60,
+    "stress": 80
+  },
+  "percentile_band_thresholds": {
+    "watch": 66,
+    "risk": 85
+  }
+}

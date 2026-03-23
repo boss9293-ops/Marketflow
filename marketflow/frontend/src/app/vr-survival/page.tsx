@@ -9,15 +9,9 @@ import VRSurvival, {
 } from '@/components/crash/vr/VRSurvival'
 import { detectPatternMatches } from '../../../../../engine/pattern_detector'
 import { computeCurrentMarketAnalogs } from '../../../../../vr/analog/compute_market_analog'
-import { buildStrategyArena, type StrategyArenaView } from '../../../../../vr/arena/compute_strategy_arena'
 import { buildPostureMessage } from '../../../../../vr/dashboard/build_posture_message'
 import { mapScenarioPlaybook } from '../../../../../vr/playbooks/playbook_mapper'
-import {
-  buildVRPlaybackView,
-  type RawStandardPlaybackArchive,
-  type RawVRSurvivalPlaybackArchive,
-  type VRPlaybackEventOverrides,
-} from '../../../../../vr/playback/vr_playback_loader'
+import type { RawStandardPlaybackArchive } from '../../../../../vr/playback/vr_playback_loader'
 import { generateMarketState, toPatternDetectorInput } from '../../../../../vr/state/market_state_generator'
 import type { MarketState } from '../../../../../vr/types/market_state'
 import IntegratedResearchPanel   from '@/components/ai/IntegratedResearchPanel'
@@ -153,7 +147,6 @@ export default async function VRSurvivalPage({
   const riskV1 = readRiskV1Current()
   const heatmapData = readOutputJson<ETFRoomData>('etf_room.json')
   const standardPlayback = readOutputJson<RawStandardPlaybackArchive>('risk_v1_playback.json')
-  const survivalPlayback = readOutputJson<RawVRSurvivalPlaybackArchive>('vr_survival_playback.json')
   const rootDir = join(process.cwd(), '..', '..')
   const requestedTab = toSingleValue(searchParams?.tab)
   const requestedEvent = toSingleValue(searchParams?.event)
@@ -165,36 +158,16 @@ export default async function VRSurvivalPage({
   const simStart = toSingleValue(searchParams?.sim_start)
   const simCapital = toSingleValue(searchParams?.sim_capital)
   const simStockPct = toSingleValue(searchParams?.sim_stock_pct)
-  const eventOverrides: VRPlaybackEventOverrides | undefined =
+  const simParams =
     simEventId && /^\d{4}-\d{2}$/.test(simEventId)
       ? {
           event_id: simEventId,
-          simulation_start_date: simStart,
-          initial_capital: simCapital ? Number(simCapital) : undefined,
-          stock_allocation_pct: simStockPct ? Number(simStockPct) : undefined,
+          sim_start: simStart,
+          sim_capital: simCapital,
+          sim_stock_pct: simStockPct,
         }
       : undefined
   const patternDashboard = await buildCurrentPatternDashboard(rootDir, standardPlayback)
-  let playbackData: ReturnType<typeof buildVRPlaybackView> | null = null
-  try {
-    playbackData = buildVRPlaybackView({
-      standardArchive: standardPlayback,
-      survivalArchive: survivalPlayback,
-      rootDir,
-      eventOverrides,
-    })
-  } catch {
-    // buildVRPlaybackView failed — playbackData remains null
-  }
-  let strategyArena: StrategyArenaView | null = null
-  try {
-    strategyArena = buildStrategyArena({
-      standardArchive: standardPlayback,
-      survivalArchive: survivalPlayback,
-    })
-  } catch {
-    // buildStrategyArena failed — strategyArena remains null
-  }
 
   if (!raw) {
     return (
@@ -282,10 +255,9 @@ export default async function VRSurvivalPage({
           data={raw}
           heatmapData={heatmapData}
           patternDashboard={patternDashboard}
-          playbackData={playbackData}
-          strategyArena={strategyArena}
           initialTab={initialTab}
           initialPlaybackEventId={initialPlaybackEventId}
+          simParams={simParams}
         />
 
         <div style={{ fontSize: '0.75rem', color: '#475569', textAlign: 'center', paddingTop: '0.4rem' }}>

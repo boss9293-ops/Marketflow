@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -5247,6 +5247,7 @@ export default function VRSurvival({
   vrAudit,
   vrTimeline,
   iaPayload,
+  simParams,
 }: {
   data: VRSurvivalData
   heatmapData?: ETFRoomData | null
@@ -5258,8 +5259,50 @@ export default function VRSurvival({
   vrAudit?: VrAuditViewPayload | null
   vrTimeline?: VrTimelineRow[] | null
   iaPayload?: InvestorActionViewPayload | null
+  simParams?: { event_id?: string; sim_start?: string; sim_capital?: string; sim_stock_pct?: string }
 }) {
   const [tab, setTab] = useState<Tab>(TABS.includes(initialTab ?? 'Overview') ? (initialTab as Tab) : 'Overview')
+  const [fetchedPlayback, setFetchedPlayback] = useState<VRPlaybackView | null>(null)
+  const [playbackLoading, setPlaybackLoading] = useState(false)
+  const [fetchedArena, setFetchedArena] = useState<StrategyArenaView | null>(null)
+  const [arenaLoading, setArenaLoading] = useState(false)
+  const playbackFetchRef = useRef(false)
+  const arenaFetchRef = useRef(false)
+
+  // Fetch playback data on mount (used by Overview, Playback, Strategy Lab tabs)
+  useEffect(() => {
+    if (playbackFetchRef.current) return
+    playbackFetchRef.current = true
+    setPlaybackLoading(true)
+    const params = new URLSearchParams()
+    if (simParams?.event_id) params.set('event_id', simParams.event_id)
+    if (simParams?.sim_start) params.set('sim_start', simParams.sim_start)
+    if (simParams?.sim_capital) params.set('sim_capital', simParams.sim_capital)
+    if (simParams?.sim_stock_pct) params.set('sim_stock_pct', simParams.sim_stock_pct)
+    const url = `/api/vr-playback${params.size > 0 ? `?${params.toString()}` : ''}`
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: VRPlaybackView | null) => setFetchedPlayback(data))
+      .catch(() => {})
+      .finally(() => setPlaybackLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Fetch arena data lazily when Backtest tab is activated
+  useEffect(() => {
+    if (tab !== 'Backtest') return
+    if (arenaFetchRef.current) return
+    arenaFetchRef.current = true
+    setArenaLoading(true)
+    fetch('/api/vr-arena')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: StrategyArenaView | null) => setFetchedArena(data))
+      .catch(() => {})
+      .finally(() => setArenaLoading(false))
+  }, [tab])
+
+  const effectivePlayback = fetchedPlayback ?? playbackData ?? null
+  const effectiveArena = fetchedArena ?? strategyArena ?? null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -5292,12 +5335,12 @@ export default function VRSurvival({
       )}
 
       {tab === 'Overview' ? (
-        <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={playbackData} vrAudit={vrAudit} />
+        <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={effectivePlayback} vrAudit={vrAudit} />
       ) : null}
       {tab === 'Playback' ? (
-        <PlaybackTab playbackData={playbackData} initialPlaybackEventId={initialPlaybackEventId} />
+        <PlaybackTab playbackData={effectivePlayback} initialPlaybackEventId={initialPlaybackEventId} />
       ) : null}
-      {tab === 'Backtest' ? <BacktestTab strategyArena={strategyArena} /> : null}
+      {tab === 'Backtest' ? <BacktestTab strategyArena={effectiveArena} /> : null}
       {tab === 'Pool Logic' ? <PoolLogicTab /> : null}
       {tab === 'Options Overlay' ? <OptionsOverlayTab /> : null}
       {tab === 'Philosophy' ? <PhilosophyTab runId={data.run_id} /> : null}
@@ -5318,11 +5361,11 @@ export default function VRSurvival({
               Discrepancies between AI scenario probabilities and historical pattern data are signal, not noise.
             </div>
           </div>
-          <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={playbackData} vrAudit={vrAudit} />
+          <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={effectivePlayback} vrAudit={vrAudit} />
         </div>
       ) : null}
       {tab === 'Strategy Lab' ? (
-        <StrategyLabTab events={(playbackData?.events ?? []) as unknown as LabEvent[]} />
+        <StrategyLabTab events={(effectivePlayback?.events ?? []) as unknown as LabEvent[]} />
       ) : null}
       {tab === 'Timeline' ? (
         <VrTimelinePanel rows={vrTimeline} useSampleData={true} />

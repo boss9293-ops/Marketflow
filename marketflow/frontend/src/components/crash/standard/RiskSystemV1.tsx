@@ -825,14 +825,12 @@ function RadarChart({
           <polygon key={ratio} points={polyPts(ratio)} fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
         ))}
         {layers.map((_, i) => (
-          <line key={`axis-${i}`} x1={cx} y1={cy} x2={ptX(i, 1)} y2={ptY(i, 1)} stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
+          <line key={`axis-${i}`} x1={cx} y1={cy} x2={ptX(i, 1).toFixed(1)} y2={ptY(i, 1).toFixed(1)} stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
         ))}
         <polygon points={polyPts(normalR)} fill="rgba(34,197,94,0.14)" stroke="#22c55e" strokeWidth="1.2" strokeDasharray="4 3" />
         <polygon points={stressPoly} fill={`${polyColor}18`} stroke={polyColor} strokeWidth="2" />
 
         {layers.map((layer, i) => {
-          const ax = ptX(i, 1.12)
-          const ay = ptY(i, 1.12)
           const ratio = stressRatios[i]
           const short = layerShortMap[layer.key ?? ''] ?? `L${i + 1}`
           const isActive = activeIndex === i
@@ -848,9 +846,9 @@ function RadarChart({
               {isActive && (
                 <circle cx={ptX(i, ratio)} cy={ptY(i, ratio)} r={11} fill={`${layerColors[i] ?? '#60a5fa'}22`} stroke={layerColors[i] ?? '#60a5fa'} strokeWidth={1.2} />
               )}
-              <circle cx={ptX(i, ratio)} cy={ptY(i, ratio)} r={isActive ? 6.5 : 5} fill={layerColors[i] ?? '#60a5fa'} stroke="#0b0f14" strokeWidth={1.5} />
-              <text x={ax} y={ay - 4} textAnchor="middle" fill={isActive ? '#f8fafc' : isPeak ? (layerColors[i] ?? polyColor) : '#e5e7eb'} fontSize="12" fontWeight={isPeak ? '900' : '800'}>{short}</text>
-              <text x={ax} y={ay + 11} textAnchor="middle" fill={isPeak ? (layerColors[i] ?? polyColor) : '#cbd5e1'} fontSize="11.5" fontWeight={isPeak ? '800' : '600'}>{layer.score}/{layer.max}</text>
+              <circle cx={ptX(i, ratio).toFixed(1)} cy={ptY(i, ratio).toFixed(1)} r={isActive ? 6.5 : 5} fill={layerColors[i] ?? '#60a5fa'} stroke="#0b0f14" strokeWidth={1.5} />
+              <text x={ptX(i, 1.12).toFixed(1)} y={(ptY(i, 1.12) - 4).toFixed(1)} textAnchor="middle" fill={isActive ? '#f8fafc' : isPeak ? (layerColors[i] ?? polyColor) : '#e5e7eb'} fontSize="12" fontWeight={isPeak ? '900' : '800'}>{short}</text>
+              <text x={ptX(i, 1.12).toFixed(1)} y={(ptY(i, 1.12) + 11).toFixed(1)} textAnchor="middle" fill={isPeak ? (layerColors[i] ?? polyColor) : '#cbd5e1'} fontSize="11.5" fontWeight={isPeak ? '800' : '600'}>{layer.score}/{layer.max}</text>
             </g>
           )
         })}

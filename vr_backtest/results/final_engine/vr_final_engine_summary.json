@@ -1,0 +1,347 @@
+{
+  "generated_at": "2026-03-22T02:19:33.096Z",
+  "target_episodes": [
+    "2011-06",
+    "2020-02",
+    "2021-12",
+    "2025-01"
+  ],
+  "engine_configs": [
+    {
+      "label": "A_v1.3",
+      "description": "v1.3 baseline: explainable_vr_v1, macro gating OFF"
+    },
+    {
+      "label": "B_v1.5_off",
+      "description": "v1.5 macro OFF: same behavior as A"
+    },
+    {
+      "label": "C_v1.5_on",
+      "description": "v1.5 macro ON: explainable_vr_v1 with CRISIS/macro gating"
+    },
+    {
+      "label": "BENCH",
+      "description": "Benchmark: vr_original_v2"
+    }
+  ],
+  "table_51_episode_comparison": [
+    {
+      "episode": "2020-02",
+      "engine": "A_v1.3",
+      "final_value": 16487.52,
+      "max_drawdown_pct": -44.69,
+      "avg_exposure_pct": 57.41,
+      "snapback_capture_score": 0.27,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2020-02",
+      "engine": "B_v1.5_off",
+      "final_value": 16487.52,
+      "max_drawdown_pct": -44.69,
+      "avg_exposure_pct": 57.41,
+      "snapback_capture_score": 0.27,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2020-02",
+      "engine": "C_v1.5_on",
+      "final_value": 16487.52,
+      "max_drawdown_pct": -44.69,
+      "avg_exposure_pct": 57.41,
+      "snapback_capture_score": 0.27,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2020-02",
+      "engine": "BENCH",
+      "final_value": 19030.56,
+      "max_drawdown_pct": -69.91,
+      "avg_exposure_pct": 99.27,
+      "snapback_capture_score": 0.5,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2021-12",
+      "engine": "A_v1.3",
+      "final_value": 22384.34,
+      "max_drawdown_pct": -32.86,
+      "avg_exposure_pct": 47.42,
+      "snapback_capture_score": 0,
+      "buy_count": 13,
+      "defense_count": 0
+    },
+    {
+      "episode": "2021-12",
+      "engine": "B_v1.5_off",
+      "final_value": 22384.34,
+      "max_drawdown_pct": -32.86,
+      "avg_exposure_pct": 47.42,
+      "snapback_capture_score": 0,
+      "buy_count": 13,
+      "defense_count": 0
+    },
+    {
+      "episode": "2021-12",
+      "engine": "C_v1.5_on",
+      "final_value": 22384.34,
+      "max_drawdown_pct": -32.86,
+      "avg_exposure_pct": 47.42,
+      "snapback_capture_score": 0,
+      "buy_count": 13,
+      "defense_count": 0
+    },
+    {
+      "episode": "2021-12",
+      "engine": "BENCH",
+      "final_value": 11140.95,
+      "max_drawdown_pct": -81.32,
+      "avg_exposure_pct": 93.85,
+      "snapback_capture_score": 0.498,
+      "buy_count": 8,
+      "defense_count": 0
+    },
+    {
+      "episode": "2011-06",
+      "engine": "A_v1.3",
+      "final_value": 12122.65,
+      "max_drawdown_pct": -53.69,
+      "avg_exposure_pct": 69.56,
+      "snapback_capture_score": 0.4,
+      "buy_count": 11,
+      "defense_count": 0
+    },
+    {
+      "episode": "2011-06",
+      "engine": "B_v1.5_off",
+      "final_value": 12122.65,
+      "max_drawdown_pct": -53.69,
+      "avg_exposure_pct": 69.56,
+      "snapback_capture_score": 0.4,
+      "buy_count": 11,
+      "defense_count": 0
+    },
+    {
+      "episode": "2011-06",
+      "engine": "C_v1.5_on",
+      "final_value": 12122.65,
+      "max_drawdown_pct": -53.69,
+      "avg_exposure_pct": 69.56,
+      "snapback_capture_score": 0.4,
+      "buy_count": 11,
+      "defense_count": 0
+    },
+    {
+      "episode": "2011-06",
+      "engine": "BENCH",
+      "final_value": 28195.05,
+      "max_drawdown_pct": -49.57,
+      "avg_exposure_pct": 90.86,
+      "snapback_capture_score": 0.4,
+      "buy_count": 12,
+      "defense_count": 0
+    },
+    {
+      "episode": "2025-01",
+      "engine": "A_v1.3",
+      "final_value": 21113.05,
+      "max_drawdown_pct": -41.73,
+      "avg_exposure_pct": 70.58,
+      "snapback_capture_score": 0.917,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2025-01",
+      "engine": "B_v1.5_off",
+      "final_value": 21113.05,
+      "max_drawdown_pct": -41.73,
+      "avg_exposure_pct": 70.58,
+      "snapback_capture_score": 0.917,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2025-01",
+      "engine": "C_v1.5_on",
+      "final_value": 21113.05,
+      "max_drawdown_pct": -41.73,
+      "avg_exposure_pct": 70.58,
+      "snapback_capture_score": 0.917,
+      "buy_count": 10,
+      "defense_count": 0
+    },
+    {
+      "episode": "2025-01",
+      "engine": "BENCH",
+      "final_value": 23528.36,
+      "max_drawdown_pct": -56.57,
+      "avg_exposure_pct": 90.58,
+      "snapback_capture_score": 0.393,
+      "buy_count": 5,
+      "defense_count": 0
+    }
+  ],
+  "table_52_mode_stats": [
+    {
+      "episode": "2020-02",
+      "total_bars": 467,
+      "normal_days": 137,
+      "crisis_days": 330,
+      "crisis_ratio": 0.7066,
+      "macro_active_days": 0
+    },
+    {
+      "episode": "2021-12",
+      "total_bars": 719,
+      "normal_days": 144,
+      "crisis_days": 575,
+      "crisis_ratio": 0.7997,
+      "macro_active_days": 44
+    },
+    {
+      "episode": "2011-06",
+      "total_bars": 552,
+      "normal_days": 329,
+      "crisis_days": 223,
+      "crisis_ratio": 0.404,
+      "macro_active_days": 0
+    },
+    {
+      "episode": "2025-01",
+      "total_bars": 494,
+      "normal_days": 281,
+      "crisis_days": 213,
+      "crisis_ratio": 0.4312,
+      "macro_active_days": 0
+    }
+  ],
+  "table_53_behavior_delta": [
+    {
+      "episode": "2020-02",
+      "v1_3_final": 16487.52,
+      "v1_5_on_final": 16487.52,
+      "v1_3_vs_v1_5_diff": 0,
+      "macro_on_vs_off_diff": 0,
+      "blocked_entries_count": 0,
+      "delayed_entries_count": 0
+    },
+    {
+      "episode": "2021-12",
+      "v1_3_final": 22384.34,
+      "v1_5_on_final": 22384.34,
+      "v1_3_vs_v1_5_diff": 0,
+      "macro_on_vs_off_diff": 0,
+      "blocked_entries_count": 0,
+      "delayed_entries_count": 0
+    },
+    {
+      "episode": "2011-06",
+      "v1_3_final": 12122.65,
+      "v1_5_on_final": 12122.65,
+      "v1_3_vs_v1_5_diff": 0,
+      "macro_on_vs_off_diff": 0,
+      "blocked_entries_count": 0,
+      "delayed_entries_count": 0
+    },
+    {
+      "episode": "2025-01",
+      "v1_3_final": 21113.05,
+      "v1_5_on_final": 21113.05,
+      "v1_3_vs_v1_5_diff": 0,
+      "macro_on_vs_off_diff": 0,
+      "blocked_entries_count": 0,
+      "delayed_entries_count": 0
+    }
+  ],
+  "monte_carlo": {
+    "n_paths": 500,
+    "horizon_days": 252,
+    "start_price": 50,
+    "random_seed": 42,
+    "A_v1_3": {
+      "n_paths": 500,
+      "p5_final": 2013.7,
+      "median_final": 7466.78,
+      "median_mdd": -60.91,
+      "time_in_market_mean": 92,
+      "avg_exposure_mean": 74.94,
+      "snapback_capture_score_mean": 0.472,
+      "snapback_success_rate": 79.6,
+      "tail_loss_5pct": 2013.7,
+      "worst_case_dd": -90.72
+    },
+    "C_v1_5_on": {
+      "n_paths": 500,
+      "p5_final": 2013.7,
+      "median_final": 7465.9,
+      "median_mdd": -60.91,
+      "time_in_market_mean": 91.99,
+      "avg_exposure_mean": 74.94,
+      "snapback_capture_score_mean": 0.47,
+      "snapback_success_rate": 79,
+      "tail_loss_5pct": 2013.7,
+      "worst_case_dd": -90.72
+    },
+    "BENCH": {
+      "n_paths": 500,
+      "p5_final": 809.98,
+      "median_final": 7326.71,
+      "median_mdd": -70.48,
+      "time_in_market_mean": 100,
+      "avg_exposure_mean": 92.09,
+      "snapback_capture_score_mean": 0.68,
+      "snapback_success_rate": 100,
+      "tail_loss_5pct": 809.98,
+      "worst_case_dd": -99.27
+    }
+  },
+  "decision": {
+    "result": "ACCEPT",
+    "all_criteria_pass": true,
+    "criterion_1_2022_final": {
+      "pass": true,
+      "a_val": 22384.34,
+      "c_val": 22384.34
+    },
+    "criterion_2_mc_tail": {
+      "pass": true,
+      "a_val": 2013.7,
+      "c_val": 2013.7,
+      "threshold": 1913.015
+    },
+    "criterion_3_no_degradation": {
+      "pass": true,
+      "details": [
+        {
+          "episode": "2011-06",
+          "a_val": 12122.65,
+          "c_val": 12122.65,
+          "pass": true
+        },
+        {
+          "episode": "2020-02",
+          "a_val": 16487.52,
+          "c_val": 16487.52,
+          "pass": true
+        },
+        {
+          "episode": "2025-01",
+          "a_val": 21113.05,
+          "c_val": 21113.05,
+          "pass": true
+        }
+      ]
+    },
+    "criterion_4_snapback_rate": {
+      "pass": true,
+      "a_val": 79.6,
+      "c_val": 79,
+      "threshold": 55.72
+    }
+  }
+}

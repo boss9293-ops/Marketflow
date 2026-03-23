@@ -80,7 +80,7 @@ def ensure_table(conn: sqlite3.Connection) -> None:
 
 def lmd(conn: sqlite3.Connection) -> pd.DataFrame:
     df = pd.read_sql_query("SELECT date, spy, qqq, iwm, vix, dxy, us10y, us2y, oil, gold, btc FROM market_daily ORDER BY date", conn)
-    if not df.empty: df["date"] = pd.to_datetime(df["date"])
+    if not df.empty: df["date"] = pd.to_datetime(df["date"], format="mixed")
     return df
 
 
@@ -90,7 +90,7 @@ def lid(conn: sqlite3.Connection, symbol: str) -> pd.DataFrame:
     FROM indicators_daily WHERE symbol=? ORDER BY date
     """
     df = pd.read_sql_query(q, conn, params=[symbol])
-    if not df.empty: df["date"] = pd.to_datetime(df["date"])
+    if not df.empty: df["date"] = pd.to_datetime(df["date"], format="mixed")
     return df
 
 
@@ -99,7 +99,7 @@ def lds(conn: sqlite3.Connection) -> pd.DataFrame:
     keep = [c for c in ["date", "gate_score", "vcp_count", "rotation_count", "risk_trend", "market_phase"] if c in cols]
     if not keep: return pd.DataFrame()
     df = pd.read_sql_query(f"SELECT {', '.join(keep)} FROM daily_snapshots ORDER BY date", conn)
-    if not df.empty: df["date"] = pd.to_datetime(df["date"])
+    if not df.empty: df["date"] = pd.to_datetime(df["date"], format="mixed")
     return df
 
 

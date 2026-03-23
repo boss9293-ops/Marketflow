@@ -15,6 +15,36 @@ import TodaySnapshotBar from '@/components/dashboard/TodaySnapshotBar'
 import CrossAssetStripCompact from '@/components/dashboard/CrossAssetStripCompact'
 import RiskEngineSummaryBar from '@/components/dashboard/RiskEngineSummaryBar'
 import MonitoredTopicsWidget from '@/components/dashboard/MonitoredTopicsWidget'
+import SmartAnalyzerSection from '@/components/dashboard/SmartAnalyzerSection'
+import SmartAnalyzerHero from '@/components/dashboard/SmartAnalyzerHero'
+import InvestorActionConsole from '@/components/dashboard/InvestorActionConsole'
+import AnalogList from '@/components/dashboard/AnalogList'
+import ForwardOutlookCard from '@/components/dashboard/ForwardOutlookCard'
+import TransitionProbabilityCard from '@/components/dashboard/TransitionProbabilityCard'
+import UpgradePrompt from '@/components/common/UpgradePrompt'
+import DailyStatusStrip from '@/components/dashboard/DailyStatusStrip'
+import DailyChangeCard from '@/components/dashboard/DailyChangeCard'
+import { buildDailySnapshot } from '@/lib/buildDailySnapshot'
+import { buildAlerts } from '@/lib/alertEngine'
+import { dispatchAlerts } from '@/lib/alertDispatcher'
+import { formatNarrativeView } from '@/lib/formatNarrativeView'
+import { buildForwardOutlook } from '@/lib/formatForwardOutlook'
+import { buildTransitionView } from '@/lib/formatTransitionView'
+import NarrativeBriefCard from '@/components/dashboard/NarrativeBriefCard'
+import LatestBriefCard from '@/components/dashboard/LatestBriefCard'
+import BriefHistoryCard from '@/components/dashboard/BriefHistoryCard'
+import { getLatestBrief, getBriefHistory } from '@/lib/briefStore'
+import AlertBanner from '@/components/dashboard/AlertBanner'
+import AlertList from '@/components/dashboard/AlertList'
+import StatusLegend from '@/components/common/StatusLegend'
+import { formatInvestorActionView } from '@/lib/formatInvestorAction'
+import { formatAnalyzerReliabilityFromView } from '@/lib/formatAnalyzerReliability'
+import { buildSmartAnalyzerView } from '@/lib/buildSmartAnalyzerView'
+import { DEV_UNLOCK_ALL } from '@/config/dev'
+import type { SmartAnalyzerViewPayload } from '@/lib/formatSmartAnalyzer'
+import type { ResearchDeskPayload } from '@/types/researchDesk'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import UnifiedPriorityStrip  from '@/components/priority/UnifiedPriorityStrip'
 import DailyDigestPanel       from '@/components/digest/DailyDigestPanel'
 import VrValidationTriggerPanel from '@/components/validation/VrValidationTriggerPanel'
@@ -258,7 +288,7 @@ const SMART_FLOW_FALLBACK: SmartMoneyCache = {
 // ── Page ──────────────────────────────────────────────────────────
 
 export default async function Dashboard() {
-  const [snapshotsData, alertsData, overviewHome, dailyBriefing, healthcheck, healthSnapshot, actionSnapshot, marketTape, smartMoney, sectorRotation] = await Promise.all([
+  const [snapshotsData, alertsData, overviewHome, dailyBriefing, healthcheck, healthSnapshot, actionSnapshot, marketTape, smartMoney, sectorRotation, rdSamples, saSamples, saLive] = await Promise.all([
     readCacheJson<SnapshotsCache>('snapshots_120d.json', { snapshots: [] }),
     readCacheJson<AlertsCache>('alerts_recent.json', { alerts: [] }),
     readCacheJson<OverviewHomeData>('overview_home.json', EMPTY_HOME),
@@ -269,11 +299,64 @@ export default async function Dashboard() {
     readCacheJson<MarketTapeCache>('market_tape.json', { items: [] }),
     readCacheJson<SmartMoneyCache>('smart_money.json', SMART_FLOW_FALLBACK),
     readOutputJson<SectorRotationCache>('sector_rotation.json', { sector_perf: [] }),
+    readOutputJson<RdSampleItem[]>('research_desk_sample.json', []),
+    readOutputJson<SaSampleFile>('smart_analyzer_sample.json', { scenarios: [] }),
+    readOutputJson<Record<string, unknown> | null>('smart_analyzer_latest.json', null),
   ])
 
   const snapshots     = Array.isArray(snapshotsData.snapshots) ? snapshotsData.snapshots : []
   const recent5Market = snapshots.slice(-5).reverse()
   const alerts        = Array.isArray(alertsData.alerts) ? alertsData.alerts : []
+
+
+  // Smart Analyzer view payload (WO-SA14/SA15)
+  type RdSampleItem = { research_desk?: unknown; [key: string]: unknown }
+  type SaScenario = { name: string; input: unknown; output: Record<string, unknown> }
+  type SaSampleFile = { scenarios: SaScenario[] }
+  const rdPayload: ResearchDeskPayload | null = Array.isArray(rdSamples) && rdSamples.length > 0
+    ? ((rdSamples[0] as RdSampleItem)?.research_desk as ResearchDeskPayload ?? null)
+    : null
+  void rdPayload
+  const saRawOutput: Record<string, unknown> | null =
+    (saLive && typeof saLive === 'object' && !('error' in saLive))
+      ? (saLive as Record<string, unknown>)
+      : (Array.isArray((saSamples as { scenarios?: SaScenario[] })?.scenarios) && (saSamples as { scenarios: SaScenario[] }).scenarios.length > 0)
+        ? ((saSamples as { scenarios: SaScenario[] }).scenarios[0]?.output as Record<string, unknown> ?? null)
+        : null
+  const saViewPayload: SmartAnalyzerViewPayload | null = buildSmartAnalyzerView(saRawOutput as Parameters<typeof buildSmartAnalyzerView>[0])
+  const iaPayload = formatInvestorActionView(saViewPayload)
+  const reliabilityPayload = formatAnalyzerReliabilityFromView(saViewPayload)
+
+  // Subscription tier (WO-SA24) — replace with real auth check when billing wired
+  const session = await getServerSession(authOptions)
+  const IS_PREMIUM = DEV_UNLOCK_ALL || ((session?.user as any)?.plan === 'PREMIUM')
+
+  // Daily snapshot view (WO-SA25)
+  const dailyView = buildDailySnapshot(saViewPayload, snapshots)
+
+  // Alert engine (WO-SA26)
+  const alertsPayload = buildAlerts(saViewPayload, new Date().toISOString().slice(0, 10))
+
+  // Dispatch HIGH alerts via Telegram (WO-SA27)
+  void dispatchAlerts(alertsPayload)
+
+  // Narrative brief (WO-SA28)
+  const forwardOutlook  = buildForwardOutlook(saViewPayload, reliabilityPayload)
+  const transitionView  = buildTransitionView(saViewPayload, reliabilityPayload)
+  const narrativeView   = formatNarrativeView({
+    sa:          saViewPayload,
+    reliability: reliabilityPayload,
+    alerts:      alertsPayload,
+    dailyView,
+    forward:     forwardOutlook,
+    transition:  transitionView,
+  })
+
+  // Stored brief (WO-SA29)
+  const [latestBrief, briefHistory] = await Promise.all([
+    getLatestBrief(),
+    getBriefHistory(),
+  ])
 
   const severityCount = {
     HIGH: alerts.filter((a) => (a.severity_label || '').toUpperCase() === 'HIGH').length,
@@ -868,8 +951,47 @@ export default async function Dashboard() {
         </section>
       </section>
 
-      {/* ────── MARKET STRUCTURE (collapsed) ────── */}
-      {/* ────── PRIORITY MONITOR ────── */}
+      {rdPayload && <SmartAnalyzerSection payload={rdPayload} />}
+
+      {/* ── Smart Analyzer Hero (WO-SA14) ── */}
+      <AlertBanner alerts={alertsPayload} />
+
+      <SmartAnalyzerHero payload={saViewPayload} reliability={reliabilityPayload} />
+
+      {/* ── Daily Status Strip (WO-SA25) ── */}
+      <DailyStatusStrip view={dailyView} />
+
+      <AlertList alerts={alertsPayload} />
+
+      {/* ── Investor Action Console (WO-SA17) ── */}
+      <InvestorActionConsole payload={iaPayload} reliability={reliabilityPayload} />
+
+      {/* ── Status Glossary (SA19) ── */}
+      <StatusLegend />
+
+      {/* ── Daily Change Card (WO-SA25) ── */}
+      <DailyChangeCard view={dailyView} />
+
+      {/* ── Historical Analogs (SA20) ── */}
+      <AnalogList payload={saViewPayload} isPremium={IS_PREMIUM} />
+
+      {/* ── Upgrade Gate (SA23) ── */}
+      {!IS_PREMIUM && <UpgradePrompt />}
+
+      {/* ── Forward Outlook (SA21) ── */}
+      <ForwardOutlookCard payload={saViewPayload} reliability={reliabilityPayload} isPremium={IS_PREMIUM} />
+
+      {/* ── Transition Outlook (SA22) ── */}
+      <TransitionProbabilityCard payload={saViewPayload} reliability={reliabilityPayload} isPremium={IS_PREMIUM} />
+
+      {/* ────── Narrative Brief (WO-SA28) ────── */}
+      <NarrativeBriefCard view={narrativeView} isPremium={IS_PREMIUM} />
+
+      {/* ────── Generated Brief (WO-SA29) ────── */}
+      <LatestBriefCard brief={latestBrief} />
+      <BriefHistoryCard history={briefHistory} />
+
+      {/* ────── MARKET STRUCTURE / PRIORITY MONITOR ────── */}
       <UnifiedPriorityStrip />
       <DailyDigestPanel />
       <VrValidationTriggerPanel />

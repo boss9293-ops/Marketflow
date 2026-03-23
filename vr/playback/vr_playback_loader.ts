@@ -200,6 +200,13 @@ const CURATED_PLAYBACK_SUITE: Array<{
     group: 'Corrections',
     note: 'Trade policy shock and tariff escalation volatility episode.',
   },
+  {
+    suite_id: '2025-03-fragile-recovery',
+    event_id: '2025-03',
+    display_name: '2025-03 Fragile Recovery',
+    group: 'Corrections',
+    note: 'Post-shock rebound sequence with fragile stabilization and renewed downside sensitivity.',
+  },
 ]
 
 function countRealTqqqPoints(event: RawStandardPlaybackArchive['events'][number]) {

@@ -1,0 +1,6 @@
+event_id,event_label,baseline_total_vmin_trigger_events,guard_on_total_vmin_trigger_events,baseline_executed_vmin_buys,guard_on_executed_vmin_buys,guard_on_partial_buys_count,guard_on_delayed_buys_count,guard_on_blocked_buys_count,guard_on_average_delay_bars,guard_on_delayed_fill_rate_pct,guard_on_blocked_then_lower_price_reentry_rate_pct
+2011-06,2011 Debt Ceiling,1,4,1,1,1,1,2,2,100,0
+2018-10,2018 Q4,0,0,0,0,0,0,0,,,
+2020-02,2020 Covid Crash,2,7,2,3,1,3,3,2.5,66.67,100
+2021-12,2022 Fed Bear,3,7,3,3,1,2,4,1.5,100,100
+2024-07,2024 Yen Carry,0,0,0,0,0,0,0,,,

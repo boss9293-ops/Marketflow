@@ -28,7 +28,7 @@ DEFAULT_TIMEOUT = 600  # 10 minutes default
 # Scripts that need a longer timeout (SP500 bulk downloads etc.)
 SCRIPT_TIMEOUTS: dict[str, int] = {
     "update_market_daily.py": 600,   # 10 min -- yfinance VIX/rates/FX
-    "update_ohlcv.py":       3600,  # 60 min — 500 symbols × yfinance/stooq
+    "update_ohlcv.py":        300,  # 5 min  — 500 symbols × parallel yfinance (8 workers)
     "update_indicators.py":  1800,  # 30 min — 500 symbols × indicator calc
     "build_daily_snapshot.py": 600, # 10 min — heavy join across all symbols
     "screener.py":           600,   # 10 min — scoring across all symbols

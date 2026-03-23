@@ -19,6 +19,19 @@ import HistoricalAnalogPanel, { type HistoricalAnalogSummary } from './Historica
 import { StrategyLabTab, type LabEvent } from './StrategyLabTab'
 import ScenarioEnginePanel from './ScenarioEnginePanel'
 import SuggestedPostureStrip, { type VRPostureMessage } from './SuggestedPostureStrip'
+import VrActionAuditCard from '../../vr/VrActionAuditCard'
+import VrTimelinePanel from '../../vr/VrTimelinePanel'
+import type { VrAuditViewPayload } from '../../../lib/formatVrAudit'
+import type { InvestorActionViewPayload } from '../../../types/investorAction'
+import InvestorActionBadgeRow from '../../dashboard/InvestorActionBadgeRow'
+import type { VrTimelineRow } from '../../../lib/formatVrTimeline'
+import OverlayAlignmentBadge from '../../arena/OverlayAlignmentBadge'
+import MonteCarloOverlayCard from '../../arena/MonteCarloOverlayCard'
+import OverlayScoreStrip from '../../arena/OverlayScoreStrip'
+import {
+  buildArenaOverlayDisplayModel,
+  type ArenaOverlayDisplayModel,
+} from '../../../lib/arena/overlay/buildArenaOverlayDisplayModel'
 import {
   buildVariantForCap,
   type ExecutionPlaybackSource,
@@ -400,6 +413,12 @@ type VRPlaybackEventView = {
         cycle_pool_cap_pct: number | null
         cumulative_pool_spent: number
         buy_blocked_by_cycle_cap: boolean
+        false_bottom_risk_level: 'LOW' | 'MEDIUM' | 'HIGH'
+        buy_delay_flag: boolean
+        delay_strength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+        reset_ready_flag: boolean
+        reset_confidence: 'LOW' | 'MEDIUM' | 'HIGH'
+        reset_reason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
         trade_reason: string | null
         state_after_trade: string
       }>
@@ -452,6 +471,15 @@ type VRPlaybackEventView = {
         cumulative_pool_spent: number
         blocked_buy_count: number
         deferred_buy_count: number
+        false_bottom_risk_level: 'LOW' | 'MEDIUM' | 'HIGH'
+        buy_delay_flag: boolean
+        delay_strength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+        reset_ready_flag: boolean
+        reset_confidence: 'LOW' | 'MEDIUM' | 'HIGH'
+        reset_reason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
+        guard_partial_buy_count: number
+        guard_delayed_buy_count: number
+        guard_blocked_buy_count: number
         executed_buy_count: number
         executed_sell_count: number
         executed_defense_count: number
@@ -465,7 +493,8 @@ type VRPlaybackEventView = {
         trigger_source: string | null; ladder_level_hit: number | null; trade_price: number | null;
         stock_evaluation_value: number; vref_eval: number | null; vmax_eval: number | null; sell_gate_open: boolean;
         shares_before: number; shares_after: number; avg_cost_before: number; avg_cost_after: number;
-        pool_cash_before: number; pool_cash_after: number; cycle_pool_used_pct: number; blocked_by_cap: boolean; state_after: string;
+        pool_cash_before: number; pool_cash_after: number; cycle_pool_used_pct: number; blocked_by_cap: boolean;
+        false_bottom_risk_level: 'LOW' | 'MEDIUM' | 'HIGH'; buy_delay_flag: boolean; delay_strength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'; reset_ready_flag: boolean; reset_confidence: 'LOW' | 'MEDIUM' | 'HIGH'; reset_reason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'; state_after: string;
       }>
       validation_summary: {
         has_buy_execution: boolean
@@ -569,6 +598,12 @@ type VRPlaybackEventView = {
           cycle_pool_cap_pct: number | null
           cumulative_pool_spent: number
           buy_blocked_by_cycle_cap: boolean
+          false_bottom_risk_level: 'LOW' | 'MEDIUM' | 'HIGH'
+          buy_delay_flag: boolean
+          delay_strength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+          reset_ready_flag: boolean
+          reset_confidence: 'LOW' | 'MEDIUM' | 'HIGH'
+          reset_reason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
           trade_reason: string | null
           state_after_trade: string
         }>
@@ -692,6 +727,15 @@ type VRPlaybackEventView = {
           cumulative_pool_spent: number
           blocked_buy_count: number
           deferred_buy_count: number
+          false_bottom_risk_level: 'LOW' | 'MEDIUM' | 'HIGH'
+          buy_delay_flag: boolean
+          delay_strength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+          reset_ready_flag: boolean
+          reset_confidence: 'LOW' | 'MEDIUM' | 'HIGH'
+          reset_reason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
+          guard_partial_buy_count: number
+          guard_delayed_buy_count: number
+          guard_blocked_buy_count: number
           executed_buy_count: number
           executed_sell_count: number
           executed_defense_count: number
@@ -723,6 +767,12 @@ type VRPlaybackEventView = {
           pool_cash_after: number
           cycle_pool_used_pct: number
           blocked_by_cap: boolean
+          false_bottom_risk_level: 'LOW' | 'MEDIUM' | 'HIGH'
+          buy_delay_flag: boolean
+          delay_strength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+          reset_ready_flag: boolean
+          reset_confidence: 'LOW' | 'MEDIUM' | 'HIGH'
+          reset_reason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
           state_after: string
         }>
         validation_summary: {
@@ -872,6 +922,121 @@ type StrategyArenaView = {
     start: string
     end: string
     vr_source: 'survival_archive' | null
+    adaptive_exposure_report?: {
+      event: string
+      initial_state: {
+        exposure: number
+        reason: string
+      }
+      full_transitions: Array<{
+        date: string
+        from_exposure: number
+        to_exposure: number
+        reason: string
+        asset_n: number
+        tqqq_ma200_n: number | null
+        dd3: number | null
+        dd5: number | null
+        peak_dd: number | null
+        rebound_from_low: number | null
+      }>
+      visible_transitions: Array<{
+        date: string
+        from_exposure: number
+        to_exposure: number
+        reason: string
+        asset_n: number
+        tqqq_ma200_n: number | null
+        dd3: number | null
+        dd5: number | null
+        peak_dd: number | null
+        rebound_from_low: number | null
+      }>
+    }
+    strategy_reports?: Partial<
+      Record<
+        string,
+        {
+          initial_state: {
+            exposure: number
+            reason: string
+          }
+          full_transitions: Array<{
+            date: string
+            from_exposure: number
+            to_exposure: number
+            reason: string
+          }>
+          visible_transitions: Array<{
+            date: string
+            from_exposure: number
+            to_exposure: number
+            reason: string
+          }>
+        }
+      >
+    >
+    warning_layer?: {
+      warning_state: 'NORMAL' | 'WATCH' | 'ALERT' | 'DEFENSE_READY' | 'DEFENSE_ACTIVE' | 'RECOVERY_MODE'
+      peak_warning_state: 'NORMAL' | 'WATCH' | 'ALERT' | 'DEFENSE_READY' | 'DEFENSE_ACTIVE' | 'RECOVERY_MODE'
+      warning_reason: string
+      trigger_metrics: {
+        dd3: number | null
+        dd5: number | null
+        dd6: number | null
+        peakDD: number | null
+        rebound_from_low_pct: number | null
+        distance_to_ma200_pct: number | null
+        vr_band_level: number | null
+      }
+      scenario_hint: 'V' | 'Correction' | 'Bear' | 'Mixed'
+      mc_overlay: {
+        mcCrashRiskScore: number
+        mcBearPathSimilarity: number
+        mcVShapeOdds20d: number
+        mcRecoveryOdds20d: number
+        mcCashStressRisk: number
+        mcFalseRecoveryRisk: number
+        mcWarningConfidence: number
+        dominantMcScenario: 'V' | 'Correction' | 'Bear' | 'Mixed'
+        mcCurrentRegime: 'NORMAL' | 'SELLOFF' | 'PANIC' | 'BOTTOMING' | 'RECOVERY'
+        mcNextStateOdds: {
+          NORMAL: number
+          SELLOFF: number
+          PANIC: number
+          BOTTOMING: number
+          RECOVERY: number
+        }
+        mcPanicPersistenceRisk: number
+        mcRecoveryTransitionOdds: number
+        mcRegimeConfidence: number
+        mcAgreementScore: number
+        mcConflictScore: number
+        mcInterpretationState:
+          | 'STRONG_BEAR_CONFIRMATION'
+          | 'WEAK_BEAR'
+          | 'MIXED'
+          | 'EARLY_RECOVERY'
+          | 'FALSE_RECOVERY_RISK'
+          | 'HIGH_UNCERTAINTY'
+        mcAgreementReason: string
+        mcTrustScore: number
+        mcCalibrationBucket: 'HIGH_CONFIDENCE' | 'MEDIUM_CONFIDENCE' | 'LOW_CONFIDENCE'
+        overlayReason: string
+      } | null
+      full_transitions: Array<{
+        date: string
+        from_state: 'NORMAL' | 'WATCH' | 'ALERT' | 'DEFENSE_READY' | 'DEFENSE_ACTIVE' | 'RECOVERY_MODE'
+        to_state: 'NORMAL' | 'WATCH' | 'ALERT' | 'DEFENSE_READY' | 'DEFENSE_ACTIVE' | 'RECOVERY_MODE'
+        reason: string
+      }>
+      visible_transitions: Array<{
+        date: string
+        from_state: 'NORMAL' | 'WATCH' | 'ALERT' | 'DEFENSE_READY' | 'DEFENSE_ACTIVE' | 'RECOVERY_MODE'
+        to_state: 'NORMAL' | 'WATCH' | 'ALERT' | 'DEFENSE_READY' | 'DEFENSE_ACTIVE' | 'RECOVERY_MODE'
+        reason: string
+      }>
+    }
     metrics: Partial<{
       buy_hold: {
         final_return_pct: number
@@ -879,13 +1044,25 @@ type StrategyArenaView = {
         recovery_time_days: number | null
         exposure_stability_pct: number
       }
-      ma200_risk_control: {
+      ma200_risk_control_50: {
         final_return_pct: number
         max_drawdown_pct: number
         recovery_time_days: number | null
         exposure_stability_pct: number
       }
-      fixed_stop_loss: {
+      ma200_lb30_hybrid: {
+        final_return_pct: number
+        max_drawdown_pct: number
+        recovery_time_days: number | null
+        exposure_stability_pct: number
+      }
+      low_based_lb30: {
+        final_return_pct: number
+        max_drawdown_pct: number
+        recovery_time_days: number | null
+        exposure_stability_pct: number
+      }
+      low_based_lb25: {
         final_return_pct: number
         max_drawdown_pct: number
         recovery_time_days: number | null
@@ -907,18 +1084,24 @@ type StrategyArenaView = {
     chart_data: Array<{
       date: string
       buy_hold_equity: number
-      ma200_risk_control_equity: number
-      fixed_stop_loss_equity: number
+      ma200_risk_control_50_equity: number
+      ma200_lb30_hybrid_equity: number
+      low_based_lb30_equity: number
+      low_based_lb25_equity: number
       adaptive_exposure_equity: number | null
       original_vr_scaled_equity: number | null
       buy_hold_drawdown: number
-      ma200_risk_control_drawdown: number
-      fixed_stop_loss_drawdown: number
+      ma200_risk_control_50_drawdown: number
+      ma200_lb30_hybrid_drawdown: number
+      low_based_lb30_drawdown: number
+      low_based_lb25_drawdown: number
       adaptive_exposure_drawdown: number | null
       original_vr_scaled_drawdown: number | null
       buy_hold_exposure: number
-      ma200_risk_control_exposure: number
-      fixed_stop_loss_exposure: number
+      ma200_risk_control_50_exposure: number
+      ma200_lb30_hybrid_exposure: number
+      low_based_lb30_exposure: number
+      low_based_lb25_exposure: number
       adaptive_exposure_exposure: number | null
       original_vr_scaled_exposure: number | null
     }>
@@ -927,29 +1110,327 @@ type StrategyArenaView = {
     fixed_stop_loss_rule: string
     ma200_rule: string
     vr_source_priority: string
+    warning_layer_rule: string
   }
 }
 
-const TABS = ['Overview', 'Strategy Lab', 'Crash Analysis', 'Backtest', 'Playback', 'Pool Logic', 'Options Overlay', 'Philosophy'] as const
+const TABS = ['Overview', 'Strategy Lab', 'Crash Analysis', 'Backtest', 'Playback', 'Pool Logic', 'Options Overlay', 'Philosophy', 'Timeline'] as const
 const HEATMAP_SYMBOLS = ['TQQQ', 'SOXL', 'TECL', 'SPXL', 'UPRO', 'LABU'] as const
 export type Tab = (typeof TABS)[number]
 type HeatmapState = 'Stable' | 'Weak' | 'Fragile' | 'Breakdown Risk' | 'No Data'
 
 const STRATEGY_LABELS = {
   buy_hold: 'Buy & Hold',
-  ma200_risk_control: 'MA200 Risk Control',
-  fixed_stop_loss: 'Fixed Stop Loss',
+  ma200_risk_control_50: 'MA200 (50%)',
+  ma200_lb30_hybrid: 'MA200 + LB30',
+  low_based_lb30: 'LB30',
+  low_based_lb25: 'LB25',
   adaptive_exposure: 'Adaptive Exposure',
-  original_vr_scaled: 'Original VR (Scaled)',
+  original_vr_scaled: 'VR Original (Capped)',
+} as const
+
+const STRATEGY_CHIP_LABELS = {
+  buy_hold: 'Buy & Hold',
+  ma200_risk_control_50: 'MA200 (50%)',
+  ma200_lb30_hybrid: 'MA200 + LB30',
+  low_based_lb30: 'LB30',
+  low_based_lb25: 'LB25',
+  adaptive_exposure: 'Adaptive Exposure',
+  original_vr_scaled: 'VR Original (Capped)',
 } as const
 
 const STRATEGY_COLORS = {
-  buy_hold: '#60a5fa',
-  ma200_risk_control: '#f59e0b',
-  fixed_stop_loss: '#f97316',
-  adaptive_exposure: '#34d399',
-  original_vr_scaled: '#818cf8',
+  buy_hold: '#9CA3AF',
+  ma200_risk_control_50: '#F59E0B',
+  ma200_lb30_hybrid: '#C084FC',
+  low_based_lb30: '#14B8A6',
+  low_based_lb25: '#22D3EE',
+  adaptive_exposure: '#10B981',
+  original_vr_scaled: '#3B82F6',
 } as const
+
+type StrategyArenaKey = keyof typeof STRATEGY_LABELS
+
+const ARENA_BACKTEST_TEXT = {
+  en: {
+    backtest: {
+      philosophy: {
+        eyebrow: 'Backtest Philosophy',
+        title: 'Positioning Map, Not Winner Selection',
+        body: [
+          'This backtest is not designed to identify the best strategy.',
+          'Instead, it shows how different approaches are positioned under the same market conditions.',
+          'Each approach reflects a different balance between risk, drawdown, recovery behavior, and psychological stability.',
+          'The warning layer comes before execution. It is designed to flag abnormal downside behavior early, not to auto-trade by itself.',
+        ],
+        footer: 'Backtest is a map, not the answer.',
+      },
+      conditions: {
+        eyebrow: 'Test Conditions',
+        title: 'What This Comparison Is Testing',
+        labels: {
+          period: 'Period',
+          asset: 'Asset',
+          execution: 'Execution',
+          purpose: 'Purpose',
+          note: 'Important Note',
+        },
+        asset: {
+          name: 'TQQQ',
+          detail: 'A 3x leveraged Nasdaq-100 ETF with much higher volatility than standard ETFs.',
+        },
+        execution:
+          'Signals are evaluated at the close of each trading day and applied on the next trading session. All Arena strategies begin from the same 80% invested / 20% cash allocation.',
+        purpose:
+          'This comparison is intended to show positioning differences, not to determine a superior strategy.',
+        note:
+          'Leveraged ETFs amplify both gains and losses, which can lead to large drawdowns and rapid rebounds.',
+        marketContextByEventId: {
+          '2008-crash': 'A prolonged global deleveraging period tied to the credit crisis.',
+          '2011-debt-crisis': 'US downgrade stress and Eurozone instability created a sharp risk-off phase.',
+          '2018-volmageddon': 'A volatility shock and rapid deleveraging event hit leveraged Nasdaq exposure.',
+          '2020-covid-crash': 'Pandemic panic and policy shock created a historic crash followed by a violent rebound.',
+          '2022-bear-market': 'A prolonged bearish market with rising rates and persistent inflation pressure.',
+          '2024-yen-carry': 'A fast unwind in crowded risk positioning produced a sharp selloff and rebound.',
+          '2025-tariff':
+            'This period reflects tariff-related uncertainty and policy-driven volatility. Markets experienced intermittent drawdowns, uneven recoveries, and elevated sensitivity to macro and geopolitical signals.',
+        },
+        purposeByEventId: {
+          '2025-tariff':
+            'To observe how different approaches behave under non-linear, macro-driven stress conditions.',
+        },
+      },
+        summary: {
+          adaptive: {
+            title: 'Adaptive Exposure',
+            fallback: 'Featured advanced defensive approach',
+          },
+          lb30: {
+            title: 'LB30',
+            detail: 'Default low-based recovery | Slower re-risking, lower flip-flop',
+          },
+          ma200: {
+            title: 'MA200 (50%)',
+            detail: 'Psychological stability reference | Simpler, slower response',
+          },
+          hybrid: {
+            title: 'MA200 + LB30',
+            detail: 'MA200 defense with low-based recovery | Hybrid reference',
+          },
+          vr: {
+            title: 'VR Original (Capped)',
+            detail: 'Original VR reference | Core comparison baseline from the VR family',
+          },
+        },
+    },
+    strategy: {
+      buy_hold:
+        'Starts with 80% invested in TQQQ and keeps a permanent 20% cash reserve. It does not rebalance, defend, or re-enter, so it serves as the plain market baseline under the shared Arena allocation.',
+      ma200_risk_control:
+        'Starts from the shared 80 / 20 Arena allocation, moves to cash below the 200-day moving average, and restores to the 80% invested cap above it. This is a stricter research reference, not the main anchor for this page.',
+      ma200_risk_control_50:
+        'Starts from the shared 80 / 20 Arena allocation, reduces exposure to 50% when price falls below the 200-day moving average, and restores to the 80% invested cap when price recovers above it. Its primary purpose is psychological stability, helping investors stay invested during large drawdowns. This is a familiar reference approach, not a return-maximizing strategy.',
+      ma200_risk_control_50_early_rebuy:
+        'A traditional MA200-based defensive approach with an optional early re-entry feature. After reducing exposure below the 200-day moving average, a partial re-entry is triggered if price rebounds significantly from the local low. This helps reduce delayed re-entry during recovery phases while keeping the MA200 framework intact.',
+      ma200_lb30_hybrid:
+        'Uses a simple MA200 defense on the way down, then re-adds risk through the LB30 low-based rebound ladder instead of waiting for a full MA200-only recovery.',
+      fixed_stop_loss:
+        'A hard stop-based defensive rule that exits after a deep instrument drawdown and waits for a cleaner re-entry setup.',
+      low_based_lb30:
+        'Default low-based recovery approach. It keeps the existing Adaptive downside evidence, caps the deepest defense at 40% invested, and re-adds risk through slower 30% / 40% / 50%-or-MA200 rebound steps.',
+      low_based_lb25:
+        'Bear-market reference version of the low-based recovery ladder. It uses the same downside evidence, but re-enters a bit earlier with 25% / 35% / 45%-or-MA200 rebound steps.',
+      adaptive_exposure:
+        'Adaptive keeps the current evidence-based defensive ladder unchanged. In Arena, it is used as the fast-recovery and V-shape reference rather than the default low-based recovery model.',
+      adaptive_exposure_fast_reentry:
+        'Experimental variant of Adaptive Exposure with a faster rebound step from 25% back to 50%.',
+      adaptive_exposure_relaxed_reentry:
+        'Experimental variant of Adaptive Exposure with a looser condition for returning from 50% back to the 80% Arena cap.',
+      adaptive_exposure_step_reentry:
+        'Experimental variant of Adaptive Exposure that re-risks in smaller staged steps.',
+      original_vr_scaled:
+        'Original VR reference that reuses archive VR defense and Vmin-buy intent on the Arena-local TQQQ path. Vmin-triggered rebuys are constrained by a 50% per-cycle capital cap and a permanent 20% cash floor, making it a controlled baseline rather than an unbounded averaging system.',
+    },
+  },
+} as const
+
+const BACKTEST_COPY = ARENA_BACKTEST_TEXT.en
+
+const ARENA_TOOLTIP_ORDER: StrategyArenaKey[] = [
+  'buy_hold',
+  'original_vr_scaled',
+  'ma200_risk_control_50',
+  'ma200_lb30_hybrid',
+  'low_based_lb30',
+  'low_based_lb25',
+  'adaptive_exposure',
+]
+
+const STRATEGY_SERIES_KEYS: Record<
+  StrategyArenaKey,
+  {
+    equity: StrategyArenaView['events'][number]['chart_data'][number] extends infer Row
+      ? Row extends Record<string, unknown>
+        ? keyof Row
+        : never
+      : never
+    drawdown: StrategyArenaView['events'][number]['chart_data'][number] extends infer Row
+      ? Row extends Record<string, unknown>
+        ? keyof Row
+        : never
+      : never
+    exposure: StrategyArenaView['events'][number]['chart_data'][number] extends infer Row
+      ? Row extends Record<string, unknown>
+        ? keyof Row
+        : never
+      : never
+  }
+> = {
+  buy_hold: {
+    equity: 'buy_hold_equity',
+    drawdown: 'buy_hold_drawdown',
+    exposure: 'buy_hold_exposure',
+  },
+  ma200_risk_control_50: {
+    equity: 'ma200_risk_control_50_equity',
+    drawdown: 'ma200_risk_control_50_drawdown',
+    exposure: 'ma200_risk_control_50_exposure',
+  },
+  ma200_lb30_hybrid: {
+    equity: 'ma200_lb30_hybrid_equity',
+    drawdown: 'ma200_lb30_hybrid_drawdown',
+    exposure: 'ma200_lb30_hybrid_exposure',
+  },
+  low_based_lb30: {
+    equity: 'low_based_lb30_equity',
+    drawdown: 'low_based_lb30_drawdown',
+    exposure: 'low_based_lb30_exposure',
+  },
+  low_based_lb25: {
+    equity: 'low_based_lb25_equity',
+    drawdown: 'low_based_lb25_drawdown',
+    exposure: 'low_based_lb25_exposure',
+  },
+  adaptive_exposure: {
+    equity: 'adaptive_exposure_equity',
+    drawdown: 'adaptive_exposure_drawdown',
+    exposure: 'adaptive_exposure_exposure',
+  },
+  original_vr_scaled: {
+    equity: 'original_vr_scaled_equity',
+    drawdown: 'original_vr_scaled_drawdown',
+    exposure: 'original_vr_scaled_exposure',
+  },
+}
+
+const STRATEGY_SETUP_NOTES: Record<StrategyArenaKey, string> = {
+  buy_hold: BACKTEST_COPY.strategy.buy_hold,
+  ma200_risk_control_50: BACKTEST_COPY.strategy.ma200_risk_control_50,
+  ma200_lb30_hybrid: BACKTEST_COPY.strategy.ma200_lb30_hybrid,
+  low_based_lb30: BACKTEST_COPY.strategy.low_based_lb30,
+  low_based_lb25: BACKTEST_COPY.strategy.low_based_lb25,
+  adaptive_exposure: BACKTEST_COPY.strategy.adaptive_exposure,
+  original_vr_scaled: BACKTEST_COPY.strategy.original_vr_scaled,
+}
+
+function formatAdaptiveTransitionSummary(
+  transitions: AdaptiveExposureReport['full_transitions']
+) {
+  return transitions
+    .map((transition) => `${transition.from_exposure}->${transition.to_exposure} ${transition.date} (${transition.reason})`)
+    .join('; ')
+}
+
+type AdaptiveExposureReport = NonNullable<StrategyArenaView['events'][number]['adaptive_exposure_report']>
+type StrategyExposureReport = NonNullable<NonNullable<StrategyArenaView['events'][number]['strategy_reports']>[string]>
+type WarningLayerReport = NonNullable<StrategyArenaView['events'][number]['warning_layer']>
+
+function formatAdaptiveExplainability(report?: AdaptiveExposureReport) {
+  if (!report) return ''
+
+  const visibleTransitionKeys = new Set(
+    report.visible_transitions.map(
+      (transition) => `${transition.date}|${transition.from_exposure}|${transition.to_exposure}|${transition.reason}`
+    )
+  )
+  const earlierTransitions = report.full_transitions.filter(
+    (transition) =>
+      !visibleTransitionKeys.has(
+        `${transition.date}|${transition.from_exposure}|${transition.to_exposure}|${transition.reason}`
+      )
+  )
+
+  return [
+    `Visible start posture: ${report.initial_state.exposure}% (${report.initial_state.reason}).`,
+    earlierTransitions.length
+      ? `Earlier full-series transitions: ${formatAdaptiveTransitionSummary(earlierTransitions)}.`
+      : 'No earlier full-series transitions before the visible window.',
+    report.visible_transitions.length
+      ? `Visible-window transitions: ${formatAdaptiveTransitionSummary(report.visible_transitions)}.`
+      : 'No exposure transitions inside the visible window.',
+  ].join(' ')
+}
+
+function formatStrategyExplainability(report?: StrategyExposureReport) {
+  if (!report) return ''
+  const transitionSummary = (transitions: StrategyExposureReport['full_transitions']) =>
+    transitions
+      .map((transition) => `${transition.from_exposure}->${transition.to_exposure} ${transition.date} (${transition.reason})`)
+      .join('; ')
+
+  return [
+    `Visible start posture: ${report.initial_state.exposure}% (${report.initial_state.reason}).`,
+    report.visible_transitions.length
+      ? `Visible-window transitions: ${transitionSummary(report.visible_transitions)}.`
+      : 'No exposure transitions inside the visible window.',
+  ].join(' ')
+}
+
+function formatWarningExplainability(report?: WarningLayerReport) {
+  if (!report) return ''
+  const visibleTransitionSummary = report.visible_transitions
+    .map((transition) => `${transition.from_state} → ${transition.to_state} ${transition.date}`)
+    .join('; ')
+
+  return [
+    `Current warning state: ${formatWarningStateLabel(report.warning_state)}.`,
+    `Reason: ${report.warning_reason}`,
+    `Scenario hint: ${report.scenario_hint}.`,
+    report.visible_transitions.length
+      ? `Visible-window state changes: ${visibleTransitionSummary}.`
+      : 'No warning-state transitions inside the visible window.',
+    'This system detects abnormal downside behavior before executing defensive actions.',
+    'Warning does not equal trading.',
+  ].join(' ')
+}
+
+function warningStateTone(state: WarningLayerReport['warning_state']) {
+  switch (state) {
+    case 'NORMAL':
+      return '#94a3b8'
+    case 'WATCH':
+      return '#fbbf24'
+    case 'ALERT':
+      return '#fb923c'
+    case 'DEFENSE_READY':
+      return '#f97316'
+    case 'DEFENSE_ACTIVE':
+      return '#ef4444'
+    case 'RECOVERY_MODE':
+      return '#10b981'
+    default:
+      return '#cbd5e1'
+  }
+}
+
+function formatOptionalPercent(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) return 'n/a'
+  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`
+}
+
+function formatWarningStateLabel(value: WarningLayerReport['warning_state']) {
+  return value.split('_').join(' ')
+}
 
 function panelStyle(extra?: CSSProperties): CSSProperties {
   return {
@@ -1089,6 +1570,130 @@ function formatSignedPercent(value: number) {
 
 function formatRecoveryDays(value: number | null) {
   return value == null ? 'Not Recovered' : `${value}d`
+}
+
+function formatArenaPeriodRange(start: string, end: string) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+  const startValue = new Date(`${start}T00:00:00Z`)
+  const endValue = new Date(`${end}T00:00:00Z`)
+  return `${formatter.format(startValue)} - ${formatter.format(endValue)}`
+}
+
+function formatArenaDelta(value: number, suffix = 'pts') {
+  return `${value >= 0 ? '+' : ''}${value.toFixed(1)} ${suffix}`
+}
+
+function arenaDeltaTone(value: number): string {
+  if (value > 0.05) return '#10b981'
+  if (value < -0.05) return '#ef4444'
+  return '#94a3b8'
+}
+
+function getArenaLineVisuals(strategyKey: StrategyArenaKey) {
+  if (strategyKey === 'adaptive_exposure') {
+    return { strokeWidth: 2.8, strokeOpacity: 1, strokeDasharray: undefined }
+  }
+  if (strategyKey === 'ma200_risk_control_50') {
+    return { strokeWidth: 1.9, strokeOpacity: 0.95, strokeDasharray: '6 4' }
+  }
+  if (strategyKey === 'ma200_lb30_hybrid') {
+    return { strokeWidth: 2.1, strokeOpacity: 0.95, strokeDasharray: '7 3' }
+  }
+  if (strategyKey === 'low_based_lb30') {
+    return { strokeWidth: 2.15, strokeOpacity: 0.98, strokeDasharray: undefined }
+  }
+  if (strategyKey === 'low_based_lb25') {
+    return { strokeWidth: 1.95, strokeOpacity: 0.9, strokeDasharray: '5 3' }
+  }
+  if (strategyKey === 'buy_hold') {
+    return { strokeWidth: 1.9, strokeOpacity: 0.95, strokeDasharray: undefined }
+  }
+  if (strategyKey === 'original_vr_scaled') {
+    return { strokeWidth: 2, strokeOpacity: 0.95, strokeDasharray: '5 3' }
+  }
+  return { strokeWidth: 1.35, strokeOpacity: 0.58, strokeDasharray: undefined }
+}
+
+function BacktestChartTooltip({
+  active,
+  payload,
+  label,
+  visibleStrategyKeys,
+  metricKind = 'equity',
+}: {
+  active?: boolean
+  payload?: Array<{ dataKey?: string; value?: number | null; color?: string }>
+  label?: string | number
+  visibleStrategyKeys: StrategyArenaKey[]
+  metricKind?: 'equity' | 'drawdown' | 'exposure'
+}) {
+  if (!active || !payload?.length) return null
+
+  const visibleKeySet = new Set(visibleStrategyKeys)
+  const payloadByStrategy = new Map<StrategyArenaKey, { value: number | null; color?: string }>()
+
+  ;(Object.keys(STRATEGY_SERIES_KEYS) as StrategyArenaKey[]).forEach((strategyKey) => {
+    const seriesKey = STRATEGY_SERIES_KEYS[strategyKey][metricKind]
+    const entry = payload.find((item) => item.dataKey === seriesKey)
+    if (entry) {
+      payloadByStrategy.set(strategyKey, { value: entry.value ?? null, color: entry.color })
+    }
+  })
+
+  const orderedItems = ARENA_TOOLTIP_ORDER
+    .filter((strategyKey) => visibleKeySet.has(strategyKey))
+    .map((strategyKey) => ({
+      strategyKey,
+      entry: payloadByStrategy.get(strategyKey),
+    }))
+    .filter((item) => item.entry && typeof item.entry.value === 'number')
+
+  if (!orderedItems.length) return null
+
+  return (
+    <div
+      style={{
+        background: '#111827',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 10,
+        padding: '0.75rem 0.85rem',
+        minWidth: 200,
+      }}
+    >
+      <div style={{ color: '#f8fafc', fontSize: '0.84rem', fontWeight: 700, marginBottom: 8 }}>{label}</div>
+      <div style={{ display: 'grid', gap: 6 }}>
+        {orderedItems.map(({ strategyKey, entry }) => (
+          <div
+            key={strategyKey}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontSize: '0.79rem' }}
+          >
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#cbd5e1' }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 999,
+                  background: entry?.color ?? STRATEGY_COLORS[strategyKey],
+                }}
+              />
+              {STRATEGY_CHIP_LABELS[strategyKey]}
+            </div>
+            <span style={{ color: '#f8fafc', fontVariantNumeric: 'tabular-nums' }}>
+              {metricKind === 'equity'
+                ? entry?.value?.toFixed(2)
+                : metricKind === 'drawdown'
+                  ? formatSignedPercent(entry?.value ?? 0)
+                  : `${(entry?.value ?? 0).toFixed(0)}%`}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function CycleStartPanel({
@@ -1699,6 +2304,43 @@ function formatPlaybackToken(value: string) {
     .join(' ')
 }
 
+function getFalseBottomGuardInterpretation(args: {
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
+  buyDelayFlag: boolean
+  delayStrength: 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+}) {
+  if (!args.buyDelayFlag || args.delayStrength === 'NONE' || args.riskLevel === 'LOW') {
+    return 'Rebound conditions do not currently require a delay guard.'
+  }
+  if (args.delayStrength === 'STRONG') {
+    return 'Current rebound is weak and another low remains possible. Early buying is being held back.'
+  }
+  if (args.delayStrength === 'MODERATE') {
+    return 'The rebound remains fragile, so new buying is being delayed until conditions settle.'
+  }
+  return 'The rebound is still fragile, so buying is being staged more slowly.'
+}
+
+function getResetReleaseInterpretation(args: {
+  resetReadyFlag: boolean
+  resetConfidence: 'LOW' | 'MEDIUM' | 'HIGH'
+  resetReason: 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
+}) {
+  if (!args.resetReadyFlag) {
+    return 'Additional downside has not fully stabilized yet, so the guard remains in place.'
+  }
+
+  if (args.resetReason === 'REBOUND') {
+    return 'Additional lows have paused and rebound quality is improving, so guarded buying can reopen.'
+  }
+
+  if (args.resetReason === 'STRUCTURE') {
+    return 'Internal structure is stabilizing without fresh lows, so the delay layer is being eased.'
+  }
+
+  return 'Downside pressure appears exhausted, but the reset is still being released cautiously.'
+}
+
 function renderTokenChips(values: string[]) {
   return (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -1783,7 +2425,7 @@ function PlaybackChartTooltip({
         <div style={{ color: '#f8fafc', fontSize: '0.84rem', fontWeight: 700, marginBottom: 6 }}>{typeof source?.date === 'string' ? source.date : label}</div>
         {originalEval != null ? (
           <div style={{ color: '#94a3b8', fontSize: '0.72rem' }}>
-            Original VR: {originalEval.toFixed(2)}
+            Original VR (Playback): {originalEval.toFixed(2)}
           </div>
         ) : null}
         {scenarioEval != null ? (
@@ -1817,7 +2459,7 @@ function PlaybackChartTooltip({
         <div style={{ color: '#f8fafc', fontSize: '0.84rem', marginBottom: 6 }}>{label}</div>
         {typeof originalValue === 'number' ? (
           <div style={{ color: '#94a3b8', fontSize: '0.72rem' }}>
-            Original VR: {originalValue.toFixed(2)}
+            Original VR (Playback): {originalValue.toFixed(2)}
           </div>
         ) : null}
         {typeof scenarioValue === 'number' ? (
@@ -2140,10 +2782,12 @@ function OverviewTab({
   data,
   patternDashboard,
   playbackData,
+  vrAudit,
 }: {
   data: VRSurvivalData
   patternDashboard?: VRDashboardPatternSummary | null
   playbackData?: VRPlaybackView | null
+  vrAudit?: VrAuditViewPayload | null
 }) {
   const vr = deriveVRState(data)
 
@@ -2274,6 +2918,9 @@ function OverviewTab({
       >
         {vr.current.explain}
       </div>
+
+      {/* ── VR Execution Audit (WO-SA12) ── */}
+      {vrAudit && <VrActionAuditCard payload={vrAudit} />}
     </div>
   )
 }
@@ -2393,6 +3040,7 @@ function PlaybackTab({
     _ep.variants[cyclePoolCap] ??
     variantCache[cyclePoolCap]?.variant ??
     _ep.variants[_ep.default_cap_option]!
+  // Playback "original" mode always uses the archive replay baseline, not Arena "Original VR (Scaled)".
   const displayedExecutionVariant =
     executionMode === 'original' ? (executionOverride?.execution_playback ?? selected.execution_playback).original_vr : executionVariant
   const comparisonView =
@@ -2403,23 +3051,34 @@ function PlaybackTab({
   const cycleBoundaries = displayedExecutionVariant.market_chart.cycle_boundaries
   const cycleSummaries = displayedExecutionVariant.cycle_summaries
   const focusWindow = displayedExecutionVariant.focus_window
-  const fullEventStartDate = displayedExecutionVariant.points[0]?.date ?? selected.start
+  const firstCycleStartDate =
+    selected.cycle_framework.cycles[0]?.cycle_start_date ??
+    cycleSummaries[0]?.start_date ??
+    displayedExecutionVariant.points.find((pt) => pt.cycle_no != null)?.date ??
+    selected.cycle_start.simulation_start_date ??
+    displayedExecutionVariant.points[0]?.date ??
+    selected.start
+  const fullEventStartDate =
+    firstCycleStartDate
   const lastMeaningfulExecutionPoint =
     [...displayedExecutionVariant.points]
       .reverse()
       .find((point) => point.cycle_no != null || point.in_event) ?? null
-  const fullEventEndDate = lastMeaningfulExecutionPoint?.date ?? selected.end
-  const dailyWindowStartDate = dailyWindowMode === 'full_event' ? fullEventStartDate : focusWindow?.start_date ?? fullEventStartDate
-  const dailyWindowEndDate = dailyWindowMode === 'full_event' ? fullEventEndDate : focusWindow?.end_date ?? fullEventEndDate
-  const isInDailyWindow = (date: string) =>
+  const fullEventEndDate =
+    selected.cycle_framework.cycles[selected.cycle_framework.cycles.length - 1]?.cycle_end_date ??
+    cycleSummaries[cycleSummaries.length - 1]?.end_date ??
+    lastMeaningfulExecutionPoint?.date ??
+    selected.end
+  const resolvedDailyWindow =
     dailyWindowMode === 'full_event'
-      ? date >= fullEventStartDate && date <= fullEventEndDate
-      : !focusWindow ||
-        (date >= focusWindow.start_date && date <= focusWindow.end_date)
+      ? { start_date: fullEventStartDate, end_date: fullEventEndDate }
+      : focusWindow ?? { start_date: fullEventStartDate, end_date: fullEventEndDate }
+  const dailyWindowStartDate = resolvedDailyWindow.start_date
+  const dailyWindowEndDate = resolvedDailyWindow.end_date
+  const isInDailyWindow = (date: string) => date >= dailyWindowStartDate && date <= dailyWindowEndDate
   const clipZoneToDailyWindow = <T extends { start_date: string; end_date: string }>(zone: T): T | null => {
-    if (dailyWindowMode === 'full_event' || !focusWindow) return zone
-    const start = zone.start_date < focusWindow.start_date ? focusWindow.start_date : zone.start_date
-    const end = zone.end_date > focusWindow.end_date ? focusWindow.end_date : zone.end_date
+    const start = zone.start_date < dailyWindowStartDate ? dailyWindowStartDate : zone.start_date
+    const end = zone.end_date > dailyWindowEndDate ? dailyWindowEndDate : zone.end_date
     if (start > end) return null
     return { ...zone, start_date: start, end_date: end }
   }
@@ -2430,7 +3089,7 @@ function PlaybackTab({
   const filteredDefenseMarkers = sortByDateAsc(displayedExecutionVariant.defense_markers.filter((marker) => isInDailyWindow(marker.date)))
   const filteredPoolCapFlags = sortByDateAsc(displayedExecutionVariant.pool_cap_flags.filter((marker) => isInDailyWindow(marker.date)))
   const filteredScenarioZones = displayedExecutionVariant.scenario_phase_zones
-    .filter((zone) => !firstInEventDate || zone.end_date >= firstInEventDate)
+    .filter((zone) => zone.end_date >= dailyWindowStartDate)
     .map((zone) => clipZoneToDailyWindow(zone))
     .filter((zone): zone is NonNullable<typeof zone> => zone != null)
   const filteredRecoveryZones = displayedExecutionVariant.vmin_recovery_attempt_zones
@@ -2440,14 +3099,11 @@ function PlaybackTab({
     .map((zone) => clipZoneToDailyWindow(zone))
     .filter((zone): zone is NonNullable<typeof zone> => zone != null)
   const filteredMarketRows = sortByDateAsc(marketRows.filter((row) => isInDailyWindow(row.date)))
-  // Separate display window from cycle logic window (WO61B):
-  // Cycle labels / boundaries only start from the first active event date (in_event=true).
-  // Pre-event history remains visible in the chart without cycle overlays.
-  const firstInEventDate = displayedExecutionVariant.points.find((pt) => pt.in_event)?.date ?? null
+  // Daily display starts at the actual event window; cycle overlays share the same boundary.
   const filteredCycleBoundaries = sortByDateAsc(
     cycleBoundaries.filter((boundary) =>
       isInDailyWindow(boundary.date) &&
-      (!firstInEventDate || boundary.date >= firstInEventDate)
+      boundary.date >= dailyWindowStartDate
     )
   )
   const filteredBreachPoints = sortByDateAsc(displayedExecutionVariant.market_chart.breach_points.filter((point) => isInDailyWindow(point.date)))
@@ -2796,7 +3452,7 @@ function PlaybackTab({
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {(playbackLayer === 'cycle' ? (['original', 'scenario'] as const) : (['original', 'scenario', 'compare'] as const)).map((mode) => (
               <button key={mode} type="button" onClick={() => setExecutionMode(mode)} style={tabStyle(executionMode === mode)}>
-                {mode === 'original' ? 'Original VR' : mode === 'scenario' ? 'Scenario VR' : 'Compare'}
+                {mode === 'original' ? 'Original VR (Playback)' : mode === 'scenario' ? 'Scenario VR' : 'Compare'}
               </button>
             ))}
           </div>
@@ -2804,7 +3460,7 @@ function PlaybackTab({
         {playbackLayer === 'cycle' ? (
           <div style={{ display: 'grid', gap: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 }}>
-              <PlaceholderCard compact label="Cycles Covered" text={`${cycleSummaries.length}`} detail={`Engine: ${executionMode === 'original' ? 'Original VR' : 'Scenario VR'}`} />
+              <PlaceholderCard compact label="Cycles Covered" text={`${cycleSummaries.length}`} detail={`Engine: ${executionMode === 'original' ? 'Original VR (Playback)' : 'Scenario VR'}`} />
               <PlaceholderCard compact label="Average Pool Used / Cycle" text={`${avgCyclePoolUsed.toFixed(1)}%`} detail={`Max ${maxCyclePoolUsed.toFixed(1)}%`} />
               <PlaceholderCard
                 compact
@@ -3202,12 +3858,12 @@ function PlaybackTab({
               )}
               {executionMode === 'compare' ? (
                 <>
-                  <Line dataKey="original_evaluation_value" stroke="#94a3b8" strokeWidth={2} dot={false} name="Original Portfolio Value" connectNulls />
+                  <Line dataKey="original_evaluation_value" stroke="#94a3b8" strokeWidth={2} dot={false} name="Original VR (Playback) Portfolio Value" connectNulls />
                   <Line dataKey="scenario_evaluation_value" stroke="#34d399" strokeWidth={2.4} dot={false} name="Scenario Portfolio Value" connectNulls />
                 </>
               ) : (
                 <>
-                  <Line yAxisId="evaluation" dataKey={executionMode === 'scenario' ? 'portfolio_value' : 'evaluation_value'} stroke={executionMode === 'original' ? '#94a3b8' : '#e5e7eb'} strokeWidth={2.4} dot={false} name={executionMode === 'original' ? 'Original Evaluation Value' : 'Portfolio Value (Stock + Cash)'} connectNulls />
+                  <Line yAxisId="evaluation" dataKey={executionMode === 'scenario' ? 'portfolio_value' : 'evaluation_value'} stroke={executionMode === 'original' ? '#94a3b8' : '#e5e7eb'} strokeWidth={2.4} dot={false} name={executionMode === 'original' ? 'Original VR (Playback) Evaluation Value' : 'Portfolio Value (Stock + Cash)'} connectNulls />
                   <Line yAxisId="evaluation" type="stepAfter" dataKey="vref_eval" stroke="#34d399" strokeWidth={2.2} strokeDasharray="6 4" dot={false} name="Vref Eval" connectNulls />
                   <Line yAxisId="evaluation" type="stepAfter" dataKey="vmin_eval" stroke="#ef4444" strokeWidth={1.5} dot={false} name="Vmin Eval" connectNulls />
                   <Line yAxisId="evaluation" type="stepAfter" dataKey="vmax_eval" stroke="#f59e0b" strokeWidth={1.5} dot={false} name="Vmax Eval" connectNulls />
@@ -3269,6 +3925,28 @@ function PlaybackTab({
             text={displayedExecutionVariant.pool_usage_summary.pool_cash_remaining.toFixed(2)}
             detail={`Cumulative spent ${displayedExecutionVariant.pool_usage_summary.cumulative_pool_spent.toFixed(2)}`}
           />
+          {executionMode === 'scenario' ? (
+            <PlaceholderCard
+              label="False Bottom Guard"
+              text={`${displayedExecutionVariant.pool_usage_summary.false_bottom_risk_level} | ${displayedExecutionVariant.pool_usage_summary.buy_delay_flag ? `ACTIVE (${displayedExecutionVariant.pool_usage_summary.delay_strength})` : 'INACTIVE'}`}
+              detail={getFalseBottomGuardInterpretation({
+                riskLevel: displayedExecutionVariant.pool_usage_summary.false_bottom_risk_level,
+                buyDelayFlag: displayedExecutionVariant.pool_usage_summary.buy_delay_flag,
+                delayStrength: displayedExecutionVariant.pool_usage_summary.delay_strength,
+              })}
+            />
+          ) : null}
+          {executionMode === 'scenario' ? (
+            <PlaceholderCard
+              label="Reset Signal"
+              text={displayedExecutionVariant.pool_usage_summary.reset_ready_flag ? `ACTIVE (${displayedExecutionVariant.pool_usage_summary.reset_confidence})` : 'INACTIVE'}
+              detail={`Reason: ${formatPlaybackToken(displayedExecutionVariant.pool_usage_summary.reset_reason)}. ${getResetReleaseInterpretation({
+                resetReadyFlag: displayedExecutionVariant.pool_usage_summary.reset_ready_flag,
+                resetConfidence: displayedExecutionVariant.pool_usage_summary.reset_confidence,
+                resetReason: displayedExecutionVariant.pool_usage_summary.reset_reason,
+              })}`}
+            />
+          ) : null}
           <PlaceholderCard
             label="Blocked Buys"
             text={`${displayedExecutionVariant.pool_usage_summary.blocked_buy_count}`}
@@ -3400,7 +4078,7 @@ function PlaybackTab({
       <div style={panelStyle()}>
         <SectionHeader
           eyebrow="Comparison Layer"
-          title="Original VR vs Scenario Overlay"
+          title="Original VR (Playback) vs Scenario Overlay"
           note="Mechanical baseline versus scenario-aware overlay, with emphasis on deployment pace, pool survival, and late-stage optionality."
         />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 12 }}>
@@ -3419,7 +4097,7 @@ function PlaybackTab({
               <div style={{ color: '#94a3b8', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {metric.label}
               </div>
-              <div style={{ color: '#cbd5e1', fontSize: '0.82rem' }}>Original VR: {metric.original_value}</div>
+              <div style={{ color: '#cbd5e1', fontSize: '0.82rem' }}>Original VR (Playback): {metric.original_value}</div>
               <div style={{ color: '#f8fafc', fontSize: '0.88rem', fontWeight: 700 }}>Scenario VR: {metric.scenario_value}</div>
               <div style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Difference: {metric.difference}</div>
             </div>
@@ -3428,7 +4106,7 @@ function PlaybackTab({
 
         <div style={{ display: 'grid', gap: 12, marginBottom: 12 }}>
           <div style={{ ...panelStyle({ padding: '1rem', borderRadius: 16 }), boxShadow: 'none' }}>
-            <SectionHeader eyebrow="Portfolio Path" title="Portfolio Path Comparison" note="Original VR versus scenario overlay portfolio value through the replay." />
+            <SectionHeader eyebrow="Portfolio Path" title="Portfolio Path Comparison" note="Original VR (Playback) versus scenario overlay portfolio value through the replay." />
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={comparisonView.chart_rows} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -3436,7 +4114,7 @@ function PlaybackTab({
                 <YAxis tick={{ fontSize: 11, fill: '#e5e7eb' }} width={60} domain={buildAxisDomain(comparisonView.chart_rows.flatMap((row) => [row.original_portfolio_value, row.scenario_portfolio_value]), 0.08)} />
                 <Tooltip content={<PlaybackChartTooltip variant="portfolio_compare" />} />
                 <Legend wrapperStyle={{ fontSize: 12, color: '#cbd5e1' }} />
-                <Line dataKey="original_portfolio_value" stroke="#94a3b8" strokeWidth={2} dot={false} name="Original VR Portfolio" connectNulls />
+                <Line dataKey="original_portfolio_value" stroke="#94a3b8" strokeWidth={2} dot={false} name="Original VR (Playback) Portfolio" connectNulls />
                 <Line dataKey="scenario_portfolio_value" stroke="#34d399" strokeWidth={2.4} dot={false} name="Scenario VR Portfolio" connectNulls />
               </ComposedChart>
             </ResponsiveContainer>
@@ -3451,7 +4129,7 @@ function PlaybackTab({
                 <YAxis tick={{ fontSize: 11, fill: '#e5e7eb' }} width={60} domain={buildAxisDomain(comparisonView.chart_rows.flatMap((row) => [row.original_pool_remaining, row.scenario_pool_remaining]), 0.08)} />
                 <Tooltip content={<PlaybackChartTooltip variant="pool_compare" />} />
                 <Legend wrapperStyle={{ fontSize: 12, color: '#cbd5e1' }} />
-                <Line dataKey="original_pool_remaining" stroke="#94a3b8" strokeWidth={2} dot={false} name="Original VR Pool Remaining" connectNulls />
+                <Line dataKey="original_pool_remaining" stroke="#94a3b8" strokeWidth={2} dot={false} name="Original VR (Playback) Pool Remaining" connectNulls />
                 <Line dataKey="scenario_pool_remaining" stroke="#60a5fa" strokeWidth={2.4} dot={false} name="Scenario VR Pool Remaining" connectNulls />
               </ComposedChart>
             </ResponsiveContainer>
@@ -3647,6 +4325,7 @@ function PlaybackTab({
 function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | null }) {
   const events = strategyArena?.events ?? []
   const [selectedId, setSelectedId] = useState(events[0]?.id ?? '')
+  const [arenaViewMode, setArenaViewMode] = useState<'charts' | 'test_setup'>('charts')
   const selected = events.find((event) => event.id === selectedId) ?? events[0]
 
   if (!selected) {
@@ -3660,7 +4339,64 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
     )
   }
 
-  const strategyKeys = Object.keys(STRATEGY_LABELS) as Array<keyof typeof STRATEGY_LABELS>
+  const strategyKeys = ARENA_TOOLTIP_ORDER
+  const displayStrategyKeys = strategyKeys.filter(
+    (strategyKey) => strategyKey !== 'original_vr_scaled' || selected.vr_source === 'survival_archive'
+  )
+  const metricRows: Array<{
+    strategyKey: StrategyArenaKey
+    metric: {
+      final_return_pct: number
+      max_drawdown_pct: number
+      recovery_time_days: number | null
+      exposure_stability_pct: number
+    }
+  }> = displayStrategyKeys.reduce((rows, strategyKey) => {
+    const metric = selected.metrics[strategyKey]
+    if (metric) {
+      rows.push({ strategyKey, metric })
+    }
+    return rows
+  }, [])
+  const bestFinalPerformer = metricRows.length
+    ? metricRows.reduce((best, row) => (row.metric.final_return_pct > best.metric.final_return_pct ? row : best), metricRows[0])
+    : null
+  const lowestDrawdownPerformer = metricRows.length
+    ? metricRows.reduce((best, row) => (row.metric.max_drawdown_pct > best.metric.max_drawdown_pct ? row : best), metricRows[0])
+    : null
+  const buyHoldMetric = selected.metrics.buy_hold
+  const originalVrMetric = selected.metrics.original_vr_scaled
+  const ma200HalfMetric = selected.metrics.ma200_risk_control_50
+  const ma200Lb30HybridMetric = selected.metrics.ma200_lb30_hybrid
+  const lowBasedLb30Metric = selected.metrics.low_based_lb30
+  const lowBasedLb25Metric = selected.metrics.low_based_lb25
+  const adaptiveMetric = selected.metrics.adaptive_exposure
+  const warningLayer = selected.warning_layer
+  const overlayDisplayModel: ArenaOverlayDisplayModel | null = warningLayer
+    ? buildArenaOverlayDisplayModel({
+        warningState: warningLayer.warning_state,
+        warningReason: warningLayer.warning_reason,
+        scenarioHint: warningLayer.scenario_hint,
+        mcOverlay: warningLayer.mc_overlay,
+      })
+    : null
+  const adaptiveDrawdownDelta =
+    adaptiveMetric && buyHoldMetric
+      ? adaptiveMetric.max_drawdown_pct - buyHoldMetric.max_drawdown_pct
+      : null
+  const adaptiveReturnDelta =
+    adaptiveMetric && buyHoldMetric
+      ? adaptiveMetric.final_return_pct - buyHoldMetric.final_return_pct
+      : null
+  const visibleStrategyNotes = displayStrategyKeys
+  const currentMarketContext =
+    BACKTEST_COPY.backtest.conditions.marketContextByEventId[
+      selected.id as keyof typeof BACKTEST_COPY.backtest.conditions.marketContextByEventId
+    ] ?? 'A historical stress period used to compare positioning differences under the same market conditions.'
+  const currentPurpose =
+    BACKTEST_COPY.backtest.conditions.purposeByEventId?.[
+      selected.id as keyof NonNullable<typeof BACKTEST_COPY.backtest.conditions.purposeByEventId>
+    ] ?? BACKTEST_COPY.backtest.conditions.purpose
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -3668,7 +4404,7 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
         <SectionHeader
           eyebrow="Strategy Arena"
           title="Strategy Comparison Arena"
-          note="Historical stress-event comparison (asset: TQQQ, initial capital: 100). Adaptive Exposure applies VR exposure decisions to TQQQ returns. Original VR (Scaled) is the archive efficiency ratio (vr_10k/bh_10k) overlaid on TQQQ buy-and-hold."
+          note="Same-condition TQQQ stress comparison. Warning comes before execution, and Arena remains a positioning tool rather than a winner-selection engine."
         />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
           {events.map((event) => (
@@ -3677,15 +4413,25 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
             </button>
           ))}
         </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+          {([
+            { key: 'charts', label: 'Charts' },
+            { key: 'test_setup', label: 'Test Setup' },
+          ] as const).map((item) => (
+            <button key={item.key} type="button" onClick={() => setArenaViewMode(item.key)} style={tabStyle(arenaViewMode === item.key)}>
+              {item.label}
+            </button>
+          ))}
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           <PlaceholderCard label="Source Event" text={selected.standard_event_name} detail={`${selected.start} to ${selected.end}`} />
           <PlaceholderCard
-            label="VR Curve Source"
-            text={selected.vr_source === 'survival_archive' ? 'Survival Archive' : 'Not Available'}
+            label="Execution Stack"
+            text="Forecast first, execution second"
             detail={
               selected.vr_source === 'survival_archive'
-                ? 'Adaptive Exposure and Original VR both use this event\'s survival archive.'
-                : 'No survival archive exists. Adaptive Exposure and Original VR are hidden.'
+                ? 'The warning layer is read-only. Arena execution engines remain local, and the survival archive is used only to provide VR Original defense and Vmin-buy intent.'
+                : 'The warning layer is read-only. Arena execution engines remain local, and no survival archive is attached for the VR Original reference.'
             }
           />
           <PlaceholderCard
@@ -3696,11 +4442,142 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
         </div>
       </div>
 
+      {arenaViewMode === 'charts' ? (
+        <>
+      {warningLayer ? (
+      <div style={panelStyle({ padding: '1rem 1.1rem' })}>
+        <SectionHeader
+          eyebrow="Forecast Layer"
+          title="Downside Warning State"
+          note="This system detects abnormal downside behavior before executing defensive actions. Warning does not equal trading."
+        />
+        {overlayDisplayModel ? <OverlayScoreStrip model={overlayDisplayModel} /> : null}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 12,
+            marginTop: 12,
+          }}
+        >
+          <PlaceholderCard
+            compact
+            label="Trigger Snapshot"
+            text={`dd3 ${formatOptionalPercent(warningLayer.trigger_metrics.dd3)} | dd5 ${formatOptionalPercent(warningLayer.trigger_metrics.dd5)}`}
+            detail={`dd6 ${formatOptionalPercent(warningLayer.trigger_metrics.dd6)} | PeakDD ${formatOptionalPercent(warningLayer.trigger_metrics.peakDD)} | Rebound ${formatOptionalPercent(warningLayer.trigger_metrics.rebound_from_low_pct)} | MA200 gap ${formatOptionalPercent(warningLayer.trigger_metrics.distance_to_ma200_pct)}`}
+          />
+          <PlaceholderCard
+            compact
+            label="VR Band Context"
+            text={`Level ${warningLayer.trigger_metrics.vr_band_level ?? 'n/a'}`}
+            detail={strategyArena?.methodology.warning_layer_rule}
+          />
+          <PlaceholderCard
+            compact
+            label="Overlay Status"
+            text={warningLayer.mc_overlay ? 'Available' : 'Unavailable'}
+            detail={
+              warningLayer.mc_overlay
+                ? `Dominant MC scenario: ${warningLayer.mc_overlay.dominantMcScenario} | Current regime: ${warningLayer.mc_overlay.mcCurrentRegime}`
+                : 'Monte Carlo overlay is optional. Rule-based warning remains primary.'
+            }
+          />
+        </div>
+        <div style={{ marginTop: 12, color: warningStateTone(warningLayer.warning_state), fontSize: '0.82rem', fontWeight: 700 }}>
+          {formatWarningExplainability(warningLayer)}
+        </div>
+        {overlayDisplayModel ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1.3fr) minmax(260px, 0.95fr)',
+              gap: 12,
+              marginTop: 14,
+            }}
+          >
+            <MonteCarloOverlayCard model={overlayDisplayModel} />
+            <div style={{ display: 'grid', gap: 12 }}>
+              <OverlayAlignmentBadge
+                alignment={overlayDisplayModel.interpretationAlignment}
+                note={overlayDisplayModel.interpretationNote}
+                interpretationState={overlayDisplayModel.mcOverlay?.mcInterpretationState}
+                agreementScore={overlayDisplayModel.mcOverlay?.mcAgreementScore}
+                conflictScore={overlayDisplayModel.mcOverlay?.mcConflictScore}
+              />
+              <PlaceholderCard
+                compact
+                label="Overlay Use"
+                text="Interpretive Only"
+                detail="Monte Carlo overlay summarizes how similar synthetic stress paths behaved. Overlay is interpretive, not executable."
+              />
+            </div>
+          </div>
+        ) : null}
+      </div>
+      ) : null}
+
+      <div style={panelStyle({ padding: '1rem 1.1rem' })}>
+        <SectionHeader
+          eyebrow={BACKTEST_COPY.backtest.philosophy.eyebrow}
+          title={BACKTEST_COPY.backtest.philosophy.title}
+        />
+        <div style={{ display: 'grid', gap: 8 }}>
+          {BACKTEST_COPY.backtest.philosophy.body.map((line) => (
+            <div key={line} style={{ color: '#cbd5e1', fontSize: '0.92rem', lineHeight: 1.65 }}>
+              {line}
+            </div>
+          ))}
+          <div style={{ color: '#94a3b8', fontSize: '0.82rem', fontWeight: 700, marginTop: 2 }}>
+            {BACKTEST_COPY.backtest.philosophy.footer}
+          </div>
+        </div>
+      </div>
+
+      <div style={panelStyle({ padding: '1rem 1.1rem' })}>
+        <SectionHeader
+          eyebrow={BACKTEST_COPY.backtest.conditions.eyebrow}
+          title={BACKTEST_COPY.backtest.conditions.title}
+          note="Simple English framing so the chart can be read as a positioning map."
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+          <PlaceholderCard
+            compact
+            label={BACKTEST_COPY.backtest.conditions.labels.period}
+            text={formatArenaPeriodRange(selected.start, selected.end)}
+            detail={currentMarketContext}
+          />
+          <PlaceholderCard
+            compact
+            label={BACKTEST_COPY.backtest.conditions.labels.asset}
+            text={BACKTEST_COPY.backtest.conditions.asset.name}
+            detail={BACKTEST_COPY.backtest.conditions.asset.detail}
+          />
+          <PlaceholderCard
+            compact
+            label={BACKTEST_COPY.backtest.conditions.labels.execution}
+            text="Close signal, next-session action"
+            detail={BACKTEST_COPY.backtest.conditions.execution}
+          />
+          <PlaceholderCard
+            compact
+            label={BACKTEST_COPY.backtest.conditions.labels.purpose}
+            text="Positioning differences"
+            detail={currentPurpose}
+          />
+          <PlaceholderCard
+            compact
+            label={BACKTEST_COPY.backtest.conditions.labels.note}
+            text="Leveraged ETF behavior matters"
+            detail={BACKTEST_COPY.backtest.conditions.note}
+          />
+        </div>
+      </div>
+
       <div style={panelStyle()}>
         <SectionHeader
           eyebrow="Metrics"
           title="Final Return, Max Drawdown, Recovery Time, Exposure Stability"
-          note="All strategies are normalized to a 100 start value inside the selected event window."
+          note="Arena compares seven response profiles under the same starting allocation and next-bar execution rules."
         />
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -3724,7 +4601,7 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
               </tr>
             </thead>
             <tbody>
-              {strategyKeys.filter((k) => (k !== 'adaptive_exposure' && k !== 'original_vr_scaled') || selected.vr_source === 'survival_archive').map((strategyKey) => {
+              {displayStrategyKeys.map((strategyKey) => {
                 const metric = selected.metrics[strategyKey]
                 if (!metric) return null
                 return (
@@ -3755,11 +4632,121 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
 
       <div style={panelStyle()}>
         <SectionHeader eyebrow="Chart 1" title="Equity Curve Comparison" />
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 14,
+              padding: '0.85rem 0.95rem',
+            }}
+          >
+            <div style={{ color: '#10B981', fontSize: '0.82rem', fontWeight: 800, marginBottom: 4 }}>Adaptive Exposure</div>
+            {adaptiveMetric && buyHoldMetric ? (
+              <div style={{ display: 'grid', gap: 4, fontSize: '0.82rem' }}>
+                <span style={{ color: arenaDeltaTone(adaptiveDrawdownDelta ?? 0) }}>
+                  DD vs B&amp;H {formatArenaDelta(adaptiveDrawdownDelta ?? 0)}
+                </span>
+                <span style={{ color: arenaDeltaTone(adaptiveReturnDelta ?? 0) }}>
+                  Return vs B&amp;H {formatArenaDelta(adaptiveReturnDelta ?? 0)}
+                </span>
+              </div>
+            ) : (
+              <div style={{ color: '#64748b', fontSize: '0.8rem' }}>Adaptive Exposure is unavailable for this event.</div>
+            )}
+          </div>
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 14,
+              padding: '0.85rem 0.95rem',
+            }}
+          >
+            <div style={{ color: STRATEGY_COLORS.ma200_risk_control_50, fontSize: '0.82rem', fontWeight: 800, marginBottom: 4 }}>
+              {BACKTEST_COPY.backtest.summary.ma200.title}
+            </div>
+            <div style={{ color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.6 }}>
+              {BACKTEST_COPY.backtest.summary.ma200.detail}
+            </div>
+            {ma200HalfMetric ? (
+              <>
+                <div style={{ color: '#94a3b8', fontSize: '0.77rem', marginTop: 6 }}>
+                  MA200 (50%) {formatSignedPercent(ma200HalfMetric.final_return_pct)} | Max DD {formatSignedPercent(ma200HalfMetric.max_drawdown_pct)}
+                </div>
+                {ma200Lb30HybridMetric ? (
+                  <div style={{ color: '#94a3b8', fontSize: '0.77rem', marginTop: 4 }}>
+                    MA200 + LB30 {formatSignedPercent(ma200Lb30HybridMetric.final_return_pct)} | Max DD {formatSignedPercent(ma200Lb30HybridMetric.max_drawdown_pct)}
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 14,
+              padding: '0.85rem 0.95rem',
+            }}
+          >
+            <div style={{ color: STRATEGY_COLORS.low_based_lb30, fontSize: '0.82rem', fontWeight: 800, marginBottom: 4 }}>
+              {BACKTEST_COPY.backtest.summary.lb30.title}
+            </div>
+            <div style={{ color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.6 }}>
+              {BACKTEST_COPY.backtest.summary.lb30.detail}
+            </div>
+            {lowBasedLb30Metric ? (
+              <div style={{ color: '#94a3b8', fontSize: '0.77rem', marginTop: 6 }}>
+                Final return {formatSignedPercent(lowBasedLb30Metric.final_return_pct)} | Max DD {formatSignedPercent(lowBasedLb30Metric.max_drawdown_pct)}
+              </div>
+            ) : (
+              <div style={{ color: '#64748b', fontSize: '0.77rem', marginTop: 6 }}>
+                Default low-based recovery reference for this event.
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 14,
+              padding: '0.85rem 0.95rem',
+            }}
+          >
+            <div style={{ color: STRATEGY_COLORS.original_vr_scaled, fontSize: '0.82rem', fontWeight: 800, marginBottom: 4 }}>
+              {BACKTEST_COPY.backtest.summary.vr.title}
+            </div>
+            <div style={{ color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.6 }}>
+              {BACKTEST_COPY.backtest.summary.vr.detail}
+            </div>
+            {originalVrMetric ? (
+              <div style={{ color: '#94a3b8', fontSize: '0.77rem', marginTop: 6 }}>
+                Final return {formatSignedPercent(originalVrMetric.final_return_pct)} | Max DD {formatSignedPercent(originalVrMetric.max_drawdown_pct)}
+              </div>
+            ) : (
+              <div style={{ color: '#64748b', fontSize: '0.77rem', marginTop: 6 }}>
+                VR Original (Capped) is hidden for this event because no survival archive is attached.
+              </div>
+            )}
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-          {strategyKeys.filter((k) => (k !== 'adaptive_exposure' && k !== 'original_vr_scaled') || selected.vr_source === 'survival_archive').map((strategyKey) => (
+          {displayStrategyKeys.map((strategyKey) => (
             <div
               key={strategyKey}
-              title={strategyKey === 'original_vr_scaled' ? 'Original VR (Scaled): Applies the archive efficiency ratio (vr_10k / bh_10k) to the TQQQ buy-and-hold curve. This is a scaled reference — NOT a full TQQQ re-execution of the VR engine.' : undefined}
+              title={
+                strategyKey === 'original_vr_scaled'
+                  ? 'VR Original (Capped): Reuses archive VR defense and Vmin-buy intent on the Arena-local TQQQ path. Rebuys are capped to 50% added capital per cycle and exposure never re-risks above 80%.'
+                  : undefined
+              }
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -3774,15 +4761,15 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
               }}
             >
               <span style={{ width: 10, height: 10, borderRadius: 999, background: STRATEGY_COLORS[strategyKey] }} />
-              {STRATEGY_LABELS[strategyKey]}
+              {STRATEGY_CHIP_LABELS[strategyKey]}
               {strategyKey === 'original_vr_scaled' && (
-                <span style={{ fontSize: '0.68rem', color: '#64748b', marginLeft: 2 }}>ⓘ</span>
+                <span style={{ fontSize: '0.68rem', color: '#64748b', marginLeft: 2 }}>i</span>
               )}
             </div>
           ))}
           {selected.vr_source !== 'survival_archive' && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.45rem 0.7rem', borderRadius: 999, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', color: '#475569', fontSize: '0.78rem', fontStyle: 'italic' }}>
-              Adaptive Exposure &amp; Original VR (Scaled) — no archive data for this event
+              VR Original (Capped) reference hidden for this event because no survival archive is attached
             </div>
           )}
         </div>
@@ -3791,16 +4778,23 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} />
             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
-            <Tooltip contentStyle={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)' }} />
-            <Line dataKey="buy_hold_equity" stroke={STRATEGY_COLORS.buy_hold} strokeWidth={2} dot={false} name="Buy and Hold" />
-            <Line dataKey="ma200_risk_control_equity" stroke={STRATEGY_COLORS.ma200_risk_control} strokeWidth={2} dot={false} name="MA200 Risk Control" />
-            <Line dataKey="fixed_stop_loss_equity" stroke={STRATEGY_COLORS.fixed_stop_loss} strokeWidth={2} dot={false} name="Fixed Stop Loss" />
-            {selected.vr_source === 'survival_archive' && (
-              <Line dataKey="adaptive_exposure_equity" stroke={STRATEGY_COLORS.adaptive_exposure} strokeWidth={2.4} dot={false} name="Adaptive Exposure" />
-            )}
-            {selected.vr_source === 'survival_archive' && (
-              <Line dataKey="original_vr_scaled_equity" stroke={STRATEGY_COLORS.original_vr_scaled} strokeWidth={2} strokeDasharray="5 3" dot={false} name="Original VR (Scaled)" />
-            )}
+            <Tooltip content={<BacktestChartTooltip visibleStrategyKeys={displayStrategyKeys} metricKind="equity" />} />
+            {displayStrategyKeys.map((strategyKey) => {
+              const lineVisuals = getArenaLineVisuals(strategyKey)
+              return (
+                <Line
+                  key={strategyKey}
+                  dataKey={STRATEGY_SERIES_KEYS[strategyKey].equity}
+                  stroke={STRATEGY_COLORS[strategyKey]}
+                  strokeWidth={lineVisuals.strokeWidth}
+                  strokeOpacity={lineVisuals.strokeOpacity}
+                  strokeDasharray={lineVisuals.strokeDasharray}
+                  dot={false}
+                  name={STRATEGY_LABELS[strategyKey]}
+                  connectNulls={false}
+                />
+              )
+            })}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -3812,16 +4806,23 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} />
             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
-            <Tooltip contentStyle={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)' }} />
-            <Line dataKey="buy_hold_drawdown" stroke={STRATEGY_COLORS.buy_hold} strokeWidth={1.8} dot={false} name="Buy and Hold DD" />
-            <Line dataKey="ma200_risk_control_drawdown" stroke={STRATEGY_COLORS.ma200_risk_control} strokeWidth={1.8} dot={false} name="MA200 DD" />
-            <Line dataKey="fixed_stop_loss_drawdown" stroke={STRATEGY_COLORS.fixed_stop_loss} strokeWidth={1.8} dot={false} name="Stop DD" />
-            {selected.vr_source === 'survival_archive' && (
-              <Line dataKey="adaptive_exposure_drawdown" stroke={STRATEGY_COLORS.adaptive_exposure} strokeWidth={2.2} dot={false} name="Adaptive Exposure DD" />
-            )}
-            {selected.vr_source === 'survival_archive' && (
-              <Line dataKey="original_vr_scaled_drawdown" stroke={STRATEGY_COLORS.original_vr_scaled} strokeWidth={1.8} strokeDasharray="5 3" dot={false} name="Original VR (Scaled) DD" />
-            )}
+            <Tooltip content={<BacktestChartTooltip visibleStrategyKeys={displayStrategyKeys} metricKind="drawdown" />} />
+            {displayStrategyKeys.map((strategyKey) => {
+              const lineVisuals = getArenaLineVisuals(strategyKey)
+              return (
+                <Line
+                  key={strategyKey}
+                  dataKey={STRATEGY_SERIES_KEYS[strategyKey].drawdown}
+                  stroke={STRATEGY_COLORS[strategyKey]}
+                  strokeWidth={strategyKey === 'adaptive_exposure' ? 2.2 : Math.max(1.2, lineVisuals.strokeWidth - 0.35)}
+                  strokeOpacity={lineVisuals.strokeOpacity}
+                  strokeDasharray={lineVisuals.strokeDasharray}
+                  dot={false}
+                  name={`${STRATEGY_LABELS[strategyKey]} DD`}
+                  connectNulls={false}
+                />
+              )
+            })}
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" />
           </ComposedChart>
         </ResponsiveContainer>
@@ -3834,16 +4835,23 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} />
             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} domain={[0, 100]} />
-            <Tooltip contentStyle={{ background: '#111827', border: '1px solid rgba(255,255,255,0.1)' }} />
-            <Line dataKey="buy_hold_exposure" stroke={STRATEGY_COLORS.buy_hold} strokeWidth={1.8} dot={false} name="Buy and Hold Exposure" />
-            <Line dataKey="ma200_risk_control_exposure" stroke={STRATEGY_COLORS.ma200_risk_control} strokeWidth={1.8} dot={false} name="MA200 Exposure" />
-            <Line dataKey="fixed_stop_loss_exposure" stroke={STRATEGY_COLORS.fixed_stop_loss} strokeWidth={1.8} dot={false} name="Stop Exposure" />
-            {selected.vr_source === 'survival_archive' && (
-              <Line dataKey="adaptive_exposure_exposure" stroke={STRATEGY_COLORS.adaptive_exposure} strokeWidth={2.2} dot={false} name="Adaptive Exposure" />
-            )}
-            {selected.vr_source === 'survival_archive' && (
-              <Line dataKey="original_vr_scaled_exposure" stroke={STRATEGY_COLORS.original_vr_scaled} strokeWidth={1.8} strokeDasharray="5 3" dot={false} name="Original VR (Scaled) Exposure" />
-            )}
+            <Tooltip content={<BacktestChartTooltip visibleStrategyKeys={displayStrategyKeys} metricKind="exposure" />} />
+            {displayStrategyKeys.map((strategyKey) => {
+              const lineVisuals = getArenaLineVisuals(strategyKey)
+              return (
+                <Line
+                  key={strategyKey}
+                  dataKey={STRATEGY_SERIES_KEYS[strategyKey].exposure}
+                  stroke={STRATEGY_COLORS[strategyKey]}
+                  strokeWidth={strategyKey === 'adaptive_exposure' ? 2.2 : Math.max(1.2, lineVisuals.strokeWidth - 0.35)}
+                  strokeOpacity={lineVisuals.strokeOpacity}
+                  strokeDasharray={lineVisuals.strokeDasharray}
+                  dot={false}
+                  name={`${STRATEGY_LABELS[strategyKey]} Exposure`}
+                  connectNulls={false}
+                />
+              )
+            })}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -3851,12 +4859,24 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
       <div style={panelStyle()}>
         <SectionHeader eyebrow="Method" title="Strategy Rules Used In This Arena" />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
-          <PlaceholderCard label="MA200 Risk Control" text="Binary risk filter" detail={strategyArena?.methodology.ma200_rule} />
-          <PlaceholderCard label="Fixed Stop Loss" text="12% peak-to-stop rule" detail={strategyArena?.methodology.fixed_stop_loss_rule} />
+          <PlaceholderCard label="MA200 (50%)" text="80 -> 50 -> 80" detail={strategyArena?.methodology.ma200_rule} />
+          <PlaceholderCard label="MA200 + LB30" text="50% MA defense + low-based recovery" detail={strategyArena?.methodology.ma200_rule} />
+          <PlaceholderCard label="LB30 / LB25" text="Adaptive downside + low-based re-risk" detail={strategyArena?.methodology.vr_source_priority} />
+          <PlaceholderCard label="Adaptive Exposure" text="V-shape reference" detail={strategyArena?.methodology.vr_source_priority} />
           <PlaceholderCard
-            label="VR Curves"
-            text={selected.vr_source === 'survival_archive' ? 'Adaptive Exposure + Original VR (Scaled)' : 'No archive — hidden'}
-            detail={strategyArena?.methodology.vr_source_priority}
+            label="VR Original (Capped)"
+            text="Controlled VR baseline"
+            detail="Archive VR defense and Vmin-buy intent are replayed on the Arena-local TQQQ path, but rebuys stay capped so the baseline remains controlled."
+          />
+          <PlaceholderCard
+            label="Warning Layer"
+            text="Forecast first"
+            detail={strategyArena?.methodology.warning_layer_rule}
+          />
+          <PlaceholderCard
+            label="Vmin Handling"
+            text="Visual only"
+            detail="Vmin remains a reference band for Arena warning and low-based engines. VR Original alone is allowed to reuse archive Vmin-buy intent, but those rebuys are capped by cycle capital and cash-preservation rules."
           />
         </div>
         <div style={{ marginTop: 12 }}>
@@ -3865,6 +4885,151 @@ function BacktestTab({ strategyArena }: { strategyArena?: StrategyArenaView | nu
           </a>
         </div>
       </div>
+        </>
+      ) : (
+        <>
+          <div style={panelStyle()}>
+            <SectionHeader
+              eyebrow="Test Setup"
+              title="Initial Conditions"
+              note="Arena compares same-condition TQQQ paths. Playback remains a separate archive replay tab."
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+              <PlaceholderCard compact label="Asset" text="TQQQ" detail="Common leveraged instrument across this Arena event." />
+              <PlaceholderCard compact label="Initial Value" text="100" detail="Normalized starting value for every visible curve." />
+              <PlaceholderCard compact label="Date Range" text={`${selected.start} to ${selected.end}`} detail="Current selected event window." />
+              <PlaceholderCard compact label="Price Series" text="Common TQQQ series" detail="All Arena curves are compared on the same TQQQ baseline." />
+              <PlaceholderCard compact label="Comparison Basis" text="Same-condition Arena" detail="Each strategy is measured inside the same event window." />
+              <PlaceholderCard compact label="Baseline Note" text="Common start, different path" detail="All curves start from the same baseline; only paths differ." />
+              {selected.adaptive_exposure_report ? (
+                <PlaceholderCard
+                  compact
+                  label="Adaptive Start"
+                  text={`${selected.adaptive_exposure_report.initial_state.exposure}%`}
+                  detail={selected.adaptive_exposure_report.initial_state.reason}
+                />
+              ) : null}
+              {warningLayer ? (
+                <PlaceholderCard
+                  compact
+                  label="Warning Start"
+                  text={formatWarningStateLabel(warningLayer.warning_state)}
+                  detail={warningLayer.warning_reason}
+                />
+              ) : null}
+            </div>
+          </div>
+
+          <div style={panelStyle()}>
+            <SectionHeader eyebrow="Strategy Notes" title="What Each Curve Represents" />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+              {visibleStrategyNotes.map((strategyKey) => (
+                <PlaceholderCard
+                  key={strategyKey}
+                  label={STRATEGY_LABELS[strategyKey]}
+                  text={STRATEGY_LABELS[strategyKey]}
+                  detail={
+                    strategyKey === 'adaptive_exposure'
+                      ? `${STRATEGY_SETUP_NOTES[strategyKey]} ${formatAdaptiveExplainability(selected.adaptive_exposure_report)}`
+                      : strategyKey === 'low_based_lb30' ||
+                          strategyKey === 'low_based_lb25' ||
+                          strategyKey === 'ma200_lb30_hybrid' ||
+                          strategyKey === 'ma200_risk_control_50'
+                        ? `${STRATEGY_SETUP_NOTES[strategyKey]} ${formatStrategyExplainability(selected.strategy_reports?.[strategyKey])}`
+                      : strategyKey === 'original_vr_scaled'
+                        ? `${STRATEGY_SETUP_NOTES[strategyKey]} ${formatStrategyExplainability(selected.strategy_reports?.[strategyKey])}${selected.vr_source !== 'survival_archive' ? ' Hidden for this event because no survival archive is attached.' : ''}`
+                        : STRATEGY_SETUP_NOTES[strategyKey]
+                  }
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={panelStyle()}>
+            <SectionHeader eyebrow="Read Guide" title="How to Read Results" />
+            <div style={{ display: 'grid', gap: 10 }}>
+              {[
+                'Higher equity curve = stronger cumulative growth.',
+                'Smaller drawdown = better downside control.',
+                'Curves are compared under the same TQQQ baseline.',
+                'VR Original uses archive VR defense and Vmin-buy intent, but applies it as a controlled Arena-local baseline with capped rebuys.',
+                'Warning state is forecast-first. It prepares interpretation and comparison, but does not directly trade.',
+              ].map((note) => (
+                <div
+                  key={note}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 14,
+                    padding: '0.85rem 0.95rem',
+                    color: '#cbd5e1',
+                    fontSize: '0.84rem',
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {note}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={panelStyle()}>
+            <SectionHeader
+              eyebrow="Quick Summary"
+              title="Current Event Snapshot"
+              note={metricRows.length ? 'Uses the visible Arena metrics for this selected event.' : 'Static explanatory text only.'}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+              <PlaceholderCard
+                compact
+                label="Highest Final Return"
+                text={bestFinalPerformer ? STRATEGY_LABELS[bestFinalPerformer.strategyKey] : 'Metrics not available'}
+                detail={bestFinalPerformer ? `Final return ${formatSignedPercent(bestFinalPerformer.metric.final_return_pct)} | Read as a positioning outcome, not a winner.` : 'Quick summary falls back to static setup guidance.'}
+              />
+              <PlaceholderCard
+                compact
+                label="Lowest Drawdown"
+                text={lowestDrawdownPerformer ? STRATEGY_LABELS[lowestDrawdownPerformer.strategyKey] : 'Metrics not available'}
+                detail={lowestDrawdownPerformer ? `Max drawdown ${formatSignedPercent(lowestDrawdownPerformer.metric.max_drawdown_pct)}` : 'Use the charts tab for visual inspection.'}
+              />
+              <PlaceholderCard
+                compact
+                label="Adaptive vs Buy & Hold"
+                text={
+                  adaptiveMetric && buyHoldMetric
+                    ? adaptiveMetric.final_return_pct > buyHoldMetric.final_return_pct
+                      ? 'Adaptive Exposure finished above Buy & Hold'
+                      : adaptiveMetric.final_return_pct < buyHoldMetric.final_return_pct
+                        ? 'Adaptive Exposure finished below Buy & Hold'
+                        : 'Adaptive Exposure matched Buy & Hold'
+                    : 'Adaptive Exposure not available'
+                }
+                detail={
+                  adaptiveMetric && buyHoldMetric
+                    ? `${formatSignedPercent(adaptiveMetric.final_return_pct)} vs ${formatSignedPercent(buyHoldMetric.final_return_pct)} final return`
+                    : 'Adaptive metrics are unavailable for this event.'
+                }
+              />
+              <PlaceholderCard
+                compact
+                label="LB30 vs LB25"
+                text={
+                  lowBasedLb30Metric && lowBasedLb25Metric
+                    ? lowBasedLb30Metric.final_return_pct >= lowBasedLb25Metric.final_return_pct
+                      ? 'LB30 finished above LB25'
+                      : 'LB25 finished above LB30'
+                    : 'Low-based comparison unavailable'
+                }
+                detail={
+                  lowBasedLb30Metric && lowBasedLb25Metric
+                    ? `${formatSignedPercent(lowBasedLb30Metric.final_return_pct)} vs ${formatSignedPercent(lowBasedLb25Metric.final_return_pct)} final return`
+                    : 'This card compares the two low-based recovery ladders for the selected event.'
+                }
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -4079,6 +5244,9 @@ export default function VRSurvival({
   strategyArena,
   initialTab,
   initialPlaybackEventId,
+  vrAudit,
+  vrTimeline,
+  iaPayload,
 }: {
   data: VRSurvivalData
   heatmapData?: ETFRoomData | null
@@ -4087,6 +5255,9 @@ export default function VRSurvival({
   strategyArena?: StrategyArenaView | null
   initialTab?: Tab
   initialPlaybackEventId?: string
+  vrAudit?: VrAuditViewPayload | null
+  vrTimeline?: VrTimelineRow[] | null
+  iaPayload?: InvestorActionViewPayload | null
 }) {
   const [tab, setTab] = useState<Tab>(TABS.includes(initialTab ?? 'Overview') ? (initialTab as Tab) : 'Overview')
 
@@ -4100,8 +5271,28 @@ export default function VRSurvival({
         ))}
       </div>
 
+      {/* ── Investor posture compact strip (SA17) ── */}
+      {iaPayload && (
+        <div style={{
+          display:       'flex',
+          alignItems:    'center',
+          gap:           8,
+          background:    'rgba(255,255,255,0.02)',
+          border:        '1px solid rgba(255,255,255,0.05)',
+          borderRadius:  8,
+          padding:       '5px 12px',
+          flexWrap:      'wrap',
+        }}>
+          <span style={{ color: '#4B5563', fontSize: '0.62rem', fontWeight: 700 }}>Investor posture</span>
+          <InvestorActionBadgeRow posture={iaPayload.action_posture} size="sm" />
+          {iaPayload.constraints.length > 0 && (
+            <span style={{ color: '#6B7280', fontSize: '0.62rem' }}>· {iaPayload.constraints[0]}</span>
+          )}
+        </div>
+      )}
+
       {tab === 'Overview' ? (
-        <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={playbackData} />
+        <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={playbackData} vrAudit={vrAudit} />
       ) : null}
       {tab === 'Playback' ? (
         <PlaybackTab playbackData={playbackData} initialPlaybackEventId={initialPlaybackEventId} />
@@ -4127,11 +5318,14 @@ export default function VRSurvival({
               Discrepancies between AI scenario probabilities and historical pattern data are signal, not noise.
             </div>
           </div>
-          <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={playbackData} />
+          <OverviewTab data={data} patternDashboard={patternDashboard} playbackData={playbackData} vrAudit={vrAudit} />
         </div>
       ) : null}
       {tab === 'Strategy Lab' ? (
         <StrategyLabTab events={(playbackData?.events ?? []) as unknown as LabEvent[]} />
+      ) : null}
+      {tab === 'Timeline' ? (
+        <VrTimelinePanel rows={vrTimeline} useSampleData={true} />
       ) : null}
       <LeverageStressHeatmap heatmapData={heatmapData} />
     </div>

@@ -1,0 +1,445 @@
+{
+  "generated_at": "2026-03-21",
+  "objective": "Verify what the Standard Risk Engine already knows before building what the Smart Analyzer must add.",
+  "engine_definition": {
+    "standard_engine_primary_file": "marketflow/backend/scripts/build_risk_v1.py",
+    "audited_live_output": "marketflow/backend/output/risk_v1.json",
+    "audited_live_run_id": "20260320_223449",
+    "audited_live_data_as_of": "2026-03-19",
+    "scope_note": "Standard engine means MSS + 12-layer total_risk + Track A/B/C + master_signal inside build_risk_v1.py. Adjacent macro/validation files were searched only to classify signals as indirect or missing."
+  },
+  "audit_rows": [
+    {
+      "group": "Core Structure / Context",
+      "signal_name": "QQQ_MSS_core",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ticker_history_daily.QQQ.close",
+      "currently_used": "Y",
+      "usage_location": "main MSS block; detect_event_type; compute_track_a equity_filter; compute_track_b_velocity",
+      "purpose": "Core MSS input for trend, drawdown, MA state, and exposure logic",
+      "output_impact": "HIGH",
+      "notes": "Primary Standard-engine anchor; also generates realized-vol percentile and event-type classification"
+    },
+    {
+      "group": "Core Structure / Context",
+      "signal_name": "SPY_DIA_context",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.SPY.close; ohlcv_daily.DIA.close",
+      "currently_used": "Y",
+      "usage_location": "_struct_score; build_final_risk; build_context_history",
+      "purpose": "Broad-market confirmation/moderation of Nasdaq signal",
+      "output_impact": "MED",
+      "notes": "Affects final_risk/final_exposure context; does not change total_risk total"
+    },
+    {
+      "group": "Core Structure / Context",
+      "signal_name": "Market_breadth_universe",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily universe close history -> pct_above_MA200 / pct_above_MA50 / pct_52w_low",
+      "currently_used": "Y",
+      "usage_location": "compute_breadth_metrics; _layer2_breadth; classify_risk_scenario",
+      "purpose": "Participation and internal-weakness check",
+      "output_impact": "HIGH",
+      "notes": "Falls back to QQQ/SPY rotation if breadth query is unavailable"
+    },
+    {
+      "group": "Core Structure / Context",
+      "signal_name": "QQQ_SPY_relative_rotation",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "derived from QQQ close / SPY close",
+      "currently_used": "Y",
+      "usage_location": "_rotation_filter; build_final_risk; _layer2_breadth fallback; _layer8_shock",
+      "purpose": "Tech-vs-broad-market rotation context",
+      "output_impact": "MED",
+      "notes": "Used for context/fallback and shock divergence; not a direct macro/rates signal"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "HYG_credit_proxy",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.HYG.close or cache.HYG",
+      "currently_used": "Y",
+      "usage_location": "_layer3_credit; _layer4_leveraged_loan; _layer5_liquidity; _layer6_funding; _layer9_cross_asset; compute_track_a",
+      "purpose": "High-yield price stress proxy",
+      "output_impact": "HIGH",
+      "notes": "One of the most reused market-credit inputs in the Standard engine"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "LQD_credit_proxy",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.LQD.close or cache.LQD",
+      "currently_used": "Y",
+      "usage_location": "_layer3_credit; _layer5_liquidity",
+      "purpose": "Investment-grade benchmark against HYG",
+      "output_impact": "MED",
+      "notes": "Mostly used as denominator/benchmark rather than as a standalone signal"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "HYG_LQD_relative_spread_proxy",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "derived HYG 20d return - LQD 20d return; HYG/LQD ratio trend",
+      "currently_used": "Y",
+      "usage_location": "_layer3_credit; _layer5_liquidity",
+      "purpose": "ETF credit-spread / liquidity-preference proxy",
+      "output_impact": "HIGH",
+      "notes": "Core liquid-market credit proxy inside L3 and L5"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "Private_credit_manager_basket_BX_KKR_APO_ARES",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.BX.close; KKR.close; APO.close; ARES.close",
+      "currently_used": "Y",
+      "usage_location": "_layer3_credit",
+      "purpose": "Private-credit transmission proxy",
+      "output_impact": "MED",
+      "notes": "Public-equity stand-in for alt-manager stress rather than direct credit spreads"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "Leveraged_loan_ETFs_BKLN_SRLN",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.BKLN.close; ohlcv_daily.SRLN.close",
+      "currently_used": "Y",
+      "usage_location": "_layer4_leveraged_loan",
+      "purpose": "Direct leveraged-loan stress proxy",
+      "output_impact": "HIGH",
+      "notes": "ETF drawdown proxy; no direct loan-spread series used"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "BKLN_HYG_relative_loan_stress",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "derived BKLN/HYG relative return",
+      "currently_used": "Y",
+      "usage_location": "_layer4_leveraged_loan; compute_track_a; compute_track_a_early",
+      "purpose": "Loan-market weakness vs HY",
+      "output_impact": "HIGH",
+      "notes": "Important early-transmission input in Layer 4 and Track A"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "BDC_basket_vs_SPY",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "derived mean(ARCC, OBDC, BXSL) / SPY",
+      "currently_used": "Y",
+      "usage_location": "compute_track_a; compute_track_a_early",
+      "purpose": "Early private-credit weakening proxy",
+      "output_impact": "MED",
+      "notes": "Track-only input; changes Track A / master_signal, not total_risk total"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "XLF_XLU_defensive_rotation",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.XLF.close; ohlcv_daily.XLU.close; SPY benchmark",
+      "currently_used": "Y",
+      "usage_location": "_layer7_macro",
+      "purpose": "Macro/defensive rotation proxy",
+      "output_impact": "HIGH",
+      "notes": "Main Standard macro proxy in place of direct macro-release series"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "XLF_KRE_financial_transmission",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.XLF.close; ohlcv_daily.KRE.close; SPY benchmark",
+      "currently_used": "Y",
+      "usage_location": "_layer12_financial_stress; compute_track_a_early",
+      "purpose": "Bank/broker transmission proxy",
+      "output_impact": "HIGH",
+      "notes": "Models financial propagation through equities, not bank funding spreads"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "IWM_SPY_risk_appetite",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "derived IWM/SPY relative return",
+      "currently_used": "Y",
+      "usage_location": "_layer9_cross_asset; classify_risk_scenario",
+      "purpose": "Small-cap risk-appetite proxy",
+      "output_impact": "LOW",
+      "notes": "Secondary confirmation only"
+    },
+    {
+      "group": "Risk / Volatility",
+      "signal_name": "VIX_implied_vol_family",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "cache.VIX or market_daily.vix",
+      "currently_used": "Y",
+      "usage_location": "_layer5_liquidity; _layer6_funding; _layer8_shock; _layer11_liquidity_shock; compute_track_c",
+      "purpose": "Primary implied-vol / fear input",
+      "output_impact": "HIGH",
+      "notes": "Standard uses VIX only; broader vol-family term structure is not implemented"
+    },
+    {
+      "group": "Risk / Volatility",
+      "signal_name": "PUT_CALL_ratio",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "cache.PUT_CALL",
+      "currently_used": "Y",
+      "usage_location": "_layer6_funding; _layer8_shock; _layer10_credit_spread; compute_master_signal escalation conditions",
+      "purpose": "Hedging-demand / funding-friction proxy",
+      "output_impact": "HIGH",
+      "notes": "Collector can proxy PUT_CALL from VIX if direct CBOE series fails"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "DXY_dollar_liquidity_stress",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "cache.DXY with market_daily.dxy fallback",
+      "currently_used": "Y",
+      "usage_location": "_load_preferred_series; _layer5_liquidity; _layer11_liquidity_shock",
+      "purpose": "Dollar liquidity drain / global tightening proxy",
+      "output_impact": "HIGH",
+      "notes": "This is the explicit dollar-stress input; current live output uses market_daily fallback"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "Credit_spreads_HY_OAS_IG_OAS",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "cache.HY_OAS (BAMLH0A0HYM2); cache.IG_OAS (BAMLC0A0CM)",
+      "currently_used": "Y",
+      "usage_location": "_layer10_credit_spread; compute_track_a",
+      "purpose": "Direct cash credit-spread monitor",
+      "output_impact": "HIGH",
+      "notes": "HY_OAS is more influential than IG_OAS; both also feed Track A"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "HY_IG_OAS_spread",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "derived HY_OAS - IG_OAS",
+      "currently_used": "Y",
+      "usage_location": "_layer10_credit_spread",
+      "purpose": "Credit risk-premium widening",
+      "output_impact": "HIGH",
+      "notes": "Explicit spread signal, but it is credit spread logic rather than Treasury curve logic"
+    },
+    {
+      "group": "Liquidity / Credit",
+      "signal_name": "FSI_st_louis_financial_stress",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "cache.FSI (STLFSI4)",
+      "currently_used": "Y",
+      "usage_location": "_layer10_credit_spread",
+      "purpose": "Weekly system-wide stress overlay",
+      "output_impact": "MED",
+      "notes": "Weekly cadence makes it slower than ETF/VIX inputs"
+    },
+    {
+      "group": "Rates / Yields",
+      "signal_name": "MOVE_TLT_bond_stress_proxies",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py; marketflow/backend/scripts/build_replay_v1.py",
+      "source_series": "market_daily.move; ohlcv_daily.TLT.close",
+      "currently_used": "Y",
+      "usage_location": "_layer11_liquidity_shock",
+      "purpose": "Rate-volatility / bond-stress proxy",
+      "output_impact": "MED",
+      "notes": "Only live bond-stress block; live build uses market_daily.move while replay loads cache.MOVE"
+    },
+    {
+      "group": "Shock / Commodity",
+      "signal_name": "USDJPY_yen_carry_unwind",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.JPY=X.close",
+      "currently_used": "Y",
+      "usage_location": "compute_track_c",
+      "purpose": "Exogenous yen-carry shock sensor",
+      "output_impact": "MED",
+      "notes": "Track C only; changes Track C state and master_signal, not total_risk total"
+    },
+    {
+      "group": "Shock / Commodity",
+      "signal_name": "Oil_energy_shock",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "market_daily.oil",
+      "currently_used": "Y",
+      "usage_location": "compute_track_c",
+      "purpose": "Energy/geopolitical shock sensor",
+      "output_impact": "MED",
+      "notes": "Present only as 1-day z-score in Track C; not integrated into 12-layer total_risk"
+    },
+    {
+      "group": "Shock / Commodity",
+      "signal_name": "GLD_safe_haven_vs_SPY",
+      "source_file": "marketflow/backend/scripts/build_risk_v1.py",
+      "source_series": "ohlcv_daily.GLD.close vs SPY close",
+      "currently_used": "Y",
+      "usage_location": "compute_track_c",
+      "purpose": "Flight-to-safety confirmation",
+      "output_impact": "MED",
+      "notes": "Track C only"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "EFFR_WALCL_RRP_macro_liquidity",
+      "source_file": "marketflow/backend/validation_engine.py; marketflow/backend/config/macro_policy_v1.json; marketflow/backend/jobs/build_macro_snapshot.py",
+      "source_series": "FRED EFFR; WALCL; RRPONTSYD",
+      "currently_used": "N",
+      "usage_location": "ValidationEngine.compute_macro_series; macro snapshot only; not wired to build_risk_v1.py",
+      "purpose": "Separate validation/macro-engine inputs for RPI/LPI/MPS",
+      "output_impact": "NONE",
+      "notes": "Present elsewhere in repo, but they do not move Standard Risk Engine outputs today"
+    },
+    {
+      "group": "Rates / Yields",
+      "signal_name": "US10Y",
+      "source_file": "marketflow/backend/scripts/update_market_daily.py; marketflow/backend/collectors/collect_fred.py; marketflow/backend/jobs/build_macro_snapshot.py",
+      "source_series": "market_daily.us10y / FRED DGS10",
+      "currently_used": "N",
+      "usage_location": "not wired to build_risk_v1.py",
+      "purpose": "Available rates data outside Standard engine",
+      "output_impact": "NONE",
+      "notes": "Clear gap: no 10Y level/change/momentum logic in Standard"
+    },
+    {
+      "group": "Rates / Yields",
+      "signal_name": "US2Y",
+      "source_file": "marketflow/backend/scripts/update_market_daily.py; marketflow/backend/collectors/collect_fred.py; marketflow/backend/jobs/build_macro_snapshot.py",
+      "source_series": "market_daily.us2y / FRED DGS2",
+      "currently_used": "N",
+      "usage_location": "not wired to build_risk_v1.py",
+      "purpose": "Available rates data outside Standard engine",
+      "output_impact": "NONE",
+      "notes": "Clear gap: no 2Y input in Standard"
+    },
+    {
+      "group": "Rates / Yields",
+      "signal_name": "Yield_curve_10Y_2Y",
+      "source_file": "marketflow/backend/jobs/build_macro_snapshot.py",
+      "source_series": "DGS10 - DGS2 (fallback DGS10 - EFFR)",
+      "currently_used": "N",
+      "usage_location": "macro snapshot only; not wired to build_risk_v1.py",
+      "purpose": "Macro yield-curve measure outside Standard engine",
+      "output_impact": "NONE",
+      "notes": "Treasury curve logic is absent from Standard even though the repo computes it elsewhere"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "CPI_release_handling",
+      "source_file": "marketflow/backend/jobs/build_macro_snapshot.py; marketflow/backend/config/macro_policy_v1.json",
+      "source_series": "FRED CPIAUCSL",
+      "currently_used": "N",
+      "usage_location": "macro snapshot real-rate proxy only; no build_risk_v1 consumer",
+      "purpose": "Inflation series exists outside Standard only",
+      "output_impact": "NONE",
+      "notes": "No CPI release-date/event handling or direct Standard-engine wiring found"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "PPI_release_handling",
+      "source_file": "not_found_in_standard_or_macro_pipeline",
+      "source_series": "none",
+      "currently_used": "N",
+      "usage_location": "not found",
+      "purpose": "Not implemented",
+      "output_impact": "NONE",
+      "notes": "No PPI series, threshold, or release logic found in searched Standard/macro backend paths"
+    },
+    {
+      "group": "Inflation / Macro Event Proxies",
+      "signal_name": "Jobless_claims_release_handling",
+      "source_file": "not_found_in_standard_or_macro_pipeline",
+      "source_series": "none",
+      "currently_used": "N",
+      "usage_location": "not found",
+      "purpose": "Not implemented",
+      "output_impact": "NONE",
+      "notes": "No jobless claims / labor-release logic found in searched Standard/macro backend paths"
+    }
+  ],
+  "special_questions": [
+    {
+      "item": "CPI",
+      "is_already_present": "INDIRECT",
+      "material_output_effect": "NONE",
+      "recommendation_if_missing": "reserve_for_smart_analyzer_layer",
+      "rationale": "CPIAUCSL exists in the macro snapshot path, but Standard has no CPI release-date/event logic and build_risk_v1.py never reads it."
+    },
+    {
+      "item": "PPI",
+      "is_already_present": "NO",
+      "material_output_effect": "NONE",
+      "recommendation_if_missing": "reserve_for_smart_analyzer_layer",
+      "rationale": "No PPI series or release-handling logic was found in searched Standard/macro backend paths."
+    },
+    {
+      "item": "Jobless claims",
+      "is_already_present": "NO",
+      "material_output_effect": "NONE",
+      "recommendation_if_missing": "reserve_for_smart_analyzer_layer",
+      "rationale": "No jobless-claims or labor-release logic was found in searched Standard/macro backend paths."
+    },
+    {
+      "item": "US10Y",
+      "is_already_present": "INDIRECT",
+      "material_output_effect": "NONE",
+      "recommendation_if_missing": "add_to_standard_engine_later",
+      "rationale": "US10Y data is collected and stored, but Standard never reads it; this is a real core-market-data gap."
+    },
+    {
+      "item": "US2Y",
+      "is_already_present": "INDIRECT",
+      "material_output_effect": "NONE",
+      "recommendation_if_missing": "add_to_standard_engine_later",
+      "rationale": "US2Y data is collected and stored, but Standard never reads it; needed for explicit front-end yield-curve/rates sensitivity."
+    },
+    {
+      "item": "rate volatility",
+      "is_already_present": "YES",
+      "material_output_effect": "MED",
+      "recommendation_if_missing": "already_present",
+      "rationale": "MOVE and TLT flight are live in Layer 11, with VIX also contributing to funding/liquidity/shock blocks."
+    },
+    {
+      "item": "oil shock",
+      "is_already_present": "YES",
+      "material_output_effect": "MED",
+      "recommendation_if_missing": "already_present",
+      "rationale": "Oil is a live Track C sensor for Energy / Geopolitical Shock, but it is not inside the 12-layer total_risk total."
+    },
+    {
+      "item": "dollar stress",
+      "is_already_present": "YES",
+      "material_output_effect": "HIGH",
+      "recommendation_if_missing": "already_present",
+      "rationale": "DXY directly feeds Layer 5 Liquidity and Layer 11 Liquidity Shock."
+    },
+    {
+      "item": "credit stress",
+      "is_already_present": "YES",
+      "material_output_effect": "HIGH",
+      "recommendation_if_missing": "already_present",
+      "rationale": "Credit is a major Standard-engine strength: HYG/LQD, HY_OAS/IG_OAS, HY-IG spread, BKLN/SRLN, alt-manager basket, BDC/SPY, and FSI are all active."
+    }
+  ],
+  "summary": {
+    "signals_already_strong_in_standard_engine": [
+      "Credit stress and transmission: HYG/LQD, HY_OAS/IG_OAS, HY-IG spread, BKLN/SRLN, BKLN/HYG, BX/KKR/APO/ARES, BDC/SPY.",
+      "Liquidity/funding stress: DXY, VIX, PUT_CALL, FSI, and Liquidity/Funding layers.",
+      "Market structure and participation: QQQ MSS, broad breadth metrics, SPY/DIA context, QQQ/SPY rotation.",
+      "Defensive macro proxies: XLF/XLU rotation and XLF/KRE financial transmission."
+    ],
+    "signals_present_but_weak_or_underused": [
+      "Rate-vol / bond stress is present only through MOVE and TLT inside Layer 11, so it is materially lighter than credit/liquidity coverage.",
+      "Oil, USDJPY, and GLD are live only in Track C, so they affect Track C/master_signal but not total_risk total.",
+      "FSI is helpful but weekly and slower than the ETF/VIX blocks."
+    ],
+    "signals_missing": [
+      "Direct US10Y level/change/momentum.",
+      "Direct US2Y level/change/momentum.",
+      "Treasury 10Y-2Y curve logic inside Standard.",
+      "CPI/PPI/jobless release handling.",
+      "PPI and jobless-claims series in the Standard/macro backend path."
+    ],
+    "signals_better_handled_by_smart_analyzer": [
+      "CPI/PPI/jobless release interpretation and post-release context.",
+      "News filtering and event-vs-structural classification.",
+      "Headline-driven war/geopolitical attribution layered on top of Track C sensors."
+    ],
+    "recommendation": "Proceed to WO-SA1, but log a separate later Standard-engine work order to wire US10Y/US2Y/yield-curve inputs into core scoring. Smart Analyzer should own release/event interpretation first."
+  }
+}

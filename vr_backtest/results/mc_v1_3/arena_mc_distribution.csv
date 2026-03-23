@@ -1,0 +1,11 @@
+engine,metric,mean,p5,p25,p50,p75,p95,min,max
+explainable_v1_3,final_value,10365.878,2013.7,4311.9,7466.78,13121.04,28656.83,1147.03,60465.6
+explainable_v1_3,max_drawdown_pct,-61.086,-86.35,-74.28,-60.91,-49.89,-36.15,-90.72,-23.42
+explainable_v1_3,avg_exposure_pct,74.944,60.27,67.39,74.31,83.87,89.31,42.79,92.9
+explainable_v1_3,snapback_capture_score,0.472,0.297,0.3,0.444,0.612,0.842,0,0.948
+explainable_v1_3,time_in_market_pct,92.004,78.66,83,96.05,100,100,78.66,100
+vr_original_v2,final_value,9865.559,809.98,3216.9,7326.71,13249.92,28745.6,87.99,62433.29
+vr_original_v2,max_drawdown_pct,-68.532,-94.97,-83.58,-70.48,-55.35,-36.73,-99.27,-23.42
+vr_original_v2,avg_exposure_pct,92.092,85.02,88.94,92.68,95.7,97.48,82.86,97.98
+vr_original_v2,snapback_capture_score,0.68,0.32,0.685,0.697,0.698,0.998,0.31,0.998
+vr_original_v2,time_in_market_pct,100,100,100,100,100,100,100,100

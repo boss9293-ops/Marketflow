@@ -6,13 +6,14 @@ Behavior:
 2) Per symbol: check last date in DB; fetch only the delta since then
    (incremental mode).  If no existing data, fetch full --years history.
 3) INSERT OR REPLACE into ohlcv_daily with (symbol, date) PK
-4) Retry each symbol up to 3x with exponential back-off + jitter on failure.
-5) Print per-symbol upsert count, total record count, and error symbols
+4) Retry each symbol up to --retry times with exponential back-off + jitter.
+5) Parallel fetch via ThreadPoolExecutor (default --workers 8) for fast daily updates.
 
 Usage (PowerShell):
-  python backend/scripts/update_ohlcv.py
-  python backend/scripts/update_ohlcv.py --limit 20
-  python backend/scripts/update_ohlcv.py --full   # force full 2-year re-fetch
+  py backend/scripts/update_ohlcv.py                   # fast parallel incremental
+  py backend/scripts/update_ohlcv.py --workers 1       # sequential (debug)
+  py backend/scripts/update_ohlcv.py --full            # force full 2-year re-fetch
+  py backend/scripts/update_ohlcv.py --limit 20        # test with 20 symbols
 """
 from __future__ import annotations
 
@@ -23,6 +24,7 @@ import sqlite3
 import sys
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from io import StringIO
 from typing import Dict, List, Optional, Tuple
@@ -61,15 +63,27 @@ def to_yf_symbol(symbol: str) -> str:
 
 
 def _safe_float(v):
-    if pd.isna(v):
+    try:
+        if pd.isna(v):
+            return None
+    except (TypeError, ValueError):
+        pass
+    try:
+        return float(v)
+    except (TypeError, ValueError):
         return None
-    return float(v)
 
 
 def _safe_int(v):
-    if pd.isna(v):
+    try:
+        if pd.isna(v):
+            return None
+    except (TypeError, ValueError):
+        pass
+    try:
+        return int(v)
+    except (TypeError, ValueError):
         return None
-    return int(v)
 
 
 def fetch_yfinance_rows(
@@ -114,7 +128,7 @@ def fetch_stooq_rows(
 ) -> Tuple[List[Tuple], str]:
     stooq_symbol = symbol.lower().replace(".", "-")
     url = f"https://stooq.com/q/d/l/?s={stooq_symbol}.us&i=d"
-    r = requests.get(url, timeout=30)
+    r = requests.get(url, timeout=10)
     r.raise_for_status()
     csv_text = r.text.strip()
     if not csv_text or "No data" in csv_text:
@@ -219,11 +233,12 @@ def validate_required_tables(conn: sqlite3.Connection) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--limit",  type=int,   default=None,  help="limit symbols for test run")
-    parser.add_argument("--years",  type=int,   default=2,     help="history years for full fetch (default: 2)")
-    parser.add_argument("--sleep",  type=float, default=0.15,  help="base sleep seconds between symbols (default: 0.15)")
-    parser.add_argument("--full",   action="store_true",       help="force full re-fetch ignoring DB last date")
-    parser.add_argument("--retry",  type=int,   default=3,     help="max retry attempts per symbol (default: 3)")
+    parser.add_argument("--limit",   type=int,   default=None,  help="limit symbols for test run")
+    parser.add_argument("--years",   type=int,   default=2,     help="history years for full fetch (default: 2)")
+    parser.add_argument("--sleep",   type=float, default=0.05,  help="sleep between sequential fetches (used only with --workers 1)")
+    parser.add_argument("--full",    action="store_true",       help="force full re-fetch ignoring DB last date")
+    parser.add_argument("--retry",   type=int,   default=2,     help="max retry attempts per symbol (default: 2)")
+    parser.add_argument("--workers", type=int,   default=8,     help="parallel fetch workers (default: 8; 1=sequential)")
     args = parser.parse_args()
 
     path = db_path()
@@ -246,7 +261,7 @@ def main() -> int:
             print("[WARN] No active symbols in universe_symbols.")
             return 0
 
-        # --- Incremental mode: load last-known dates from DB ---
+        # Load last-known dates from DB
         if args.full:
             last_dates: Dict[str, str] = {}
             print("[INFO] Mode: full re-fetch (--full flag)")
@@ -257,42 +272,92 @@ def main() -> int:
 
         today = datetime.now().strftime("%Y-%m-%d")
 
-        for i, symbol in enumerate(symbols, start=1):
-            try:
-                last_date = last_dates.get(symbol) if not args.full else None
-                if last_date and last_date >= today:
-                    # Already up-to-date
-                    print(f"[SKIP] [{i}/{len(symbols)}] {symbol}: already current ({last_date})")
-                    continue
+        # Separate already-current from needs-update
+        needs_update: List[str] = []
+        for symbol in symbols:
+            last_date = last_dates.get(symbol) if not args.full else None
+            if last_date and last_date >= today:
+                print(f"[SKIP] {symbol}: already current ({last_date})")
+            else:
+                needs_update.append(symbol)
 
-                # start_date = day after last known date
-                if last_date:
-                    start_date: Optional[str] = (
-                        pd.to_datetime(last_date) + timedelta(days=1)
-                    ).strftime("%Y-%m-%d")
-                else:
-                    start_date = None  # full history
+        print(f"[INFO] Symbols needing update: {len(needs_update)}")
 
-                rows, source = fetch_rows_with_retry(
-                    symbol, start_date=start_date, years=args.years, max_retries=args.retry
+        if not needs_update:
+            print("[INFO] All symbols are up-to-date.")
+
+        elif args.workers > 1 and not args.full:
+            # ── PARALLEL MODE (default for daily incremental) ──────────────────
+            print(f"[INFO] Parallel mode: {args.workers} workers")
+
+            def _fetch_one(symbol: str) -> Tuple[str, List[Tuple], Optional[str]]:
+                last_date = last_dates.get(symbol)
+                start_date = (
+                    (pd.to_datetime(last_date) + timedelta(days=1)).strftime("%Y-%m-%d")
+                    if last_date else None
                 )
-                if not rows:
-                    print(f"[SKIP] [{i}/{len(symbols)}] {symbol}: 0 new rows ({source})")
-                    continue
+                try:
+                    # Fast path: try yfinance first
+                    rows, source = fetch_yfinance_rows(symbol, start_date=start_date, years=args.years)
+                    if rows:
+                        if last_date:
+                            rows = [r for r in rows if r[1] > last_date]
+                        return symbol, rows, None
+                    # yfinance returned empty — no new data available yet
+                    # Skip stooq for incremental-today fetches to avoid slow timeout
+                    if start_date and start_date >= today:
+                        return symbol, [], None
+                    # For older deltas, fall back to stooq
+                    rows2, _ = fetch_stooq_rows(symbol, start_date=start_date, years=args.years)
+                    if last_date:
+                        rows2 = [r for r in rows2 if r[1] > last_date]
+                    return symbol, rows2, None
+                except Exception as e:
+                    return symbol, [], f"{type(e).__name__}: {e}"
 
-                cnt = upsert_rows(conn, rows)
-                total_upserted += cnt
-                mode_tag = f"delta from {start_date}" if start_date else f"full {args.years}y"
-                print(f"[INFO] [{i}/{len(symbols)}] {symbol}: {cnt} rows ({source}, {mode_tag})")
+            completed = 0
+            with ThreadPoolExecutor(max_workers=args.workers) as executor:
+                future_to_sym = {executor.submit(_fetch_one, s): s for s in needs_update}
+                for fut in as_completed(future_to_sym):
+                    completed += 1
+                    sym, rows, err = fut.result()
+                    if err:
+                        error_symbols.append((sym, err))
+                        print(f"[ERROR] [{completed}/{len(needs_update)}] {sym}: {err}")
+                    elif rows:
+                        cnt = upsert_rows(conn, rows)
+                        total_upserted += cnt
+                        print(f"[INFO]  [{completed}/{len(needs_update)}] {sym}: {cnt} new rows")
+                    else:
+                        print(f"[SKIP]  [{completed}/{len(needs_update)}] {sym}: 0 new rows")
 
-            except Exception as e:
-                msg = f"{type(e).__name__}: {e}"
-                error_symbols.append((symbol, msg))
-                print(f"[ERROR] [{i}/{len(symbols)}] {symbol}: {msg}")
+        else:
+            # ── SEQUENTIAL MODE (--full or --workers 1) ────────────────────────
+            for i, symbol in enumerate(needs_update, start=1):
+                try:
+                    last_date = last_dates.get(symbol) if not args.full else None
+                    start_date: Optional[str] = (
+                        (pd.to_datetime(last_date) + timedelta(days=1)).strftime("%Y-%m-%d")
+                        if last_date else None
+                    )
+                    rows, source = fetch_rows_with_retry(
+                        symbol, start_date=start_date, years=args.years, max_retries=args.retry
+                    )
+                    if not rows:
+                        print(f"[SKIP] [{i}/{len(needs_update)}] {symbol}: 0 new rows ({source})")
+                        continue
+                    cnt = upsert_rows(conn, rows)
+                    total_upserted += cnt
+                    mode_tag = f"delta from {start_date}" if start_date else f"full {args.years}y"
+                    print(f"[INFO] [{i}/{len(needs_update)}] {symbol}: {cnt} rows ({source}, {mode_tag})")
 
-            # Sleep with jitter to reduce rate-limit hits
-            if args.sleep > 0:
-                time.sleep(args.sleep + random.uniform(0, args.sleep * 0.5))
+                except Exception as e:
+                    msg = f"{type(e).__name__}: {e}"
+                    error_symbols.append((symbol, msg))
+                    print(f"[ERROR] [{i}/{len(needs_update)}] {symbol}: {msg}")
+
+                if args.sleep > 0:
+                    time.sleep(args.sleep + random.uniform(0, args.sleep * 0.5))
 
         total_records = conn.execute("SELECT COUNT(*) FROM ohlcv_daily").fetchone()[0]
         print(f"[INFO] Total upsert rows this run: {total_upserted}")

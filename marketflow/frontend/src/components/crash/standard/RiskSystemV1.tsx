@@ -1,6 +1,8 @@
 ﻿'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import MonteCarloInterpretationCard from '@/components/MonteCarloInterpretationCard'
+import { buildStandardInterpretationDisplayModel } from '@/lib/standard/buildStandardInterpretationDisplayModel'
 import {
   ComposedChart, Line, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, ReferenceLine, CartesianGrid,
@@ -898,11 +900,17 @@ function RadarChart({
     </div>
   )
 }
-function OverviewTab({ data }: { data: RiskV1Data }) {
+function OverviewTab({
+  data,
+}: {
+  data: RiskV1Data
+}) {
   const { current: c, history, methodology } = data
+  const interpretationModel = useMemo(() => buildStandardInterpretationDisplayModel(data), [data])
   const tier = methodology.level_tiers.find((t) => t.level === c.level) ?? methodology.level_tiers[0]
   const colNow = LEVEL_COLORS[c.level] ?? '#e5e7eb'
   const freshnessOrder = ['qqq', 'spy', 'hyg', 'lqd', 'dxy', 'vix', 'put_call', 'hy_oas', 'ig_oas', 'fsi', 'move']
+  const [showFreshness, setShowFreshness] = useState(true)
   const orderedFreshness = Object.entries(data.input_freshness || {}).sort(
     (a, b) => freshnessOrder.indexOf(a[0]) - freshnessOrder.indexOf(b[0]),
   )
@@ -917,6 +925,8 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
   const [ltLoading,    setLtLoading]    = useState(false)
   const [showRiskContribution, setShowRiskContribution] = useState(false)
   const [contextSignalTab, setContextSignalTab] = useState<'spy' | 'dia' | 'rotation'>('spy')
+  const [mssCtxTab, setMssCtxTab] = useState<'mss' | 'risk' | 'both'>('mss')
+  const [ovChartMode, setOvChartMode] = useState<'score' | 'risk' | 'compare' | 'long-term'>('score')
 
   const cur90ChartPts = useMemo(() => {
     if (!cur90Pts.length) return []
@@ -1162,10 +1172,25 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
                 Current data timing for Track A / B / C inputs
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 12, color: '#9fb0d1' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 12, color: '#9fb0d1', alignItems: 'center' }}>
               <span>Track A as-of: {data.track_a?.as_of_date || '—'}</span>
               <span>Track C as-of: {data.track_c?.as_of_date || '—'}</span>
               <span>Track B 5d ref: {data.track_b?.mss_5d_ago_date || '—'}</span>
+              <button
+                onClick={() => setShowFreshness((v) => !v)}
+                style={{
+                  marginLeft: 4,
+                  padding: '3px 10px',
+                  fontSize: 11,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: 999,
+                  color: '#9ca3af',
+                  cursor: 'pointer',
+                }}
+              >
+                {showFreshness ? '숨기기' : '카드 보기'}
+              </button>
             </div>
           </div>
 
@@ -1244,6 +1269,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
             </div>
           )}
 
+{showFreshness && (
           <div
             style={{
               display: 'grid',
@@ -1314,6 +1340,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
               )
             })}
           </div>
+          )}
         </div>
       )}
 
@@ -2302,6 +2329,18 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
               )
             })()}
 
+            <MonteCarloInterpretationCard
+              summaryLine={interpretationModel.summaryLine}
+              detailLines={interpretationModel.detailLines}
+              forwardNarrativeLine={interpretationModel.forwardNarrativeLine}
+              interpretationState={interpretationModel.interpretationState}
+              currentRegime={interpretationModel.currentRegime}
+              agreementScore={interpretationModel.agreementScore}
+              conflictScore={interpretationModel.conflictScore}
+              trustScore={interpretationModel.trustScore}
+              subtext={interpretationModel.subtext}
+            />
+
 
             {/* Market Regime and Risk Scenario */}
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
@@ -3201,7 +3240,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* QQQ vs MA200 */}
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '0.91rem 1.04rem' }}>
-              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>QQQ Core Structure ??90D</div>
+              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>QQQ Core Structure — 90D</div>
               <div style={{ fontSize: '0.95rem', color: '#e5e7eb', marginBottom: 8 }}>QQQ distance from MA200 (%) - positive = above MA200</div>
               <ResponsiveContainer width="100%" height={140}>
                 <ComposedChart data={ch} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
@@ -3218,7 +3257,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
             </div>
             {/* SPY vs MA200 */}
             <div style={{ display: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '0.91rem 1.04rem' }}>
-              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>SPY Broad Market Context ??90D</div>
+              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>SPY Broad Market Context — 90D</div>
               <div style={{ fontSize: '0.95rem', color: '#e5e7eb', marginBottom: 8 }}>SPY distance from MA200 (%) - positive = above MA200</div>
               <ResponsiveContainer width="100%" height={140}>
                 <ComposedChart data={ch} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
@@ -3236,7 +3275,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '0.91rem 1.04rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>Risk Signal Context ??90D</div>
+                  <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>Risk Signal Context — 90D</div>
                   <div style={{ fontSize: '0.95rem', color: '#e5e7eb' }}>SPY, DIA, and QQQ/SPY rotation in one tabbed view</div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -3321,7 +3360,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
             </div>
             {/* DIA Industrial Context */}
             <div style={{ display: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '0.91rem 1.04rem' }}>
-              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>DIA Industrial Context ??90D</div>
+              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>DIA Industrial Context — 90D</div>
               <div style={{ fontSize: '0.95rem', color: '#e5e7eb', marginBottom: 8 }}>DIA distance from MA200 (%) - Dow Jones 30 industrial/cyclical proxy</div>
               <ResponsiveContainer width="100%" height={140}>
                 <ComposedChart data={ch} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
@@ -3338,7 +3377,7 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
             </div>
             {/* QQQ/SPY Rotation */}
             <div style={{ display: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '0.91rem 1.04rem' }}>
-              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>QQQ/SPY Relative Strength ??90D</div>
+              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#e5e7eb', marginBottom: 2 }}>QQQ/SPY Relative Strength — 90D</div>
               <div style={{ fontSize: '0.95rem', color: '#e5e7eb', marginBottom: 8 }}>100 = window start - rising = Nasdaq leading - falling = rotation away from tech</div>
               <ResponsiveContainer width="100%" height={140}>
                 <ComposedChart data={ch} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
@@ -3352,96 +3391,147 @@ function OverviewTab({ data }: { data: RiskV1Data }) {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            {/* "How to Read" explainer */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-              {/* Section title */}
-              <div style={{ fontSize: '1.06rem', fontWeight: 700, color: '#a5b4fc', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                How to Read
-              </div>
-
-              {/* Signal definitions */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: '1.12rem', fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>Four Signals</div>
-                {[
-                  { label: 'Nasdaq MSS', color: '#a5b4fc', desc: 'Primary QQQ structure model built from MA50/MA200 position, breadth, volatility, and drawdown. 100 is neutral.' },
-                  { label: 'SPY Context', color: '#34d399', desc: 'Broad-market context that helps separate a tech-only problem from a market-wide breakdown.' },
-                  { label: 'DIA Context', color: '#fbbf24', desc: 'Industrial/cyclical context. If SPY and DIA weaken together, broad-market stress is more likely.' },
-                  { label: 'QQQ/SPY Rotation', color: '#f472b6', desc: 'Relative strength of QQQ versus SPY. Falling rotation suggests leadership is moving away from tech.' },
-                ].map(s => (
-                  <div key={s.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <div style={{ width: 3, minHeight: 36, borderRadius: 2, background: s.color, flexShrink: 0, marginTop: 2 }} />
-                    <div>
-                      <div style={{ fontSize: '1.12rem', fontWeight: 700, color: s.color, marginBottom: 2 }}>{s.label}</div>
-                      <div style={{ fontSize: '1.1rem', color: '#e5e7eb', lineHeight: 1.6 }}>{s.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Scenario matrix */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.9rem 1rem' }}>
-                <div style={{ fontSize: '0.99rem', fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Scenario Map</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-
-                  {/* Scenario 1 ??Tech only */}
-                  <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderLeft: '3px solid #f59e0b', borderRadius: 8, padding: '0.75rem 0.9rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f59e0b', background: 'rgba(245,158,11,0.15)', padding: '1px 8px', borderRadius: 4 }}>SCENARIO A - Current pattern</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#e5e7eb' }}>Tech-specific stress</span>
-                    </div>
-                    <div style={{ fontSize: '0.93rem', color: '#e5e7eb', lineHeight: 1.65 }}>
-                      <strong style={{ color: '#fbbf24' }}>Signal mix:</strong> Nasdaq MSS softens (Level 1-2) while SPY and DIA remain stable and QQQ/SPY rotation falls.<br />
-                      <strong style={{ color: '#fbbf24' }}>Meaning:</strong> Tech is weakening, but the broader market is not yet breaking down.<br />
-                      <strong style={{ color: '#fbbf24' }}>Action guide:</strong> Trim Nasdaq-heavy risk, but do not assume a full market crash.
-                    </div>
-                  </div>
-
-                  {/* Scenario 2 ??Systemic */}
-                  <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderLeft: '3px solid #ef4444', borderRadius: 8, padding: '0.75rem 0.9rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ef4444', background: 'rgba(239,68,68,0.15)', padding: '1px 8px', borderRadius: 4 }}>SCENARIO B</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#e5e7eb' }}>Systemic market stress</span>
-                    </div>
-                    <div style={{ fontSize: '0.93rem', color: '#e5e7eb', lineHeight: 1.65 }}>
-                      <strong style={{ color: '#fca5a5' }}>Signal mix:</strong> Nasdaq MSS weakens (L2+) and both SPY and DIA move into Weakening or Defensive states.<br />
-                      <strong style={{ color: '#fca5a5' }}>Meaning:</strong> This points to a broader market breakdown rather than a tech-only correction.<br />
-                      <strong style={{ color: '#fca5a5' }}>Action guide:</strong> Shift into defensive posture across the whole book.
-                    </div>
-                  </div>
-
-                  {/* Scenario 3 ??Healthy */}
-                  <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.20)', borderLeft: '3px solid #22c55e', borderRadius: 8, padding: '0.75rem 0.9rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.15)', padding: '1px 8px', borderRadius: 4 }}>SCENARIO C</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#e5e7eb' }}>Healthy / risk-on</span>
-                    </div>
-                    <div style={{ fontSize: '0.93rem', color: '#e5e7eb', lineHeight: 1.65 }}>
-                      <strong style={{ color: '#86efac' }}>Signal mix:</strong> Nasdaq MSS is strong or stable, SPY and DIA are stable, and QQQ/SPY rotation is supportive.<br />
-                      <strong style={{ color: '#86efac' }}>Meaning:</strong> Leadership is broad enough to support a healthier risk-on environment.
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Why both signals matter for Nasdaq-focused investors */}
-              <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.20)', borderRadius: 10, padding: '0.9rem 1rem' }}>
-                <div style={{ fontSize: '0.99rem', fontWeight: 700, color: '#818cf8', marginBottom: 6 }}>Why SPY and DIA matter for Nasdaq-focused users</div>
-                <div style={{ fontSize: '0.93rem', color: '#e5e7eb', lineHeight: 1.7 }}>
-                  For QQQ/TQQQ-heavy portfolios, Nasdaq MSS is the primary signal. SPY and DIA are not there to override it, but to help judge <strong style={{ color: '#c7d2fe' }}>depth and breadth of the weakness</strong>.<br /><br />
-                  <strong style={{ color: '#c7d2fe' }}>If SPY holds while Nasdaq weakens</strong>, the move is more likely a rotation or contained tech correction.<br />
-                  <strong style={{ color: '#c7d2fe' }}>If SPY falls with Nasdaq</strong>, the move is more likely systemic and requires faster defense.<br /><br />
-                  The goal is to decide <strong style={{ color: '#c7d2fe' }}>how broad and how defensive the response should be</strong>, not just whether risk exists.
-                </div>
-              </div>
-
-              {/* Warning note */}
-              <div style={{ fontSize: '0.93rem', color: '#e5e7eb', lineHeight: 1.6, padding: '0 0.2rem' }}>
-                These context signals describe current structure. They are not a short-term directional forecast and historical analogs do not guarantee future outcomes.
-              </div>
-
+      <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:'0.91rem 1.04rem' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
+          <div>
+            <div style={{ fontSize: '1.12rem', fontWeight:800, color:'#e5e7eb' }}>
+              {ovChartMode === 'risk' ? 'Risk Intensity - Last 90 Days' : 'Market Structure Score (MSS) - Last 90 Days'}
             </div>
+            <div style={{ fontSize: '0.99rem', color:'#e5e7eb', marginTop:4 }}>
+              {ovChartMode === 'risk' ? 'Higher = more danger (inverted from MSS)' : '100 = structural baseline'}
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:6 }}>
+            {(['score','risk','compare','long-term'] as const).map((m) => {
+              const on = ovChartMode === m
+              const label = m === 'score' ? 'Score View' : m === 'risk' ? 'Risk View' : m === 'compare' ? 'Compare' : 'Full History'
+              return (
+                <button key={m} onClick={() => setOvChartMode(m)} style={{
+                  padding:'0.3rem 0.7rem', borderRadius:999,
+                  border: on ? '1px solid rgba(34,211,238,0.55)' : '1px solid rgba(255,255,255,0.08)',
+                  background: on ? 'rgba(34,211,238,0.15)' : 'rgba(255,255,255,0.02)',
+                  color: on ? '#99f6e4' : '#e5e7eb', fontSize: '0.95rem', fontWeight:700,
+                }}>{label}</button>
+              )
+            })}
+          </div>
+        </div>
+        <div style={{ fontSize: '0.99rem', color:'#e5e7eb', marginTop:6, lineHeight:1.6 }}>
+          {ovChartMode === 'long-term'
+            ? 'Full MSS history (1999-present) with historical crisis periods overlaid. Shaded = known crisis events.'
+            : ovChartMode === 'risk'
+              ? 'Risk Intensity is the inverted view of MSS, designed for users who prefer higher values to represent higher danger.'
+              : 'Market Structure Score (MSS) measures how healthy the market structure is relative to its long-term baseline. Higher = stronger, lower = riskier.'}
+        </div>
+        {/* Long-term MSS history with crisis overlays */}
+        {ovChartMode === 'long-term' && (
+          ltLoading
+            ? <div style={{ textAlign:'center', padding:40, color:'#9ca3af', fontSize:'0.9rem' }}>Loading full history...</div>
+            : ltPts.length === 0
+              ? <div style={{ textAlign:'center', padding:40, color:'#6b7280', fontSize:'0.9rem' }}>No data ??run build_risk_v1.py</div>
+              : <>
+                  <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:6, marginTop:4 }}>
+                    {CRISIS_OVERLAYS.map(co => (
+                      <span key={co.label} style={{
+                        fontSize:'0.72rem', fontWeight:700, color: co.color,
+                        background: co.fill, borderRadius:4, padding:'2px 7px',
+                        border: `1px solid ${co.color}44`,
+                      }}>{co.label}</span>
+                    ))}
+                  </div>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <ComposedChart data={ltPts} margin={{ top:4, right:48, left:0, bottom:0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                      <XAxis dataKey="d" tick={{ fontSize:10, fill:'#9ca3af' }}
+                        interval={Math.max(1, Math.floor(ltPts.length / 10))}
+                        tickFormatter={(d:string) => d.slice(0,4)} />
+                      <YAxis domain={[40, 130]} tick={{ fontSize:11, fill:'#e5e7eb' }} width={28} />
+                      <Tooltip contentStyle={{ background:'#1c1f26', border:'1px solid rgba(255,255,255,0.1)', fontSize:'0.95rem', borderRadius:6 }}
+                        formatter={(v:number) => [v?.toFixed(1), 'MSS']}
+                        labelFormatter={(d:string) => d} />
+                      {MSS_ZONES.map((z) => (
+                        <ReferenceArea key={`zone-${z.key}`} y1={z.min} y2={z.max} fill={z.fill} strokeOpacity={0} />
+                      ))}
+                      {CRISIS_OVERLAYS.map(co => (
+                        <ReferenceArea key={co.label} x1={co.x1} x2={co.x2}
+                          fill={co.fill} strokeOpacity={0}
+                          label={{ value: co.label, position:'insideTopLeft', fill: co.color, fontSize:9, fontWeight:700 }} />
+                      ))}
+                      <ReferenceLine y={100} stroke="rgba(255,255,255,0.2)" strokeDasharray="3 2" />
+                      <Line dataKey="s" stroke="#22d3ee" strokeWidth={1.5} dot={false} name="MSS" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </>
+        )}
+        {ovChartMode !== 'long-term' && <ResponsiveContainer width="100%" height={220}>
+          <ComposedChart data={cur90ChartPts} margin={{ top:4, right:48, left:0, bottom:0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#e5e7eb' }} interval={cur90xInt} />
+            {ovChartMode !== 'risk' && (
+              <YAxis yAxisId="score" domain={[60, 130]} tick={{ fontSize: 12, fill: '#e5e7eb' }} width={28} />
+            )}
+            {ovChartMode === 'risk' && (
+              <YAxis yAxisId="risk" domain={[0, 60]} tick={{ fontSize: 12, fill: '#e5e7eb' }} width={28} />
+            )}
+            {ovChartMode === 'compare' && (
+              <YAxis yAxisId="risk" orientation="right" domain={[0, 60]} tick={{ fontSize: 12, fill: '#e5e7eb' }} width={28} />
+            )}
+            <Tooltip contentStyle={{ background:'#1c1f26', border:'1px solid rgba(255,255,255,0.1)', fontSize: '1.1rem', borderRadius:6 }}
+              formatter={(v:number) => v?.toFixed(1)} />
+            {ovChartMode !== 'risk' && MSS_ZONES.map((z) => (
+              <ReferenceArea key={`zone-${z.key}`} yAxisId="score" y1={z.min} y2={z.max} fill={z.fill} strokeOpacity={0} />
+            ))}
+            {ovChartMode === 'risk' && RISK_ZONES.map((z) => (
+              <ReferenceArea key={`rzone-${z.label}`} yAxisId="risk" y1={z.min} y2={z.max} fill={z.fill} strokeOpacity={0} />
+            ))}
+            {ovChartMode !== 'risk' && MSS_ZONES.map((z) => (
+              <ReferenceLine key={`label-${z.key}`} yAxisId="score" y={(z.min + z.max) / 2} stroke="rgba(255,255,255,0.06)" label={{ value: z.label, fill: z.color, fontSize: 10, position: 'right' }} />
+            ))}
+            {ovChartMode === 'risk' && RISK_ZONES.map((z) => (
+              <ReferenceLine key={`rlabel-${z.label}`} yAxisId="risk" y={(z.min + z.max) / 2} stroke="rgba(255,255,255,0.06)" label={{ value: z.label, fill: z.color, fontSize: 10, position: 'right' }} />
+            ))}
+            {ovChartMode !== 'risk' && (
+              <ReferenceLine yAxisId="score" y={100} stroke="rgba(255,255,255,0.2)" strokeDasharray="3 2" />
+            )}
+            {ovChartMode === 'score' && (
+              <>
+                <Line yAxisId="score" dataKey="score" stroke="#22d3ee" strokeWidth={1.9} dot={false} name="MSS" />
+                {cur90Latest?.score != null && (
+                  <ReferenceDot yAxisId="score" x={cur90Latest.label} y={cur90Latest.score} r={4} fill="#22d3ee" stroke="#ffffff" strokeWidth={1} />
+                )}
+              </>
+            )}
+            {ovChartMode === 'risk' && (
+              <>
+                <Line yAxisId="risk" dataKey="risk_intensity" stroke="#ef4444" strokeWidth={1.9} dot={false} name="Risk Intensity" />
+                {cur90Latest?.risk_intensity != null && (
+                  <ReferenceDot yAxisId="risk" x={cur90Latest.label} y={cur90Latest.risk_intensity} r={4} fill="#ef4444" stroke="#ffffff" strokeWidth={1} />
+                )}
+              </>
+            )}
+            {ovChartMode === 'compare' && (
+              <>
+                <Line yAxisId="score" dataKey="score" stroke="#22d3ee" strokeWidth={1.7} dot={false} name="MSS (health)" />
+                <Line yAxisId="risk" dataKey="risk_intensity" stroke="#ef4444" strokeWidth={1.7} dot={false} name="Risk Intensity" />
+                <Legend verticalAlign="top" align="right" height={24} wrapperStyle={{ color:'#e5e7eb', fontSize: '0.88rem' }} />
+              </>
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6, marginTop:10 }}>
+          {[
+            { label:'Current MSS', value: cur90Latest?.score != null ? cur90Latest.score.toFixed(1) : '--', color:'#a5b4fc' },
+            { label:'Current Zone', value: cur90Zone?.label ?? '--', color: cur90Zone?.color ?? '#e5e7eb' },
+            { label:'Recommended Exposure', value: cur90Exposure, color:'#e5e7eb' },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{ background:'rgba(255,255,255,0.03)', borderRadius:8, padding:'0.52rem 0.65rem' }}>
+              <div style={{ fontSize: '0.95rem', color:'#e5e7eb', marginBottom:2 }}>{label}</div>
+              <div style={{ fontSize:'1.02rem', fontWeight:800, color }}>{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
           </div>
         )
       })()}
@@ -3516,7 +3606,7 @@ function EventPlaybackTab({ events }: { events: EventRec[] }) {
     if (fetched) return
     setFetched(true)
     setLoading(true)
-    fetch('http://localhost:5001/api/risk-v1-playback')
+    fetch('/api/risk-v1-playback')
       .then((r) => r.json())
       .then((d) => {
         const map: Record<number, PbPoint[]> = {}
@@ -4246,7 +4336,11 @@ function MethodologyTab({ m }: { m: Methodology }) {
 }
 
 // Main
-export default function RiskSystemV1({ data }: { data: RiskV1Data }) {
+export default function RiskSystemV1({
+  data,
+}: {
+  data: RiskV1Data
+}) {
   const [tab, setTab] = useState<Tab>('Overview')
 
   return (

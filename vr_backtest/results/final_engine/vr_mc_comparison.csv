@@ -1,0 +1,4 @@
+engine,n_paths,p5_final,median_final,median_mdd,time_in_market_mean,avg_exposure_mean,snapback_capture_score_mean,snapback_success_rate,tail_loss_5pct,worst_case_dd
+A_v1.3,500,2013.7,7466.78,-60.91,92,74.94,0.472,79.6,2013.7,-90.72
+C_v1.5_on,500,2013.7,7465.9,-60.91,91.99,74.94,0.47,79,2013.7,-90.72
+BENCH,500,809.98,7326.71,-70.48,100,92.09,0.68,100,809.98,-99.27

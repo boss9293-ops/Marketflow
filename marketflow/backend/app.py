@@ -1520,6 +1520,18 @@ def risk_v1_sim():
         return jsonify(data)
     return jsonify({'error': 'risk_v1_sim.json not found — run build_risk_v1.py'}), 404
 
+@app.route('/api/smart-analyzer')
+def smart_analyzer_view():
+    # Try live output first, fall back to first scenario from sample file
+    live = load_json_or_none('smart_analyzer_latest.json')
+    if live:
+        return jsonify(live)
+    sample = load_json_or_none('smart_analyzer_sample.json')
+    if sample and isinstance(sample.get('scenarios'), list) and sample['scenarios']:
+        output = sample['scenarios'][0].get('output', {})
+        return jsonify(output)
+    return jsonify({'error': 'smart_analyzer_latest.json not found - run build_smart_analyzer.py'}), 404
+
 @app.route('/api/vr-survival')
 def vr_survival():
     data = load_json_or_none('vr_survival.json')
@@ -2748,6 +2760,36 @@ def navigator_ai_cache():
         latest['fallback_latest'] = True
         return jsonify(latest)
     return jsonify({'cached': False})
+
+
+
+@app.route('/api/refresh-prices', methods=['POST'])
+def refresh_prices():
+    """On-demand OHLCV price refresh — runs update_ohlcv.py with parallel workers."""
+    t0 = _time.time()
+    try:
+        result = _run_backend_script('update_ohlcv.py', extra_args=['--workers=8'], timeout=300)
+        elapsed = round(_time.time() - t0, 1)
+        upserted = 0
+        for line in (result.stdout or '').splitlines():
+            if 'Total upsert rows this run:' in line:
+                try:
+                    upserted = int(line.split(':')[-1].strip())
+                except ValueError:
+                    pass
+        ok = result.returncode == 0
+        return jsonify({
+            'ok': ok,
+            'upserted': upserted,
+            'elapsed': elapsed,
+            'error': result.stderr.strip() if not ok else None,
+        })
+    except subprocess.TimeoutExpired:
+        elapsed = round(_time.time() - t0, 1)
+        return jsonify({'ok': False, 'upserted': 0, 'elapsed': elapsed, 'error': 'timeout'}), 504
+    except Exception as e:
+        elapsed = round(_time.time() - t0, 1)
+        return jsonify({'ok': False, 'upserted': 0, 'elapsed': elapsed, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

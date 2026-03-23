@@ -33,6 +33,7 @@ export type LabEvent = {
     } | null
   }
   execution_playback: {
+    // Playback-only archive replay baseline. Arena keeps its own scaled series.
     original_vr: {
       points: Array<{
         date: string
@@ -80,6 +81,7 @@ interface SimResult {
 interface ChartPoint {
   date: string
   tqqq_bh: number | null
+  // Playback-only archive series key. Arena uses original_vr_scaled separately.
   original_vr: number | null
   drawdown_ladder: number | null
   bottom_reentry: number | null
@@ -94,7 +96,7 @@ const STRATEGY_IDS: StrategyId[] = [
 ]
 
 const STRATEGY_META: Record<StrategyId, { label: string; color: string; desc: string }> = {
-  original_vr:      { label: 'Original VR',      color: '#6366f1', desc: 'Pre-computed VR execution from playback engine' },
+  original_vr:      { label: 'Original VR (Playback)', color: '#6366f1', desc: 'Pre-computed archive playback execution; separate from Arena scaled curve' },
   drawdown_ladder:  { label: 'Drawdown Ladder',   color: '#10b981', desc: 'Buy tiers at QQQ DD -15/-25/-35/-45% (25% pool each)' },
   bottom_reentry:   { label: 'Bottom Re-entry',   color: '#f59e0b', desc: 'Deep buy at QQQ DD <= -35%, reversal buy on recovery from -20%' },
   ma200_trend:      { label: 'MA200 Trend',       color: '#ef4444', desc: 'Buy 40% pool on MA200 cross-above, sell 30% on cross-below' },
@@ -125,11 +127,11 @@ function runSimulation(event: LabEvent, strategy: StrategyId): SimResult {
     }
   }
 
-  // Original VR: use pre-computed points directly
+  // Original VR (Playback): use pre-computed archive playback points directly.
   if (strategy === 'original_vr') {
-    const src = event.execution_playback?.original_vr?.points ?? []
-    const sum = event.execution_playback?.original_vr?.pool_usage_summary
-    const equities = src.map(p => p.portfolio_value)
+    const playbackPoints = event.execution_playback?.original_vr?.points ?? []
+    const playbackSummary = event.execution_playback?.original_vr?.pool_usage_summary
+    const equities = playbackPoints.map(p => p.portfolio_value)
     let maxDD = 0
     let peakSoFar = equities[0] ?? 0
     for (const v of equities) {
@@ -147,7 +149,7 @@ function runSimulation(event: LabEvent, strategy: StrategyId): SimResult {
     const crashDepth = Math.abs(Math.min(...qqq_dds, 0))
 
     return {
-      points: src.map(p => ({
+      points: playbackPoints.map(p => ({
         date: p.date,
         portfolio: p.portfolio_value,
         shares: p.shares_after_trade,
@@ -156,12 +158,12 @@ function runSimulation(event: LabEvent, strategy: StrategyId): SimResult {
         buys: 0,
         sells: 0,
       })),
-      buyCount: sum?.executed_buy_count ?? 0,
-      sellCount: sum?.executed_sell_count ?? 0,
-      finalEquity: src.length > 0 ? src[src.length - 1].portfolio_value : 0,
+      buyCount: playbackSummary?.executed_buy_count ?? 0,
+      sellCount: playbackSummary?.executed_sell_count ?? 0,
+      finalEquity: playbackPoints.length > 0 ? playbackPoints[playbackPoints.length - 1].portfolio_value : 0,
       maxDrawdown: maxDD,
       recoveryDays: recoveryIdx < 0 ? -1 : recoveryIdx,
-      poolRemaining: src.length > 0 ? src[src.length - 1].pool_cash_after_trade : 0,
+      poolRemaining: playbackPoints.length > 0 ? playbackPoints[playbackPoints.length - 1].pool_cash_after_trade : 0,
       crashDepth,
       defenseTiming: null,
       bottomDetection: null,
@@ -377,6 +379,7 @@ function buildChartData(
     return {
       date: p.date,
       tqqq_bh: tqqq_price != null ? Number((bhShares * tqqq_price).toFixed(2)) : null,
+      // Playback-only archive series. Arena renders Original VR (Scaled) separately.
       original_vr:     pointMaps['original_vr']?.get(p.date) ?? null,
       drawdown_ladder: pointMaps['drawdown_ladder']?.get(p.date) ?? null,
       bottom_reentry:  pointMaps['bottom_reentry']?.get(p.date) ?? null,

@@ -1,0 +1,50 @@
+[
+  {
+    "event_id": "2011-06",
+    "event_label": "2011 Debt Ceiling",
+    "phase5_fast_snapback_flag_days": 236,
+    "phase5_override_weak_days": 0,
+    "phase5_override_moderate_days": 236,
+    "phase5_fast_snapback_override_buy_count": 1
+  },
+  {
+    "event_id": "2018-10",
+    "event_label": "2018 Q4",
+    "phase5_fast_snapback_flag_days": 69,
+    "phase5_override_weak_days": 0,
+    "phase5_override_moderate_days": 69,
+    "phase5_fast_snapback_override_buy_count": 0
+  },
+  {
+    "event_id": "2020-02",
+    "event_label": "2020 Covid Crash",
+    "phase5_fast_snapback_flag_days": 254,
+    "phase5_override_weak_days": 0,
+    "phase5_override_moderate_days": 254,
+    "phase5_fast_snapback_override_buy_count": 1
+  },
+  {
+    "event_id": "2021-12",
+    "event_label": "2022 Fed Bear",
+    "phase5_fast_snapback_flag_days": 143,
+    "phase5_override_weak_days": 0,
+    "phase5_override_moderate_days": 143,
+    "phase5_fast_snapback_override_buy_count": 1
+  },
+  {
+    "event_id": "2024-07",
+    "event_label": "2024 Yen Carry",
+    "phase5_fast_snapback_flag_days": 35,
+    "phase5_override_weak_days": 0,
+    "phase5_override_moderate_days": 35,
+    "phase5_fast_snapback_override_buy_count": 0
+  },
+  {
+    "event_id": "2025-01",
+    "event_label": "2025 Tariff Shock",
+    "phase5_fast_snapback_flag_days": 81,
+    "phase5_override_weak_days": 0,
+    "phase5_override_moderate_days": 81,
+    "phase5_fast_snapback_override_buy_count": 1
+  }
+]

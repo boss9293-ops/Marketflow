@@ -1,0 +1,50 @@
+{
+  "episodes": [
+    {
+      "episode": "2011 Debt Ceiling",
+      "kpi1_final_up": true,
+      "kpi1_expl_final": 10876.97,
+      "kpi1_ma200_final": 9518.81,
+      "kpi2_recovery_faster": false,
+      "kpi2_expl_days": null,
+      "kpi2_ma200_days": 0,
+      "kpi3_dd_down": false,
+      "kpi3_expl_dd": -49.98,
+      "kpi3_vr_dd": -43.42,
+      "kpi4_snapback_ratio": 0.166,
+      "kpi4_pass": false,
+      "all_pass": false
+    },
+    {
+      "episode": "2020 Covid Crash",
+      "kpi1_final_up": true,
+      "kpi1_expl_final": 10906.08,
+      "kpi1_ma200_final": 9772.11,
+      "kpi2_recovery_faster": true,
+      "kpi2_expl_days": 11,
+      "kpi2_ma200_days": 23,
+      "kpi3_dd_down": true,
+      "kpi3_expl_dd": -16.25,
+      "kpi3_vr_dd": -60.16,
+      "kpi4_snapback_ratio": 0.41,
+      "kpi4_pass": false,
+      "all_pass": false
+    },
+    {
+      "episode": "2025 Tariff Shock",
+      "kpi1_final_up": true,
+      "kpi1_expl_final": 16338.71,
+      "kpi1_ma200_final": 9723.5,
+      "kpi2_recovery_faster": false,
+      "kpi2_expl_days": 23,
+      "kpi2_ma200_days": 0,
+      "kpi3_dd_down": true,
+      "kpi3_expl_dd": -34.68,
+      "kpi3_vr_dd": -55.38,
+      "kpi4_snapback_ratio": 0.554,
+      "kpi4_pass": false,
+      "all_pass": false
+    }
+  ],
+  "all_pass": false
+}

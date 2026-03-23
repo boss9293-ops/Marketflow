@@ -256,8 +256,19 @@ def verify_coverage_by_symbol(
         log_write(
             f"[CHECK] {symbol}: ohlcv={total_ohlcv} indicators={ind_cnt} coverage={coverage:.4f}"
         )
-        if coverage < threshold:
+        # Check if indicators are current (latest date matches OHLCV latest date)
+        latest_ind_date = conn.execute(
+            "SELECT MAX(date) FROM indicators_daily WHERE symbol = ?", (symbol,)
+        ).fetchone()[0] or ''
+        latest_ohlcv_date = conn.execute(
+            "SELECT MAX(date) FROM ohlcv_daily WHERE symbol = ? AND (adj_close IS NOT NULL OR close IS NOT NULL)",
+            (symbol,)
+        ).fetchone()[0] or ''
+        is_current = (latest_ind_date >= latest_ohlcv_date) if latest_ohlcv_date else True
+        if coverage < threshold and not is_current:
             failed.append((symbol, int(base_cnt), int(ind_cnt), float(coverage)))
+        elif coverage < threshold and is_current:
+            log_write(f"[WARN] {symbol}: low historical coverage ({coverage:.1%}) but indicators are current ({latest_ind_date}) — run --rebuild to backfill")
 
     if failed:
         log_write("[ERROR] Coverage below threshold:")

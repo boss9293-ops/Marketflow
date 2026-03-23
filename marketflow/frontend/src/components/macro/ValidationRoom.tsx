@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
 import {
@@ -616,6 +616,124 @@ export default function ValidationRoom({ conditionStudy }: { conditionStudy?: Co
       )}
     </div>
 
+
+    {/* ================================================================ */}
+    {/* VR Engine Comparison — Official Adoption Section                  */}
+    {/* ================================================================ */}
+    <div className="space-y-5 border-t border-white/5 pt-8">
+
+      {/* Header + Adoption badges */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="text-lg font-semibold text-white">Risk Engine Comparison</div>
+          <div className="text-xs text-slate-400 mt-0.5">Deterministic + Monte Carlo validated engine positioning</div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">✓ Adopted</span>
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-blue-500/15 text-blue-300 border border-blue-500/30">MC Validated</span>
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">Primary Engine</span>
+        </div>
+      </div>
+
+      {/* Engine 3-way comparison cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 relative">
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider">Primary</div>
+          <div className="text-sm font-semibold text-emerald-300 mb-1">Explainable VR</div>
+          <div className="text-[10px] text-slate-400 mb-3 font-mono">v1.3 · survival-first</div>
+          <ul className="space-y-1.5 text-xs text-slate-300">
+            <li className="flex items-start gap-1.5"><span className="text-emerald-400 mt-0.5">↓</span>Tail risk vs VR Original</li>
+            <li className="flex items-start gap-1.5"><span className="text-emerald-400 mt-0.5">↓</span>Drawdown via selective exposure</li>
+            <li className="flex items-start gap-1.5"><span className="text-emerald-400 mt-0.5">✓</span>Designed for survival + recovery</li>
+            <li className="flex items-start gap-1.5"><span className="text-slate-400 mt-0.5">~</span>Snapback lower by design (tradeoff)</li>
+          </ul>
+          <div className="mt-4 pt-3 border-t border-emerald-500/20 text-[10px] text-slate-400 italic leading-relaxed">
+            &ldquo;Reduces tail risk and drawdown while preserving strong recovery participation through selective exposure.&rdquo;
+          </div>
+        </div>
+        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-5 relative">
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider">Benchmark</div>
+          <div className="text-sm font-semibold text-amber-300 mb-1">VR Original</div>
+          <div className="text-[10px] text-slate-400 mb-3 font-mono">v2 · fixed reference</div>
+          <ul className="space-y-1.5 text-xs text-slate-300">
+            <li className="flex items-start gap-1.5"><span className="text-amber-400 mt-0.5">↑</span>Pure opportunity capture</li>
+            <li className="flex items-start gap-1.5"><span className="text-amber-400 mt-0.5">↑</span>Snapback capture benchmark</li>
+            <li className="flex items-start gap-1.5"><span className="text-rose-400 mt-0.5">↑</span>Higher drawdown exposure</li>
+            <li className="flex items-start gap-1.5"><span className="text-rose-400 mt-0.5">↑</span>Higher tail-risk distribution</li>
+          </ul>
+          <div className="mt-4 pt-3 border-t border-amber-500/20 text-[10px] text-slate-400 italic leading-relaxed">
+            &ldquo;Pure reference baseline for opportunity capture. Materially higher drawdown and tail-risk.&rdquo;
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-600/40 bg-slate-800/30 p-5 relative">
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-700/50 text-slate-400 border border-slate-600/40 uppercase tracking-wider">Legacy</div>
+          <div className="text-sm font-semibold text-slate-300 mb-1">vFinal</div>
+          <div className="text-[10px] text-slate-500 mb-3 font-mono">experimental · research only</div>
+          <ul className="space-y-1.5 text-xs text-slate-400">
+            <li className="flex items-start gap-1.5"><span className="text-slate-500 mt-0.5">—</span>Historical tuned compare path</li>
+            <li className="flex items-start gap-1.5"><span className="text-slate-500 mt-0.5">—</span>Kept for research continuity</li>
+            <li className="flex items-start gap-1.5"><span className="text-slate-500 mt-0.5">—</span>Not the adopted engine</li>
+          </ul>
+          <div className="mt-4 pt-3 border-t border-white/5 text-[10px] text-slate-500 italic leading-relaxed">
+            &ldquo;Legacy comparison path. Not production-adopted.&rdquo;
+          </div>
+        </div>
+      </div>
+
+      {/* MC Validation Summary */}
+      <div className="rounded-2xl border border-white/10 bg-[#0e1015] p-5">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <div>
+            <div className="text-sm font-semibold text-white">Monte Carlo Validation Results</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">500 paths · REGIME_STATE · Horizon 252 bars · Seed 42</div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full text-[9px] font-bold tracking-wider bg-blue-500/15 text-blue-300 border border-blue-500/30">MC Validated ✓</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/10">
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Metric</th>
+                <th className="text-right py-2 px-3 text-emerald-300 font-medium">Explainable VR (Primary)</th>
+                <th className="text-right py-2 px-3 text-amber-300 font-medium">VR Original (Benchmark)</th>
+                <th className="text-right py-2 px-3 text-slate-400 font-medium">Signal</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              <tr className="hover:bg-white/[0.02]"><td className="py-2 px-3 text-slate-300">Tail (P5) Final Value</td><td className="py-2 px-3 text-right font-mono text-slate-200">$2,014</td><td className="py-2 px-3 text-right font-mono text-slate-200">$810</td><td className="py-2 px-3 text-right"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-300">Better</span></td></tr>
+              <tr className="hover:bg-white/[0.02]"><td className="py-2 px-3 text-slate-300">Median Max Drawdown</td><td className="py-2 px-3 text-right font-mono text-slate-200">-60.9%</td><td className="py-2 px-3 text-right font-mono text-slate-200">-70.5%</td><td className="py-2 px-3 text-right"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-300">Better</span></td></tr>
+              <tr className="hover:bg-white/[0.02]"><td className="py-2 px-3 text-slate-300">Time In Market</td><td className="py-2 px-3 text-right font-mono text-slate-200">92%</td><td className="py-2 px-3 text-right font-mono text-slate-200">100%</td><td className="py-2 px-3 text-right"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-300" title="Selective exposure is intentional — reduces risk-off deployment to improve survival.">Tradeoff</span></td></tr>
+              <tr className="hover:bg-white/[0.02]"><td className="py-2 px-3 text-slate-300">Snapback Score (mean)</td><td className="py-2 px-3 text-right font-mono text-slate-200">0.47</td><td className="py-2 px-3 text-right font-mono text-slate-200">0.68</td><td className="py-2 px-3 text-right"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-300" title="Snapback capture is intentionally lower because the primary engine reduces exposure during risk-off regimes to improve survival characteristics.">Tradeoff</span></td></tr>
+              <tr className="hover:bg-white/[0.02]"><td className="py-2 px-3 text-slate-300">Snapback Success Rate</td><td className="py-2 px-3 text-right font-mono text-slate-200">79.6%</td><td className="py-2 px-3 text-right font-mono text-slate-200">100%</td><td className="py-2 px-3 text-right"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-300" title="Expected under selective risk control.">Tradeoff</span></td></tr>
+              <tr className="hover:bg-white/[0.02]"><td className="py-2 px-3 text-slate-300">Avg Exposure</td><td className="py-2 px-3 text-right font-mono text-slate-200">74.9%</td><td className="py-2 px-3 text-right font-mono text-slate-200">92.1%</td><td className="py-2 px-3 text-right"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-300" title="Controlled exposure is the design objective.">Tradeoff</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 rounded-xl bg-white/[0.02] border border-white/5 p-3 text-[11px] text-slate-300 leading-relaxed">
+          <span className="font-semibold text-white">Official Conclusion: </span>
+          Explainable VR v1.3 is accepted as the primary risk-managed engine. Under Monte Carlo validation, it delivered materially better downside resilience — lower drawdown and improved tail outcomes — while retaining meaningful snapback participation.
+          <div className="mt-2 text-slate-400">
+            <span className="text-amber-300">Snapback tradeoff:</span>{" "}
+            Capture is intentionally lower because the primary engine reduces exposure during risk-off regimes to improve survival characteristics. VR Original remains the transparent benchmark for raw opportunity capture.
+          </div>
+        </div>
+      </div>
+
+      {/* Lineage */}
+      <details className="rounded-xl border border-white/5 bg-white/[0.01] group">
+        <summary className="px-4 py-3 text-xs text-slate-400 cursor-pointer hover:text-slate-300 select-none list-none flex items-center gap-2">
+          <span>▶</span> Engine Lineage — Research Reference Only
+        </summary>
+        <div className="px-4 pb-4 pt-2">
+          <ol className="space-y-1.5 text-xs text-slate-400 list-decimal list-inside">
+            <li><span className="text-slate-300 font-mono">v1</span> — Initial explainable state machine</li>
+            <li><span className="text-slate-300 font-mono">v1.1</span> — Dynamic position sizing experiment</li>
+            <li><span className="text-slate-300 font-mono">v1.2</span> — Early block + selective pool preservation</li>
+            <li><span className="text-emerald-300 font-mono font-semibold">v1.3</span> — <span className="text-emerald-300">Adopted primary version</span> · snapback preentry + MC validated</li>
+          </ol>
+        </div>
+      </details>
+    </div>
     </div>
   )
 }

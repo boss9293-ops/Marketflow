@@ -1,0 +1,5 @@
+event_id,event_label,normal_days,warning_days,risk_off_days,bottom_watch_days,re_entry_days,first_risk_off_date,first_reentry_date,warning_reason_days,risk_off_reason_days,bottom_watch_reason_days,reentry_partial_days,reentry_delayed_reason_days,snapback_entry_reason_days
+2011-06,2011 Debt Ceiling,44,24,3,10,61,2011-08-08,2011-08-12,24,3,10,1,58,2
+2020-02,2020 Covid Crash,0,5,3,11,38,2020-03-03,2020-03-13,5,3,11,0,37,1
+2021-12,2022 Fed Bear,8,13,8,102,178,2022-01-19,2022-01-28,13,8,102,1,176,1
+2025-01,2025 Tariff Shock,18,16,1,21,28,2025-03-03,2025-03-17,16,1,21,0,27,1

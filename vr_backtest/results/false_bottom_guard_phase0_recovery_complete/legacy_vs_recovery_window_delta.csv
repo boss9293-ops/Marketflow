@@ -1,0 +1,7 @@
+event_id,event_label,extension_bars,recovery_reason,baseline_final_delta_new_minus_old,phase2_final_delta_new_minus_old,phase3_final_delta_new_minus_old,phase2_miss_cost_10d_delta_new_minus_old,phase3_miss_cost_10d_delta_new_minus_old,phase2_guard_days_delta_new_minus_old,phase3_guard_days_delta_new_minus_old,phase2_reset_missed_delta_new_minus_old,phase3_reset_missed_delta_new_minus_old
+2011-06,2011 Debt Ceiling,0,STABILIZATION_30D,0,0,0,0,0,0,0,0,0
+2018-10,2018 Q4,0,STABILIZATION_30D,0,0,0,0,0,0,0,0,0
+2020-02,2020 Covid Crash,34,MA200_20D_HOLD,4731.62,4954.2,4954.2,0,0,0,0,1,0
+2021-12,2022 Fed Bear,0,STABILIZATION_30D,0,0,0,0,0,0,0,0,0
+2024-07,2024 Yen Carry,24,MA200_20D_HOLD,1903.25,1903.25,1903.25,0,0,3,3,0,0
+2025-01,2025 Tariff Shock,37,MA200_20D_HOLD,3813.64,3797.72,3797.72,0,0,12,9,0,0

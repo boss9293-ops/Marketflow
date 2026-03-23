@@ -1,4 +1,21 @@
 export type CyclePoolCapOption = '30' | '40' | '50' | 'unlimited'
+export type FalseBottomRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH'
+export type BuyDelayStrength = 'NONE' | 'WEAK' | 'MODERATE' | 'STRONG'
+export type ResetConfidence = 'LOW' | 'MEDIUM' | 'HIGH'
+export type ResetReason = 'STRUCTURE' | 'REBOUND' | 'EXHAUSTION'
+export type FastSnapbackOverrideStrength = 'NONE' | 'WEAK' | 'MODERATE'
+export type FastSnapbackOverrideReason = 'SNAPBACK' | 'NO_REENTRY' | 'EARLY_RECOVERY'
+export type ExecutionScenarioEngine = 'vfinal' | 'explainable_vr_v1' | 'vr_original_v2'
+export type ExplainableVRState = 'NORMAL' | 'WARNING' | 'RISK_OFF' | 'BOTTOM_WATCH' | 'RE_ENTRY'
+export type ExplainableVRReasonCode =
+  | 'NORMAL'
+  | 'WARNING_ENERGY'
+  | 'RISK_OFF_BREAK'
+  | 'BOTTOM_WATCH_DELAY'
+  | 'REENTRY_PARTIAL'
+  | 'REENTRY_DELAYED'
+  | 'SNAPBACK_ENTRY'
+export type ExplainableVRBand = 'LOW' | 'MED' | 'HIGH'
 
 export type ExecutionMarker = {
   date: string
@@ -63,9 +80,37 @@ export type ExecutionPoint = {
   cycle_pool_cap_pct: number | null
   cumulative_pool_spent: number
   buy_blocked_by_cycle_cap: boolean
+  false_bottom_risk_level: FalseBottomRiskLevel
+  buy_delay_flag: boolean
+  delay_strength: BuyDelayStrength
+  reset_ready_flag: boolean
+  reset_confidence: ResetConfidence
+  reset_reason: ResetReason
+  fast_snapback_flag: boolean
+  override_strength: FastSnapbackOverrideStrength
+  override_reason: FastSnapbackOverrideReason
+  snapback_candidate_flag: boolean
+  low_reentry_flag: boolean
+  first_buy_override_used: boolean
+  override_triggered: boolean
   trade_reason: string | null
   state_after_trade: string
   structural_state: 'NONE' | 'STRUCTURAL_WATCH' | 'STRUCTURAL_STRESS' | 'STRUCTURAL_CRASH'
+  explainable_state: ExplainableVRState | null
+  explainable_prev_state: ExplainableVRState | null
+  explainable_state_days: number | null
+  explainable_delay_counter: number | null
+  explainable_partial_entry_stage: number | null
+  explainable_exposure_target: number | null
+  explainable_buy_allowed: boolean
+  explainable_sell_allowed: boolean
+  explainable_reentry_allowed: boolean
+  explainable_reason_code: ExplainableVRReasonCode | null
+  explainable_energy_score: ExplainableVRBand | null
+  explainable_lower_high_count: number | null
+  explainable_lower_low_count: number | null
+  explainable_recovery_quality: ExplainableVRBand | null
+  explainable_retest_risk: 'LOW' | 'HIGH' | null
 }
 
 export type PoolUsageSummary = {
@@ -77,6 +122,22 @@ export type PoolUsageSummary = {
   cumulative_pool_spent: number
   blocked_buy_count: number
   deferred_buy_count: number
+  false_bottom_risk_level: FalseBottomRiskLevel
+  buy_delay_flag: boolean
+  delay_strength: BuyDelayStrength
+  reset_ready_flag: boolean
+  reset_confidence: ResetConfidence
+  reset_reason: ResetReason
+  fast_snapback_flag: boolean
+  override_strength: FastSnapbackOverrideStrength
+  override_reason: FastSnapbackOverrideReason
+  snapback_candidate_flag: boolean
+  low_reentry_flag: boolean
+  first_buy_override_used: boolean
+  override_triggered: boolean
+  guard_partial_buy_count: number
+  guard_delayed_buy_count: number
+  guard_blocked_buy_count: number
   executed_buy_count: number
   executed_sell_count: number
   executed_defense_count: number
@@ -109,6 +170,19 @@ export type ExecutionDebugRecord = {
   pool_cash_after: number
   cycle_pool_used_pct: number
   blocked_by_cap: boolean
+  false_bottom_risk_level: FalseBottomRiskLevel
+  buy_delay_flag: boolean
+  delay_strength: BuyDelayStrength
+  reset_ready_flag: boolean
+  reset_confidence: ResetConfidence
+  reset_reason: ResetReason
+  fast_snapback_flag: boolean
+  override_strength: FastSnapbackOverrideStrength
+  override_reason: FastSnapbackOverrideReason
+  snapback_candidate_flag: boolean
+  low_reentry_flag: boolean
+  first_buy_override_used: boolean
+  override_triggered: boolean
   state_after: string
 }
 
@@ -186,6 +260,8 @@ export type CycleExecutionSummary = {
 }
 
 export type ExecutionPlaybackVariant = {
+  engine_id: ExecutionScenarioEngine | 'original'
+  engine_label: string
   cap_option: CyclePoolCapOption
   cap_label: string
   sell_policy: {
@@ -260,7 +336,10 @@ export type VRComparisonView = {
 
 export type ExecutionPlaybackCollection = {
   default_cap_option: CyclePoolCapOption
+  // Playback-only archive replay baseline. Distinct from Arena "Original VR (Scaled)".
   original_vr: ExecutionPlaybackVariant
+  // VR Original V2: frozen benchmark engine with 50%-of-remaining pool deployment. DO NOT MODIFY.
+  vr_original_v2_vr?: ExecutionPlaybackVariant
   variants: Partial<Record<CyclePoolCapOption, ExecutionPlaybackVariant>>
   comparison_by_cap: Partial<Record<CyclePoolCapOption, VRComparisonView>>
 }

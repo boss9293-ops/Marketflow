@@ -1,0 +1,50 @@
+{
+  "Buy & Hold": {
+    "final_equity": 2338253.302675139,
+    "cagr": 0.4320390934594116,
+    "max_drawdown": -0.8158728565085879,
+    "sharpe": 0.8975063311807805,
+    "recovery_days": 486,
+    "cash_utilisation": 0.0
+  },
+  "200MA Strategy": {
+    "final_equity": 1213357.1610934555,
+    "cagr": 0.37150824938010873,
+    "max_drawdown": -0.4977549491537898,
+    "sharpe": 0.9559967477597217,
+    "recovery_days": 73,
+    "cash_utilisation": 0.23141361256544501
+  },
+  "VR_v2_speedA_sell10": {
+    "final_equity": 2044063.2939999271,
+    "cagr": 0.41941803941758393,
+    "max_drawdown": -0.6753210086102563,
+    "sharpe": 0.9468581148812449,
+    "recovery_days": 245,
+    "cash_utilisation": 0.2031413612565445
+  },
+  "VR_v2_speedA_sell20": {
+    "final_equity": 1923254.3900820892,
+    "cagr": 0.41373658243839073,
+    "max_drawdown": -0.6506397484616354,
+    "sharpe": 0.9534083594009684,
+    "recovery_days": 231,
+    "cash_utilisation": 0.2031413612565445
+  },
+  "VR_v2_speedB_sell10": {
+    "final_equity": 1737809.0750023148,
+    "cagr": 0.40433103616600063,
+    "max_drawdown": -0.7487728576751563,
+    "sharpe": 0.9134077207619862,
+    "recovery_days": 368,
+    "cash_utilisation": 0.22041884816753926
+  },
+  "VR_v2_speedB_sell20": {
+    "final_equity": 1793344.4378040673,
+    "cagr": 0.40724236907475175,
+    "max_drawdown": -0.6827493107777631,
+    "sharpe": 0.9401318844323464,
+    "recovery_days": 360,
+    "cash_utilisation": 0.22041884816753926
+  }
+}

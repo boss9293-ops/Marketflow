@@ -72,3 +72,17 @@ data/
 
 # claude
 .claude/
+# Temp / MC working dirs
+.mc_live_tmp/
+.mc_regime_tmp/
+.mc_regime_tmp2/
+.mc_tmp/
+.mc_ui_tmp/
+.ui_tmp/
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
+
+# VR backtest output (로컬 전용)
+vr_backtest/

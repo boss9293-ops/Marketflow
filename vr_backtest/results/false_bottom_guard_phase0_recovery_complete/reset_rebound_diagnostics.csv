@@ -1,7 +1,0 @@
-event_id,event_label,phase2_legacy_guard_active_days,phase2_recovery_guard_active_days,phase3_legacy_guard_active_days,phase3_recovery_guard_active_days,phase2_legacy_avg_days_to_first_buy_after_reset,phase2_recovery_avg_days_to_first_buy_after_reset,phase3_legacy_avg_days_to_first_buy_after_reset,phase3_recovery_avg_days_to_first_buy_after_reset,phase2_legacy_reset_missed_rebounds,phase2_recovery_reset_missed_rebounds,phase3_legacy_reset_missed_rebounds,phase3_recovery_reset_missed_rebounds,phase2_legacy_reset_false_positive_rate_pct,phase2_recovery_reset_false_positive_rate_pct,phase3_legacy_reset_false_positive_rate_pct,phase3_recovery_reset_false_positive_rate_pct
-2011-06,2011 Debt Ceiling,94,94,75,75,,,,,2,2,1,1,83.33,83.33,87.5,87.5
-2018-10,2018 Q4,81,81,74,74,,,,,1,1,1,1,57.14,57.14,66.67,66.67
-2020-02,2020 Covid Crash,38,38,27,27,,,,,1,2,1,1,50,40,50,50
-2021-12,2022 Fed Bear,296,296,278,278,18.5,18.5,19.25,19.25,5,5,5,5,68,68,65.22,65.22
-2024-07,2024 Yen Carry,30,33,27,30,,,,,0,0,0,0,100,100,100,100
-2025-01,2025 Tariff Shock,57,69,54,63,8,8,8,8,2,2,2,2,50,40,50,40

@@ -1,6 +1,0 @@
-event_id,event_label,guard_active_days,guard_reset_count,avg_days_to_first_vmin_buy_after_reset,avg_reset_first_buy_10d_return_pct,reset_delayed_missed_rebound_cases,reset_false_positive_rate_pct
-2011-06,2011 Debt Ceiling,151,13,31.33,28.13,2,84.62
-2018-10,2018 Q4,132,5,,,0,80
-2020-02,2020 Covid Crash,124,12,93.73,32.18,3,75
-2021-12,2022 Fed Bear,339,22,115.44,1.34,5,63.64
-2024-07,2024 Yen Carry,81,3,,,2,33.33

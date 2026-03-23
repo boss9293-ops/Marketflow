@@ -1,7 +1,0 @@
-event_id,event_label,baseline_total_vmin_trigger_events,phase2_total_vmin_trigger_events,phase3_total_vmin_trigger_events,baseline_executed_vmin_buys,phase2_executed_vmin_buys,phase3_executed_vmin_buys,phase2_partial_buys_count,phase3_partial_buys_count,phase2_delayed_buys_count,phase3_delayed_buys_count,phase2_blocked_buys_count,phase3_blocked_buys_count,phase2_average_delay_bars,phase3_average_delay_bars,phase2_delayed_fill_rate_pct,phase3_delayed_fill_rate_pct,phase2_blocked_then_lower_price_reentry_rate_pct,phase3_blocked_then_lower_price_reentry_rate_pct
-2011-06,2011 Debt Ceiling,1,4,2,1,1,1,0,0,2,0,2,1,3,,50,,0,0
-2018-10,2018 Q4,0,0,0,0,0,0,0,0,0,0,0,0,,,,,,
-2020-02,2020 Covid Crash,2,11,10,2,1,1,0,0,7,6,4,4,1,1,14.29,16.67,75,75
-2021-12,2022 Fed Bear,3,8,8,3,3,3,0,0,3,3,5,5,2.33,2.33,100,100,100,100
-2024-07,2024 Yen Carry,0,0,0,0,0,0,0,0,0,0,0,0,,,,,,
-2025-01,2025 Tariff Shock,2,3,3,2,2,2,0,0,2,2,1,1,1,1,100,100,100,100

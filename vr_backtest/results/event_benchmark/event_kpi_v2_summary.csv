@@ -1,4 +1,0 @@
-event_id,event_label,vr_final,vr_dd,vr_recovery_days,vr_cap_eff,vr_risk_adj,expl_final,expl_dd,expl_recovery_days,expl_cap_eff,expl_risk_adj,ma200_final,ma200_dd,ma200_recovery_days,ma200_cap_eff,ma200_risk_adj,kpi1,kpi2,kpi3,kpi4,kpi4_ratio,kpi4_abs_pass,all_pass
-2011-06,2011 Debt Ceiling,15603.47,-43.42,,3.1527,7.2604,10876.97,-49.98,,-0.3915,-0.7834,9518.81,-7.39,,0.0618,0.8363,true,true,false,false,-0.1242,false,false
-2020-02,2020 Covid Crash,10895.52,-60.16,,2.3015,3.8257,10906.08,-16.25,15,0.7537,4.6371,9772.11,-7.74,,0,0,true,true,true,true,0.3275,true,true
-2025-01,2025 Tariff Shock,17303.87,-55.38,,2.8891,5.2166,16338.71,-34.68,,1.4366,4.142,9723.5,-5.77,,0,0,true,true,true,true,0.4972,true,true

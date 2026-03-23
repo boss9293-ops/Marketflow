@@ -1,5 +1,0 @@
-event_id,event_label,start,end,original_final_value,vfinal_final_value,explainable_final_value,explainable_vs_original_delta,explainable_vs_vfinal_delta,original_max_drawdown_pct,vfinal_max_drawdown_pct,explainable_max_drawdown_pct,original_avg_event_exposure_pct,vfinal_avg_event_exposure_pct,explainable_avg_event_exposure_pct,explainable_first_risk_off_bar,explainable_first_reentry_bar,explainable_partial_reentry_buy_count,explainable_snapback_entry_count,explainable_reentry_delayed_days
-2011-06,2011 Debt Ceiling,2011-06-10,2011-12-30,15311.4,15809.79,10318.4,-4993,-5491.39,-41.5,-42.25,-52.64,93.58,93.95,48.64,41,45,1,2,58
-2020-02,2020 Covid Crash,2020-02-25,2020-05-14,10909.34,11245.2,9208.54,-1700.8,-2036.66,-60.17,-62.74,-16.24,99.98,91.16,36.11,6,14,0,1,37
-2021-12,2022 Fed Bear,2021-12-17,2023-03-13,6811.37,14439.79,15442.08,8630.71,1002.29,-80.61,-46.54,-29.08,99.27,30.06,12.68,22,29,1,1,176
-2025-01,2025 Tariff Shock,2025-01-10,2025-05-12,17301.34,19941.48,14817.4,-2483.94,-5124.08,-54.76,-21.23,-22.59,95.04,44.46,35.54,35,45,0,1,27

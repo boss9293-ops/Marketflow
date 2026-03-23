@@ -52,13 +52,19 @@ export function isPriorityEventVRTagValid(event: PriorityEventVRTag, standardEve
   )
 }
 
-export function loadPriorityEventTags(rootDir: string) {
+export function loadPriorityEventTags(rootDir: string, preloadedStandard?: { events?: Array<{ name?: string }> } | null) {
   if (cachedPriorityEventTags) return cachedPriorityEventTags
 
   try {
     const raw = readFileSync(join(rootDir, 'vr', 'playback', 'priority_event_vr_tags.json'), 'utf-8')
     const parsed = JSON.parse(raw) as PriorityEventVRTagFile
-    const standardEventIds = toStandardEventIdSet(rootDir)
+    const standardEventIds = preloadedStandard != null
+      ? new Set(
+          (preloadedStandard.events ?? [])
+            .map((event) => (typeof event.name === 'string' ? event.name.slice(0, 7) : null))
+            .filter((name): name is string => typeof name === 'string')
+        )
+      : toStandardEventIdSet(rootDir)
 
     cachedPriorityEventTags = (parsed.events ?? []).reduce<Record<string, PriorityEventVRTag>>((acc, event) => {
       if (isPriorityEventVRTagValid(event, standardEventIds)) {

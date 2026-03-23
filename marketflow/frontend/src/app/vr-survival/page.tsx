@@ -86,7 +86,7 @@ function formatVolatilityLabel(value: MarketState['volatility_regime']) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-async function buildCurrentPatternDashboard(rootDir: string): Promise<VRDashboardPatternSummary | null> {
+async function buildCurrentPatternDashboard(rootDir: string, preloadedStandard?: { events?: Array<{ name?: string }> } | null): Promise<VRDashboardPatternSummary | null> {
   try {
     const marketState = await generateMarketState({ rootDir })
     const patternMatches = detectPatternMatches(toPatternDetectorInput(marketState), { rootDir, limit: 3 })
@@ -96,6 +96,7 @@ async function buildCurrentPatternDashboard(rootDir: string): Promise<VRDashboar
       marketState,
       topPattern: patternMatches.top_matches[0] ?? null,
       minScore: 40,
+      preloadedStandard,
     })
     const suggestedPosture = Array.from(
       new Set(scenarioPlaybook.scenarios.flatMap((scenario) => scenario.posture_guidance))
@@ -173,17 +174,27 @@ export default async function VRSurvivalPage({
           stock_allocation_pct: simStockPct ? Number(simStockPct) : undefined,
         }
       : undefined
-  const patternDashboard = await buildCurrentPatternDashboard(rootDir)
-  const playbackData = buildVRPlaybackView({
-    standardArchive: standardPlayback,
-    survivalArchive: survivalPlayback,
-    rootDir,
-    eventOverrides,
-  })
-  const strategyArena: StrategyArenaView | null = buildStrategyArena({
-    standardArchive: standardPlayback,
-    survivalArchive: survivalPlayback,
-  })
+  const patternDashboard = await buildCurrentPatternDashboard(rootDir, standardPlayback)
+  let playbackData: ReturnType<typeof buildVRPlaybackView> | null = null
+  try {
+    playbackData = buildVRPlaybackView({
+      standardArchive: standardPlayback,
+      survivalArchive: survivalPlayback,
+      rootDir,
+      eventOverrides,
+    })
+  } catch {
+    // buildVRPlaybackView failed — playbackData remains null
+  }
+  let strategyArena: StrategyArenaView | null = null
+  try {
+    strategyArena = buildStrategyArena({
+      standardArchive: standardPlayback,
+      survivalArchive: survivalPlayback,
+    })
+  } catch {
+    // buildStrategyArena failed — strategyArena remains null
+  }
 
   if (!raw) {
     return (

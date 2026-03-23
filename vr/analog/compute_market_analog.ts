@@ -112,9 +112,10 @@ export function computeCurrentMarketAnalogs(input: {
   marketState: MarketState
   topPattern?: PatternMatch | null
   minScore?: number
+  preloadedStandard?: { events?: Array<{ name?: string }> } | null
 }): CurrentMarketAnalogResult {
   const minScore = input.minScore ?? 40
-  const tags = Object.values(loadPriorityEventTags(input.rootDir))
+  const tags = Object.values(loadPriorityEventTags(input.rootDir, input.preloadedStandard))
   const current = buildCurrentAnalogFeatures({
     marketState: input.marketState,
     topPattern: input.topPattern,

@@ -1,5 +1,22 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    import pathlib as _pathlib
+    _load_dotenv(_pathlib.Path(__file__).parent.parent / '.env')
+    _load_dotenv(_pathlib.Path(__file__).parent.parent / '.env.local', override=True)
+except Exception:
+    pass
+# Fix: curl_cffi cannot handle non-ASCII paths (Korean dir) -> copy cacert.pem to ASCII path
+try:
+    import os as _os, shutil as _shutil, certifi as _certifi
+    _ascii_cert = 'd:/tmp/cacert.pem'
+    if not _os.path.exists(_ascii_cert):
+        _shutil.copy2(_certifi.where(), _ascii_cert)
+    for _k in ('SSL_CERT_FILE', 'CURL_CA_BUNDLE', 'REQUESTS_CA_BUNDLE'):
+        _os.environ.setdefault(_k, _ascii_cert)
+except Exception:
+    pass
 import csv
 import io
 import json, os, re, sqlite3, subprocess, sys
@@ -11,6 +28,10 @@ import hashlib
 from ai import gpt_client, gemini_client
 from api.analyze_srs import srs_bp
 from api.analyze_integrated import integrated_bp
+from api.analyze_stock import stock_analysis_bp
+from api.analyze_financials import financials_bp
+from api.analyze_watchlist import watchlist_analysis_bp
+from api.analyze_portfolio import portfolio_analysis_bp
 from api.pipeline_metrics import pipeline_metrics_bp
 from api.pipeline_intelligence import pipeline_intelligence_bp
 from api.pipeline_recovery import pipeline_recovery_bp
@@ -64,6 +85,10 @@ app = Flask(__name__)
 CORS(app)
 app.register_blueprint(srs_bp)
 app.register_blueprint(integrated_bp)
+app.register_blueprint(stock_analysis_bp)
+app.register_blueprint(financials_bp)
+app.register_blueprint(watchlist_analysis_bp)
+app.register_blueprint(portfolio_analysis_bp)
 app.register_blueprint(pipeline_metrics_bp)
 app.register_blueprint(pipeline_intelligence_bp)
 app.register_blueprint(pipeline_recovery_bp)
@@ -81,7 +106,7 @@ OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'output')
 VALIDATION_SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), 'storage', 'validation_snapshots')
 MACRO_SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), 'storage', 'macro_snapshots')
 MACRO_SNAPSHOT_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'snapshots')
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'marketflow.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'marketflow.db')
 CACHE_DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache.db')
 MY_HOLDINGS_PATH = os.path.join(OUTPUT_DIR, 'my_holdings.json')
 MY_HOLDINGS_SNAPSHOT_PATH = os.path.join(OUTPUT_DIR, 'my_holdings_cache.json')

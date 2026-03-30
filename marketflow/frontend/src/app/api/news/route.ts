@@ -32,16 +32,17 @@ export async function GET(request: Request) {
           // Map to 09:30 and 16:00 structured format ("하루 2차례")
           const latestItems = data.slice(0, 2)
           
-          const mapped = latestItems.map((item: any, i: number) => {
-            const dateObj = new Date(item.datetime * 1000)
-            const dateET = dateObj.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
-            return {
-              id: `${symbol}-news-${item.id}`,
-              symbol,
-              checkpointET: i === 0 ? '16:00' : '09:30',
-              headline: item.headline,
-              source: item.source,
-              summary: item.summary || `${item.headline}. Content truncated or unavailable via free tier.`,
+      const mapped = latestItems.map((item: any, i: number) => {
+        const dateObj = new Date(item.datetime * 1000)
+        const dateET = dateObj.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+        return {
+          id: `${symbol}-news-${item.id}`,
+          ticker: symbol,
+          symbol,
+          checkpointET: i === 0 ? '16:00' : '09:30',
+          headline: item.headline,
+          source: item.source,
+          summary: item.summary || `${item.headline}. Content truncated or unavailable via free tier.`,
               url: item.url,
               dateET
             }
@@ -68,6 +69,7 @@ export async function GET(request: Request) {
           const dateET = pubTime.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
           return {
             id: `${symbol}-news-${item.uuid || i}`,
+            ticker: symbol,
             symbol,
             checkpointET: i === 0 ? '16:00' : '09:30',
             headline: item.title,
@@ -102,6 +104,7 @@ export async function GET(request: Request) {
     briefs: [
       {
         id: `${symbol}-mock-close`,
+        ticker: symbol,
         symbol,
         checkpointET: '16:00',
         headline: `${symbol} sees strategic volume expansion into market close.`,
@@ -111,6 +114,7 @@ export async function GET(request: Request) {
       },
       {
         id: `${symbol}-mock-open`,
+        ticker: symbol,
         symbol,
         checkpointET: '09:30',
         headline: `Pre-market sentiment drives ${symbol} at the open.`,

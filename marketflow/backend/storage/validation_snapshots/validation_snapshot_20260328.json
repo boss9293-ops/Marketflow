@@ -1,0 +1,150 @@
+{
+  "snapshot_date": "2026-03-28",
+  "policy_version": "macro_policy_v1",
+  "guard_policy_version": "validation_guard_policy_v1",
+  "data_asof": {
+    "WALCL": "2026-03-25",
+    "RRP": "2026-03-27",
+    "EFFR": "2026-03-26",
+    "VIX": "2026-03-26",
+    "MARKET_PROXY": "2026-03-27"
+  },
+  "revision_detected": true,
+  "revision_notes": [
+    "[REVISION] WALCL: 9 observations added in probe window (e.g. 2026-01-28)",
+    "[REVISION] RRP: 43 observations added in probe window (e.g. 2026-01-27)",
+    "[REVISION] EFFR: 42 observations added in probe window (e.g. 2026-01-27)"
+  ],
+  "windows": {
+    "baseline": {
+      "start": "2017-01-01",
+      "end": "2019-12-31",
+      "metrics": {
+        "lead_time_to_vix25": 4.5,
+        "lead_time_to_dd10": 3.6666666666666665,
+        "false_alarm_rate": 0.5833333333333334,
+        "coverage_vix25": 0.7894736842105263,
+        "coverage_dd10": 0.4146341463414634,
+        "stability_mps_abschg95": 9.17394757744242,
+        "avg_mps_conf": 100.0,
+        "false_alarm_rate_delta_vs_prev_snapshot": -0.23299319727891155,
+        "coverage_vix25_delta_vs_prev_snapshot": -0.10526315789473684,
+        "coverage_dd10_delta_vs_prev_snapshot": -0.3170731707317073,
+        "stability_mps_abschg95_delta_vs_prev_snapshot": -6.265289912629065,
+        "avg_mps_conf_delta_vs_prev_snapshot": 0.0
+      }
+    },
+    "crisis_2020": {
+      "start": "2020-01-01",
+      "end": "2020-06-30",
+      "metrics": {
+        "lead_time_to_vix25": 72.0,
+        "lead_time_to_dd10": 16.0,
+        "false_alarm_rate": 0.0,
+        "coverage_vix25": 0.04395604395604396,
+        "coverage_dd10": 0.08571428571428572,
+        "stability_mps_abschg95": 17.399841143764895,
+        "avg_mps_conf": 100.0,
+        "false_alarm_rate_delta_vs_baseline": -0.5833333333333334,
+        "coverage_vix25_delta_vs_baseline": -0.7455176402544824,
+        "coverage_dd10_delta_vs_baseline": -0.3289198606271777,
+        "stability_mps_abschg95_delta_vs_baseline": 8.225893566322476
+      }
+    },
+    "crisis_2022": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "metrics": {
+        "lead_time_to_vix25": 9.666666666666666,
+        "lead_time_to_dd10": null,
+        "false_alarm_rate": 0.5,
+        "coverage_vix25": 0.3161764705882353,
+        "coverage_dd10": 0.3404255319148936,
+        "stability_mps_abschg95": 6.673550436854645,
+        "avg_mps_conf": 100.0,
+        "false_alarm_rate_delta_vs_baseline": -0.08333333333333337,
+        "coverage_vix25_delta_vs_baseline": -0.47329721362229105,
+        "coverage_dd10_delta_vs_baseline": -0.07420861442656979,
+        "stability_mps_abschg95_delta_vs_baseline": -2.500397140587774
+      }
+    }
+  },
+  "regression": {
+    "status": "Watch",
+    "failed_checks": [
+      "crisis_2020.coverage_vix25_delta",
+      "crisis_2020.coverage_dd10_delta",
+      "crisis_2020.stability_mps_abschg95_abs_delta",
+      "crisis_2022.coverage_vix25_delta",
+      "crisis_2022.coverage_dd10_delta"
+    ],
+    "checks": [
+      {
+        "name": "baseline.avg_mps_conf_min",
+        "pass": true,
+        "value": 100.0,
+        "threshold": 60.0
+      },
+      {
+        "name": "crisis_2020.avg_mps_conf_min",
+        "pass": true,
+        "value": 100.0,
+        "threshold": 60.0
+      },
+      {
+        "name": "crisis_2022.avg_mps_conf_min",
+        "pass": true,
+        "value": 100.0,
+        "threshold": 60.0
+      },
+      {
+        "name": "crisis_2020.false_alarm_rate_delta",
+        "pass": true,
+        "value": -0.5833333333333334,
+        "threshold": 0.05
+      },
+      {
+        "name": "crisis_2020.coverage_vix25_delta",
+        "pass": false,
+        "value": -0.7455176402544824,
+        "threshold": -0.07
+      },
+      {
+        "name": "crisis_2020.coverage_dd10_delta",
+        "pass": false,
+        "value": -0.3289198606271777,
+        "threshold": -0.07
+      },
+      {
+        "name": "crisis_2020.stability_mps_abschg95_abs_delta",
+        "pass": false,
+        "value": 8.225893566322476,
+        "threshold": 8.0
+      },
+      {
+        "name": "crisis_2022.false_alarm_rate_delta",
+        "pass": true,
+        "value": -0.08333333333333337,
+        "threshold": 0.05
+      },
+      {
+        "name": "crisis_2022.coverage_vix25_delta",
+        "pass": false,
+        "value": -0.47329721362229105,
+        "threshold": -0.07
+      },
+      {
+        "name": "crisis_2022.coverage_dd10_delta",
+        "pass": false,
+        "value": -0.07420861442656979,
+        "threshold": -0.07
+      },
+      {
+        "name": "crisis_2022.stability_mps_abschg95_abs_delta",
+        "pass": true,
+        "value": 2.500397140587774,
+        "threshold": 8.0
+      }
+    ]
+  }
+}

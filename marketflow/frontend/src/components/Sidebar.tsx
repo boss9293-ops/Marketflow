@@ -8,12 +8,15 @@ import BilLabel from '@/components/BilLabel'
 import { UI_TEXT } from '@/lib/uiText'
 
 const homeItem = { href: '/dashboard', label: UI_TEXT.nav.dashboard, icon: 'home' as const }
+const newsLabel = ((UI_TEXT.nav as Record<string, { ko: string; en: string }>).news) ?? { ko: '뉴스', en: 'News' }
 
 // ── Zone OS: Market OS ────────────────────────────────────────────────────────
 const osItems = [
+  { href: '/news', label: newsLabel, subLabel: { ko: '뉴스 → 종목', en: 'News to Stock' }, dot: '#facc15' },
   { href: '/briefing', label: UI_TEXT.nav.briefing, dot: '#a855f7' },
   { href: '/macro', label: UI_TEXT.nav.macro, subLabel: { ko: '환경 압력', en: 'Environment Pressure' }, dot: '#38bdf8' },
   { href: '/chart', label: UI_TEXT.nav.chart, subLabel: { ko: '차트 · 종목 분석', en: 'Chart & Ticker' }, dot: '#22d3ee' },
+  { href: '/watchlist', label: UI_TEXT.nav.terminal, dot: '#f59e0b' },
   { href: '/sectors', label: UI_TEXT.nav.sectors, dot: '#14b8a6' },
   { href: '/sectors/rrg', label: UI_TEXT.nav.rrg, subLabel: { ko: '섹터 로테이션 그래프', en: 'Relative Rotation' }, dot: '#14b8a6' },
 ]
@@ -59,11 +62,6 @@ const toolItems = [
     dot: '#38bdf8',
     tooltip: '기관 데이터(13F)가 아닌 거래량·상대강도·추세의 프록시\n레짐 적합 시 참고용',
   },
-]
-
-// ── Zone BT: Bloomberg Terminal ──────────────────────────────────────────────
-const btItems = [
-  { href: '/watchlist', label: UI_TEXT.nav.terminal, dot: '#f59e0b' },
 ]
 
 // ── Zone KR: KR Market (collapsed) ──────────────────────────────────────────
@@ -290,14 +288,13 @@ export default function Sidebar({
   open?: boolean
   onClose?: () => void
 }) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const [osOpen, setOsOpen] = useState(true)
   const [crashOpen, setCrashOpen] = useState(true)
   const [lvOpen, setLvOpen] = useState(true)
   const [vrTestOpen, setVrTestOpen] = useState(true)
   const [reOpen, setReOpen] = useState(true)
   const [toolsOpen, setToolsOpen] = useState(true)
-  const [btOpen, setBtOpen] = useState(true)
   const [krOpen, setKrOpen] = useState(false)
 
   useEffect(() => {
@@ -531,28 +528,6 @@ export default function Sidebar({
         />
       </div>
       {toolsOpen && <NavLinks items={toolItems} pathname={pathname} compact={compact} onNavigate={overlay ? onClose : undefined} />}
-
-      {/* Zone BT: Bloomberg Terminal */}
-      <div
-        style={{
-          marginTop: '0.72rem',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          paddingTop: '0.58rem',
-          paddingLeft: compact ? '0.4rem' : '0.5rem',
-          paddingRight: compact ? '0.4rem' : '0.5rem',
-        }}
-      >
-        <ZoneHeader
-          icon={<span style={{ fontSize: '0.82rem', color: '#f59e0b' }}>BT</span>}
-          label={compact ? 'BT' : 'Bloomberg'}
-          badge="MVP"
-          badgeColor="#f59e0b"
-          onClick={() => setBtOpen((p) => !p)}
-          isOpen={btOpen}
-          compact={compact}
-        />
-      </div>
-      {btOpen && <NavLinks items={btItems} pathname={pathname} compact={compact} onNavigate={overlay ? onClose : undefined} />}
 
       {/* Zone KR: KR Market (collapsed) */}
       <div

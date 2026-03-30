@@ -282,15 +282,31 @@ function buildAxisTicks<T extends Record<string, unknown>>(
     return points.map(readTickValue).filter((value): value is string | number => value !== null)
   }
   const step = Math.max(1, Math.floor((points.length - 1) / Math.max(1, desiredCount - 1)))
-  const ticks = points
-    .filter((_, index) => index % step === 0)
-    .map(readTickValue)
-    .filter((value): value is string | number => value !== null)
-  const last = points[points.length - 1]?.[key]
-  if ((typeof last === 'string' || typeof last === 'number') && ticks[ticks.length - 1] !== last) {
-    ticks.push(last)
+  const tickIndices: number[] = []
+  for (let i = 0; i < points.length; i += step) {
+    tickIndices.push(i)
   }
-  return Array.from(new Set(ticks))
+
+  const lastIndex = points.length - 1
+  if (tickIndices[tickIndices.length - 1] !== lastIndex) {
+    const prevIndex = tickIndices[tickIndices.length - 1]
+    const minTailGap = Math.max(1, Math.floor(step * 0.6))
+    if (lastIndex - prevIndex < minTailGap) {
+      tickIndices[tickIndices.length - 1] = lastIndex
+    } else {
+      tickIndices.push(lastIndex)
+    }
+  }
+
+  const seen = new Set<string | number>()
+  const ticks: Array<string | number> = []
+  tickIndices.forEach((index) => {
+    const value = readTickValue(points[index])
+    if (value == null || seen.has(value)) return
+    seen.add(value)
+    ticks.push(value)
+  })
+  return ticks
 }
 
 // Playback types
@@ -429,8 +445,11 @@ const RISK_ZONES = [
 const CRISIS_OVERLAYS = [
   { label: '2000 Dotcom', x1: '2000-03-27', x2: '2002-10-09', color: '#ef4444', fill: 'rgba(239,68,68,0.09)' },
   { label: '2008 GFC',    x1: '2007-10-11', x2: '2009-03-09', color: '#f97316', fill: 'rgba(249,115,22,0.09)' },
+  { label: '2018 US-CN Trade', x1: '2018-11-01', x2: '2018-12-31', labelX: '2018-08-01', color: '#f59e0b', fill: 'rgba(245,158,11,0.10)' },
   { label: '2020 COVID',  x1: '2020-02-20', x2: '2020-03-23', color: '#60a5fa', fill: 'rgba(96,165,250,0.12)' },
   { label: '2022 Tight.', x1: '2022-01-03', x2: '2022-10-13', color: '#a78bfa', fill: 'rgba(167,139,250,0.09)' },
+  { label: '2024 Yen',    x1: '2024-08-01', x2: '2024-08-31', color: '#22d3ee', fill: 'rgba(34,211,238,0.11)' },
+  { label: '2025 Trump Tariff', x1: '2025-04-01', x2: '2025-04-30', color: '#fb7185', fill: 'rgba(251,113,133,0.10)' },
 ] as const
 
 function interpretMssZone(score: number | null | undefined) {
@@ -1021,6 +1040,13 @@ function OverviewTab({
   }, [chartMode, ltPts.length])
   const ltAxisTicks = useMemo(() => buildAxisTicks(ltPts, 'd', 10), [ltPts])
   const ltLastDate = ltPts[ltPts.length - 1]?.d ?? ''
+  const ltLatestScore = ltPts.length ? ltPts[ltPts.length - 1]?.s ?? null : null
+  const ltYTicks = useMemo(() => {
+    const baseTicks = [40, 65, 90, 130]
+    if (ltLatestScore == null || !Number.isFinite(ltLatestScore)) return baseTicks
+    const latestTick = Number(ltLatestScore.toFixed(1))
+    return Array.from(new Set([...baseTicks, latestTick])).sort((a, b) => a - b)
+  }, [ltLatestScore])
 
 
   const diagLayers = data.total_risk ? [
@@ -3479,7 +3505,13 @@ function OverviewTab({
                               interval={0}
                               tickFormatter={(d:string) => (d === ltLastDate ? d.slice(2) : d.slice(0,4))}
                             />
-                            <YAxis domain={[40, 130]} tick={{ fontSize:11, fill:'#e5e7eb' }} width={28} />
+                            <YAxis
+                              domain={[40, 130]}
+                              ticks={ltYTicks}
+                              tick={{ fontSize:11, fill:'#e5e7eb' }}
+                              tickFormatter={(v:number) => (Number.isInteger(v) ? `${v}` : v.toFixed(1))}
+                              width={34}
+                            />
                             <Tooltip contentStyle={{ background:'#1c1f26', border:'1px solid rgba(255,255,255,0.1)', fontSize:'0.95rem', borderRadius:6 }}
                               formatter={(v:number) => [v?.toFixed(1), 'MSS']}
                               labelFormatter={(d:string) => d} />
@@ -3488,10 +3520,26 @@ function OverviewTab({
                             ))}
                             {CRISIS_OVERLAYS.map(co => (
                               <ReferenceArea key={co.label} x1={co.x1} x2={co.x2}
-                                fill={co.fill} strokeOpacity={0}
-                                label={{ value: co.label, position:'insideTopLeft', fill: co.color, fontSize:9, fontWeight:700 }} />
+                                fill={co.fill} strokeOpacity={0} />
+                            ))}
+                            {CRISIS_OVERLAYS.map(co => (
+                              <ReferenceLine
+                                key={`overlay-label-${co.label}`}
+                                x={'labelX' in co ? co.labelX : co.x1}
+                                stroke="rgba(0,0,0,0)"
+                                label={{ value: co.label, position:'insideTopLeft', fill: co.color, fontSize:9, fontWeight:700 }}
+                              />
                             ))}
                             <ReferenceLine y={100} stroke="rgba(255,255,255,0.2)" strokeDasharray="3 2" />
+                            {ltLatestScore != null && Number.isFinite(ltLatestScore) && (
+                              <ReferenceLine
+                                y={ltLatestScore}
+                                stroke="#ef4444"
+                                strokeWidth={1.6}
+                                strokeDasharray="4 2"
+                                label={{ value: `Latest ${ltLatestScore.toFixed(1)}`, position: 'right', fill: '#ef4444', fontSize: 10, fontWeight: 700 }}
+                              />
+                            )}
                             <Line dataKey="s" stroke="#22d3ee" strokeWidth={1.5} dot={false} name="MSS" />
                           </ComposedChart>
                         </ResponsiveContainer>

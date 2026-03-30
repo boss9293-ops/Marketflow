@@ -95,7 +95,7 @@ function PriceChart({
   show200: boolean
 }) {
   const w = 1020
-  const h = 380
+  const h = 440
   const left = 46
   const right = 86
   const top = 12

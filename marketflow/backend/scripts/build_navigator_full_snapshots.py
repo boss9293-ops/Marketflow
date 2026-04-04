@@ -12,6 +12,8 @@ import sqlite3
 import datetime
 import sys
 
+from db_utils import resolve_marketflow_db
+
 
 def _find_root():
     _cand = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
@@ -31,7 +33,10 @@ def _find_root():
 BASE = _find_root()
 BACKEND = os.path.join(BASE, 'backend')
 OUT_DIR = os.path.join(BACKEND, 'output')
-DB_PATH = os.path.join(BASE, 'data', 'marketflow.db')
+DB_PATH = resolve_marketflow_db(
+    required_tables=("ohlcv_daily", "indicators_daily"),
+    prefer_engine=True,
+)
 
 
 QUERY = """

@@ -1,0 +1,41 @@
+{
+  "last_updated": "2026-03-31T00:00:00",
+  "pages": {
+    "briefing": {
+      "auto": { "active": "auto/briefing/v1.0.0_market_briefing.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "macro_brief": {
+      "auto": { "active": "auto/macro_brief/v1.0.0_macro_brief.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "risk_brief": {
+      "auto": { "active": "auto/risk_brief/v1.0.0_risk_brief.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "market_structure_brief": {
+      "auto": { "active": "auto/market_structure_brief/v1.0.0_market_structure_brief.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "today_context": {
+      "auto": { "active": "auto/today_context/v1.0.0_today_context.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "macro": {
+      "auto": { "active": "auto/macro/v1.0.0_macro_summary.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "risk": {
+      "auto": { "active": "auto/risk/v1.0.0_risk_analysis.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "validation": {
+      "auto": { "active": "auto/validation/v1.0.0_validation_room.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    },
+    "vr": {
+      "auto": { "active": "auto/vr/v1.0.0_vr_explainer.md", "versions": ["v1.0.0"] },
+      "user_req": { "active": [] }
+    }
+  }
+}

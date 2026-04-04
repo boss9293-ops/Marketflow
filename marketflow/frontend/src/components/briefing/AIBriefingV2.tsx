@@ -17,6 +17,26 @@ export type AiBriefingV2 = {
   data_date?: string
   provider?: string
   model?: string
+  summary_statement?: string
+  market_regime?: string
+  market_insight?: string
+  key_driver?: string
+  flow_signals?: string[]
+  market_reaction?: string[]
+  positioning?: string
+  today_context?: string
+  daily_briefing?: {
+    top_themes_today?: string[]
+    market_narrative?: string
+    supporting_highlights?: string[]
+  }
+  quality_gate?: {
+    daily_theme_count?: number
+    daily_narrative_sentence_count?: number
+    daily_highlight_count?: number
+    today_context_sentence_count?: number
+    rules?: Record<string, boolean>
+  }
   tokens?: {
     input?: number
     output?: number

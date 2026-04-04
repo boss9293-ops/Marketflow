@@ -7,10 +7,13 @@ import {
   StockAnalysisResponse,
   calcUpsidePct,
   fetchStockAnalysis,
+  formatMultiple,
   formatPct,
   formatPrice,
   normalizeTicker,
 } from '@/lib/stockAnalysis'
+import { pickLang, useUiLang } from '@/lib/useLangMode'
+import type { UiLang } from '@/lib/uiLang'
 
 type Props = {
   symbol?: string
@@ -37,6 +40,58 @@ type EpsEntry = {
   eps_high?: number | null
   kind?: string
 }
+
+const STREET_TEXT = {
+  loadingChart: { ko: '차트를 불러오는 중...', en: 'Loading chart...' },
+  priceHistoryUnavailable: { ko: '가격 히스토리를 불러오지 못했습니다.', en: 'Price history unavailable.' },
+  past12m: { ko: '최근 12개월', en: 'Past 12M' },
+  high: { ko: '상단', en: 'HIGH' },
+  average: { ko: '기준', en: 'AVG' },
+  low: { ko: '하단', en: 'LOW' },
+  history: { ko: '히스토리', en: 'History' },
+  forwardPeStrip: { ko: '포워드 P/E 스트립', en: 'Forward P/E Strip' },
+  priceProjectionNoEps: { ko: 'EPS 없음 - 가격 투영치', en: 'Price projection (no EPS data)' },
+  seekingAlphaStyle: { ko: 'Seeking Alpha 스타일', en: 'Seeking Alpha style' },
+  rowPe: { ko: 'P/E', en: 'P/E' },
+  rowPrice: { ko: '가격', en: 'Price' },
+  rowEps: { ko: 'EPS', en: 'EPS' },
+  rowPriceChange: { ko: '가격 변화', en: 'Price Chg' },
+  rowGrowth: { ko: '성장률', en: 'Growth' },
+  actual: { ko: '실적', en: 'Actual' },
+  estimate: { ko: '예상', en: 'Est' },
+  now: { ko: '현재', en: 'NOW' },
+  yearEstimateSuffix: { ko: '년 예상', en: 'Y Est' },
+  methodologyTitle: { ko: '3년 목표주가 계산 로직', en: '3Y Target Price Logic' },
+  year1Line: { ko: 'Year 1 (12개월): FMP 컨센서스 target mean / high / low', en: 'Year 1 (12M): FMP consensus target mean / high / low' },
+  year2Line: { ko: 'Year 2 (24개월): eps_ladder[Y+1] × blended_multiple', en: 'Year 2 (24M): eps_ladder[Y+1] × blended_multiple' },
+  year3Line: { ko: 'Year 3 (36개월): eps_ladder[Y+2] × compressed_multiple', en: 'Year 3 (36M): eps_ladder[Y+2] × compressed_multiple' },
+  blendedMultiple: { ko: 'blended_multiple:', en: 'blended_multiple:' },
+  baseY2Note: { ko: '보수적 평균회귀', en: 'conservative mean reversion' },
+  baseY3Note: { ko: '완전 평균회귀', en: 'full mean reversion' },
+  bearNote: { ko: '밸류에이션 디스카운트', en: 'valuation discount' },
+  bullNote: { ko: '프리미엄 압축', en: 'premium compression' },
+  whyMethodTitle: { ko: '이 방식의 이유', en: 'Why this method' },
+  whyMethodBody: {
+    ko: 'Year 1은 애널리스트 컨센서스를 사용하고, Year 2-3은 EPS 추정과 멀티플 정상화를 통해 시간에 따른 프리미엄 압축을 반영합니다.',
+    en: 'Year 1 uses analyst consensus directly. Year 2-3 are built from EPS ladder and normalized valuation assumptions to reflect historical premium compression over time.',
+  },
+  metricGuide: { ko: '밸류에이션 지표 가이드', en: 'Valuation Metric Guide' },
+  metric: { ko: '지표', en: 'Metric' },
+  current: { ko: '현재값', en: 'Current' },
+  description: { ko: '설명', en: 'Description' },
+  interpretation: { ko: '해석 포인트', en: 'Interpretation' },
+  failedToLoadData: { ko: '데이터를 불러오지 못했습니다.', en: 'Failed to load data' },
+  sectionKicker: { ko: '스트리트 컨센서스 • 3년 전망', en: 'Street Consensus • 3-Year Outlook' },
+  sectionTitleSuffix: { ko: '목표가 & 전망', en: 'Price Target & Forecast' },
+  upside: { ko: '1년 업사이드', en: '1Y Upside' },
+  basedOn: { ko: '기준', en: 'Based on' },
+  basedOnTargets: { ko: '애널리스트 목표가', en: 'analyst price targets' },
+  analysts: { ko: '애널리스트', en: 'analysts' },
+  ratioHintPsr: { ko: '주가 / 주당매출', en: 'Price / Sales' },
+  ratioHintPfcf: { ko: '주가 / 주당FCF', en: 'Price / FCF/share' },
+  ratioHintPbr: { ko: '주가 / 주당순자산', en: 'Price / Book value' },
+  ratioHintTpeg: { ko: '트레일링 PEG', en: 'Trailing PEG' },
+} as const
 
 function toNumber(v: unknown): number | null {
   if (v == null) return null
@@ -136,10 +191,10 @@ function buildForecast3Y(args: {
     }
   }
 
-  // Y1: analyst price targets preferred; fall back to EPS × PE
+  // Y1: analyst price targets preferred; fall back to EPS x PE
   if (y1.base == null && y1.high == null && y1.low == null) {
     if (fy1 != null) {
-      // Use EPS × compressed current PE as 1Y price proxy
+      // Use EPS x compressed current PE as 1Y price proxy
       y1 = prices(fy1, pe * 0.92, pe * 0.87, pe * 0.72)
     }
   }
@@ -173,7 +228,7 @@ function buildForecast3Y(args: {
   return { y1, y2, y3 }
 }
 
-// Chart layout constants (module-level — not reactive)
+// Chart layout constants (module-level ??not reactive)
 const W = 1100
 const H = 320
 const PL = 58
@@ -196,11 +251,13 @@ function ForecastChart({
   current,
   forecast,
   loading,
+  uiLang,
 }: {
   history: ChartPoint[]
   current: number | null
   forecast: Forecast3Y | null
   loading: boolean
+  uiLang: UiLang
 }) {
   const allVals = [
     ...history.map(p => p.close),
@@ -279,13 +336,31 @@ function ForecastChart({
     type LI = { key: string; label: string; value: number; y: number; color: string }
     const raw: Array<LI | null> = [
       forecast?.y3.high != null && y3H != null
-        ? { key: 'high', label: 'HIGH', value: forecast.y3.high, y: y3H, color: '#5eead4' }
+        ? {
+            key: 'high',
+            label: pickLang(uiLang, STREET_TEXT.high.ko, STREET_TEXT.high.en),
+            value: forecast.y3.high,
+            y: y3H,
+            color: '#5eead4',
+          }
         : null,
       forecast?.y3.base != null && y3B != null
-        ? { key: 'avg', label: 'AVG', value: forecast.y3.base, y: y3B, color: '#94a3b8' }
+        ? {
+            key: 'avg',
+            label: pickLang(uiLang, STREET_TEXT.average.ko, STREET_TEXT.average.en),
+            value: forecast.y3.base,
+            y: y3B,
+            color: '#94a3b8',
+          }
         : null,
       forecast?.y3.low != null && y3L != null
-        ? { key: 'low', label: 'LOW', value: forecast.y3.low, y: y3L, color: '#f472b6' }
+        ? {
+            key: 'low',
+            label: pickLang(uiLang, STREET_TEXT.low.ko, STREET_TEXT.low.en),
+            value: forecast.y3.low,
+            y: y3L,
+            color: '#f472b6',
+          }
         : null,
     ]
     const valid = raw.filter((x): x is LI => x != null).sort((a, b) => a.y - b.y)
@@ -295,7 +370,7 @@ function ForecastChart({
       prev = y
       return { ...item, y }
     })
-  }, [forecast, y3H, y3B, y3L])
+  }, [forecast, y3H, y3B, y3L, uiLang])
 
   // 1Y and 2Y price labels with collision avoidance
   const mkYearLabels = (
@@ -334,7 +409,9 @@ function ForecastChart({
   if (histPts.length === 0) {
     return (
       <div className="flex h-[260px] items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-sm text-slate-500">
-        {loading ? 'Loading chart...' : 'Price history unavailable.'}
+        {loading
+          ? pickLang(uiLang, STREET_TEXT.loadingChart.ko, STREET_TEXT.loadingChart.en)
+          : pickLang(uiLang, STREET_TEXT.priceHistoryUnavailable.ko, STREET_TEXT.priceHistoryUnavailable.en)}
       </div>
     )
   }
@@ -342,11 +419,11 @@ function ForecastChart({
   return (
     <div className="rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(11,18,31,0.96),rgba(7,11,20,0.98))] p-4">
       <div className="mb-3 flex items-center justify-between text-[12px] uppercase tracking-[0.22em]">
-        <span className="text-cyan-200/95">Past 12M</span>
+        <span className="text-cyan-200/95">{pickLang(uiLang, STREET_TEXT.past12m.ko, STREET_TEXT.past12m.en)}</span>
         <div className="flex gap-6 text-slate-400">
-          <span className="text-teal-300/95">1Y</span>
-          <span className="text-teal-200/75">2Y</span>
-          <span className="text-teal-100/55">3Y</span>
+          <span className="text-teal-300/95">{uiLang === 'ko' ? '1년' : '1Y'}</span>
+          <span className="text-teal-200/75">{uiLang === 'ko' ? '2년' : '2Y'}</span>
+          <span className="text-teal-100/55">{uiLang === 'ko' ? '3년' : '3Y'}</span>
         </div>
       </div>
 
@@ -410,11 +487,11 @@ function ForecastChart({
             fontSize="13" fill="rgba(203,213,225,0.80)">{t.label}</text>
         ))}
         <text x={X1} y={H - PB + 20} textAnchor="middle" fontSize="13"
-          letterSpacing="2" fill="rgba(203,213,225,0.95)">1Y</text>
+          letterSpacing="2" fill="rgba(203,213,225,0.95)">{uiLang === 'ko' ? '1년' : '1Y'}</text>
         <text x={X2} y={H - PB + 20} textAnchor="middle" fontSize="13"
-          letterSpacing="2" fill="rgba(203,213,225,0.75)">2Y</text>
+          letterSpacing="2" fill="rgba(203,213,225,0.75)">{uiLang === 'ko' ? '2년' : '2Y'}</text>
         <text x={X3} y={H - PB + 20} textAnchor="middle" fontSize="13"
-          letterSpacing="2" fill="rgba(203,213,225,0.55)">3Y</text>
+          letterSpacing="2" fill="rgba(203,213,225,0.55)">{uiLang === 'ko' ? '3년' : '3Y'}</text>
 
         {rightLabels.map(item => (
           <g key={item.key}>
@@ -447,10 +524,13 @@ function ForecastChart({
       </svg>
 
       <div className="mt-2 flex flex-wrap items-center gap-5 text-[12px] text-slate-400">
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-400" />History</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-teal-300" />High</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" />Base</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-pink-400" />Low</span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-sky-400" />
+          {pickLang(uiLang, STREET_TEXT.history.ko, STREET_TEXT.history.en)}
+        </span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-teal-300" />{pickLang(uiLang, STREET_TEXT.high.ko, STREET_TEXT.high.en)}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" />{pickLang(uiLang, STREET_TEXT.average.ko, STREET_TEXT.average.en)}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-pink-400" />{pickLang(uiLang, STREET_TEXT.low.ko, STREET_TEXT.low.en)}</span>
       </div>
     </div>
   )
@@ -461,16 +541,18 @@ function ForwardPEStrip({
   currentPrice,
   currentPe,
   forecast,
+  uiLang,
 }: {
   consensus: StockAnalysisResponse['consensus']
   currentPrice: number | null
   currentPe: number | null
   forecast: Forecast3Y | null
+  uiLang: UiLang
 }) {
   // Primary: forward_pe_ladder from backend
-  const fwdLadder  = consensus?.forward_pe_ladder ?? []
-  const actuals    = fwdLadder.filter(e => e.kind === 'actual')
-  const estimates  = fwdLadder.filter(e => e.kind !== 'actual')
+  const fwdLadder = consensus?.forward_pe_ladder ?? []
+  const actuals = fwdLadder.filter(e => e.kind === 'actual')
+  const estimates = fwdLadder.filter(e => e.kind !== 'actual')
   const lastActual = actuals[actuals.length - 1]
 
   type PeRow = {
@@ -485,7 +567,7 @@ function ForwardPEStrip({
   // Fallback 2: build from eps_ladder + current price
   if (items.length === 0 && (consensus?.eps_ladder ?? []).length > 0) {
     const epsLadder = consensus?.eps_ladder ?? []
-    const epsActuals   = epsLadder.filter(e => e.kind === 'actual')
+    const epsActuals = epsLadder.filter(e => e.kind === 'actual')
     const epsEstimates = epsLadder.filter(e => e.kind !== 'actual')
     const lastEpsActual = epsActuals[epsActuals.length - 1]
     const candidates = [...(lastEpsActual ? [lastEpsActual] : []), ...epsEstimates.slice(0, 3)].slice(0, 4)
@@ -504,10 +586,17 @@ function ForwardPEStrip({
     const bases = [forecast.y1.base, forecast.y2.base, forecast.y3.base]
     const prevBases = [currentPrice, forecast.y1.base ?? currentPrice, forecast.y2.base ?? forecast.y1.base ?? currentPrice]
     items = [
-      { year: nowYear, label: 'NOW', kind: 'actual', eps: null, forward_pe: currentPe, growth_pct: null },
+      {
+        year: nowYear,
+        label: pickLang(uiLang, STREET_TEXT.now.ko, STREET_TEXT.now.en),
+        kind: 'actual',
+        eps: null,
+        forward_pe: currentPe,
+        growth_pct: null,
+      },
       ...bases.map((base, i) => ({
         year: nowYear + i + 1,
-        label: `${i + 1}Y Est`,
+        label: uiLang === 'ko' ? `${i + 1}${STREET_TEXT.yearEstimateSuffix.ko}` : `${i + 1}${STREET_TEXT.yearEstimateSuffix.en}`,
         kind: 'estimate',
         eps: null,
         forward_pe: null,
@@ -524,27 +613,29 @@ function ForwardPEStrip({
 
   const colLabel = (item: typeof items[0]) => {
     const yr = item.year ?? '?'
-    return item.kind === 'actual' ? `${yr} Actual` : `${yr} Est`
+    return item.kind === 'actual'
+      ? `${yr} ${pickLang(uiLang, STREET_TEXT.actual.ko, STREET_TEXT.actual.en)}`
+      : `${yr} ${pickLang(uiLang, STREET_TEXT.estimate.ko, STREET_TEXT.estimate.en)}`
   }
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2 text-[12px] uppercase tracking-[0.24em] text-slate-300">
-        Forward P/E Strip
+      <div className="mb-2 flex items-center gap-2 text-[13px] uppercase tracking-[0.22em] text-slate-100">
+        {pickLang(uiLang, STREET_TEXT.forwardPeStrip.ko, STREET_TEXT.forwardPeStrip.en)}
         {priceBased
-          ? <span className="normal-case tracking-normal text-amber-500/70">· Price projection (no EPS data)</span>
-          : <span className="normal-case tracking-normal text-slate-400">· Seeking Alpha style</span>}
+          ? <span className="normal-case tracking-normal text-[12px] text-amber-300">• {pickLang(uiLang, STREET_TEXT.priceProjectionNoEps.ko, STREET_TEXT.priceProjectionNoEps.en)}</span>
+          : <span className="normal-case tracking-normal text-[12px] text-slate-200">• {pickLang(uiLang, STREET_TEXT.seekingAlphaStyle.ko, STREET_TEXT.seekingAlphaStyle.en)}</span>}
       </div>
-      <div className="overflow-hidden rounded-xl border border-white/8 bg-slate-900/60">
-        <table className="w-full border-collapse text-sm">
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900/65">
+        <table className="w-full border-collapse text-[14px]">
           <thead>
             <tr className="border-b border-white/8">
-              <th className="w-24 px-5 py-4 text-left text-[11px] uppercase tracking-[0.2em] text-slate-500" />
+              <th className="w-24 px-5 py-3 text-left text-[12px] uppercase tracking-[0.16em] text-slate-200" />
               {items.map((item, i) => (
                 <th
                   key={i}
-                  className={`px-5 py-4 text-right text-[12px] uppercase tracking-[0.14em] font-semibold ${
-                    item.kind === 'actual' ? 'text-slate-300' : 'text-cyan-300'
+                  className={`px-5 py-3 text-right text-[12px] uppercase tracking-[0.12em] font-semibold ${
+                    item.kind === 'actual' ? 'text-slate-100' : 'text-cyan-200'
                   }`}
                 >
                   {colLabel(item)}
@@ -554,12 +645,14 @@ function ForwardPEStrip({
           </thead>
           <tbody>
             <tr className="border-b border-white/5">
-              <td className="px-5 py-4 text-[12px] uppercase tracking-[0.12em] text-slate-300 font-medium">P/E</td>
+              <td className="px-5 py-3 text-[12px] uppercase tracking-[0.1em] text-slate-100 font-semibold">
+                {pickLang(uiLang, STREET_TEXT.rowPe.ko, STREET_TEXT.rowPe.en)}
+              </td>
               {items.map((item, i) => (
                 <td
                   key={i}
-                  className={`px-5 py-4 text-right text-lg font-black ${
-                    item.kind === 'actual' ? 'text-slate-200' : 'text-cyan-100'
+                  className={`px-5 py-3 text-right text-[27px] leading-none font-black ${
+                    item.kind === 'actual' ? 'text-slate-50' : 'text-cyan-100'
                   }`}
                 >
                   {item.forward_pe != null ? `${item.forward_pe.toFixed(1)}x` : '--'}
@@ -567,11 +660,13 @@ function ForwardPEStrip({
               ))}
             </tr>
             <tr className="border-b border-white/5">
-              <td className="px-5 py-4 text-[12px] uppercase tracking-[0.12em] text-slate-300 font-medium">
-                {priceBased ? 'Price' : 'EPS'}
+              <td className="px-5 py-3 text-[12px] uppercase tracking-[0.1em] text-slate-100 font-semibold">
+                {priceBased
+                  ? pickLang(uiLang, STREET_TEXT.rowPrice.ko, STREET_TEXT.rowPrice.en)
+                  : pickLang(uiLang, STREET_TEXT.rowEps.ko, STREET_TEXT.rowEps.en)}
               </td>
               {items.map((item, i) => (
-                <td key={i} className="px-5 py-4 text-right text-base text-slate-200">
+                <td key={i} className="px-5 py-3 text-right text-[26px] leading-none text-slate-50">
                   {priceBased
                     ? (item.year === new Date().getFullYear()
                         ? (currentPrice != null ? `$${currentPrice.toFixed(2)}` : '--')
@@ -581,8 +676,10 @@ function ForwardPEStrip({
               ))}
             </tr>
             <tr>
-              <td className="px-5 py-4 text-[12px] uppercase tracking-[0.12em] text-slate-300 font-medium">
-                {priceBased ? 'Price Chg' : 'Growth'}
+              <td className="px-5 py-3 text-[12px] uppercase tracking-[0.1em] text-slate-100 font-semibold">
+                {priceBased
+                  ? pickLang(uiLang, STREET_TEXT.rowPriceChange.ko, STREET_TEXT.rowPriceChange.en)
+                  : pickLang(uiLang, STREET_TEXT.rowGrowth.ko, STREET_TEXT.rowGrowth.en)}
               </td>
               {items.map((item, i) => {
                 const g = item.growth_pct
@@ -590,9 +687,9 @@ function ForwardPEStrip({
                 return (
                   <td
                     key={i}
-                    className={`px-5 py-4 text-right text-base font-bold ${
+                    className={`px-5 py-3 text-right text-[19px] leading-none font-bold ${
                       isActual || g == null
-                        ? 'text-slate-500'
+                        ? 'text-slate-300'
                         : g >= 0
                           ? 'text-emerald-400'
                           : 'text-rose-400'
@@ -610,73 +707,113 @@ function ForwardPEStrip({
   )
 }
 
-
-function MethodologyCard({ currentPe, refPe }: { currentPe: number | null; refPe: number | null }) {
-  const pe  = currentPe != null && currentPe > 3 ? currentPe.toFixed(1) : '?'
-  const ref = refPe    != null && refPe    > 3 ? refPe.toFixed(1)    : '?'
+function MethodologyCard({
+  currentPe,
+  refPe,
+  uiLang,
+}: {
+  currentPe: number | null
+  refPe: number | null
+  uiLang: UiLang
+}) {
+  const pe = currentPe != null && currentPe > 3 ? currentPe.toFixed(1) : '?'
+  const ref = refPe != null && refPe > 3 ? refPe.toFixed(1) : '?'
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/8 bg-slate-900/60">
-      <div className="border-b border-white/8 px-5 py-3.5 text-[12px] uppercase tracking-[0.22em] text-slate-300 font-semibold">
-        3년 예상주가 계산 로직
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900/65">
+      <div className="border-b border-white/10 px-5 py-3 text-[13px] uppercase tracking-[0.18em] text-slate-50 font-semibold">
+        {pickLang(uiLang, STREET_TEXT.methodologyTitle.ko, STREET_TEXT.methodologyTitle.en)}
       </div>
-      <div className="px-5 py-5 font-mono text-[13px] leading-7 text-slate-200">
-        <div>
-          <span className="text-slate-400">Year 1 (12개월):</span>{' '}
-          <span className="text-teal-300">FMP consensus</span>{' '}
-          <span className="text-slate-300">target_mean/high/low 직접 사용</span>
-        </div>
-        <div>
-          <span className="text-slate-400">Year 2 (24개월):</span>{' '}
-          <span className="text-cyan-300">eps_ladder[Y+1]</span>{' '}
-          <span className="text-slate-500">×</span>{' '}
-          <span className="text-slate-300">blended_multiple</span>
-        </div>
-        <div>
-          <span className="text-slate-400">Year 3 (36개월):</span>{' '}
-          <span className="text-violet-300">eps_ladder[Y+2]</span>{' '}
-          <span className="text-slate-500">×</span>{' '}
-          <span className="text-slate-300">compressed_multiple</span>
-        </div>
+      <div className="px-5 py-4 font-mono text-[13px] leading-7 text-slate-100">
+        <div className="text-slate-200">{pickLang(uiLang, STREET_TEXT.year1Line.ko, STREET_TEXT.year1Line.en)}</div>
+        <div className="text-slate-200">{pickLang(uiLang, STREET_TEXT.year2Line.ko, STREET_TEXT.year2Line.en)}</div>
+        <div className="text-slate-200">{pickLang(uiLang, STREET_TEXT.year3Line.ko, STREET_TEXT.year3Line.en)}</div>
 
-        <div className="mt-3 text-slate-300 font-semibold">blended_multiple:</div>
+        <div className="mt-4 text-slate-50 font-semibold">{pickLang(uiLang, STREET_TEXT.blendedMultiple.ko, STREET_TEXT.blendedMultiple.en)}</div>
         <div className="ml-4 mt-1 space-y-0.5">
           <div>
-            <span className="text-slate-400">Base Y2:</span>{' '}
+            <span className="text-slate-50">Base Y2:</span>{' '}
             <span className="text-amber-300">hist_pe_5y</span>
-            <span className="text-slate-300"> ({ref}x) × 0.6 + </span>
+            <span className="text-slate-200"> ({ref}x) × 0.6 + </span>
             <span className="text-amber-300">current_pe</span>
-            <span className="text-slate-300"> ({pe}x) × 0.4</span>
-            <span className="ml-2 text-slate-500">("점진적 평균 회귀)</span>
+            <span className="text-slate-200"> ({pe}x) × 0.4</span>
+            <span className="ml-2 text-slate-300">({pickLang(uiLang, STREET_TEXT.baseY2Note.ko, STREET_TEXT.baseY2Note.en)})</span>
           </div>
           <div>
-            <span className="text-slate-400">Base Y3:</span>{' '}
+            <span className="text-slate-50">Base Y3:</span>{' '}
             <span className="text-amber-300">hist_pe_5y</span>
-            <span className="text-slate-300"> ({ref}x)</span>
-            <span className="ml-2 text-slate-500">("완전 평균 회귀)</span>
+            <span className="text-slate-200"> ({ref}x)</span>
+            <span className="ml-2 text-slate-300">({pickLang(uiLang, STREET_TEXT.baseY3Note.ko, STREET_TEXT.baseY3Note.en)})</span>
           </div>
           <div>
-            <span className="text-slate-400">Bear&nbsp;&nbsp;:</span>{' '}
+            <span className="text-slate-50">Bear:</span>{' '}
             <span className="text-amber-300">hist_pe_5y</span>
-            <span className="text-slate-300"> × 0.80</span>
-            <span className="ml-2 text-slate-500">("밸류에이션 디스카운트)</span>
+            <span className="text-slate-200"> × 0.80</span>
+            <span className="ml-2 text-slate-300">({pickLang(uiLang, STREET_TEXT.bearNote.ko, STREET_TEXT.bearNote.en)})</span>
           </div>
           <div>
-            <span className="text-slate-400">Bull&nbsp;&nbsp;:</span>{' '}
+            <span className="text-slate-50">Bull:</span>{' '}
             <span className="text-amber-300">current_pe</span>
-            <span className="text-slate-300"> × 0.90</span>
-            <span className="ml-2 text-slate-500">("프리미엄 소폭 압축)</span>
+            <span className="text-slate-200"> × 0.90</span>
+            <span className="ml-2 text-slate-300">({pickLang(uiLang, STREET_TEXT.bullNote.ko, STREET_TEXT.bullNote.en)})</span>
           </div>
         </div>
 
-        <div className="mt-4 border-t border-white/5 pt-3 text-[12px] text-slate-300">
-          <span className="font-sans font-semibold uppercase tracking-[0.15em] text-amber-400/60">왜 이 방식인가?</span>
+        <div className="mt-4 border-t border-white/10 pt-3 text-[12px] leading-6 text-slate-200">
+          <span className="font-sans font-semibold uppercase tracking-[0.12em] text-amber-300">
+            {pickLang(uiLang, STREET_TEXT.whyMethodTitle.ko, STREET_TEXT.whyMethodTitle.en)}
+          </span>
           <span className="ml-2">
-            Year 1은 애널리스트 컨센서스를 그대로 사용(가장 신뢰). Year 2-3은 EPS 추정치에
-            P/E 평균회귀를 적용 — 성장주 프리미엄이 시간이 지남에 따라 압축되는 역사적 패턴 반영.
+            {pickLang(uiLang, STREET_TEXT.whyMethodBody.ko, STREET_TEXT.whyMethodBody.en)}
           </span>
         </div>
       </div>
+    </div>
+  )
+}
+
+function RatioCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="rounded-lg border border-white/20 bg-slate-800/55 px-3 py-2">
+      <div className="text-[12px] uppercase tracking-[0.16em] text-slate-100">{label}</div>
+      <div className="mt-1 text-[30px] leading-none font-black text-cyan-200">{value}</div>
+      {hint && <div className="mt-1 text-[12px] text-slate-200 truncate">{hint}</div>}
+    </div>
+  )
+}
+
+function MetricGuideTable({
+  rows,
+  uiLang,
+}: {
+  rows: Array<{ metric: string; value: string; desc: string; read: string }>
+  uiLang: UiLang
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-white/12 bg-slate-900/55">
+      <div className="border-b border-white/8 px-4 py-2.5 text-[12px] uppercase tracking-[0.16em] text-cyan-200">
+        {pickLang(uiLang, STREET_TEXT.metricGuide.ko, STREET_TEXT.metricGuide.en)}
+      </div>
+      <table className="w-full border-collapse text-[12px]">
+        <thead>
+          <tr className="border-b border-white/8 text-slate-200">
+            <th className="px-4 py-2.5 text-left font-semibold">{pickLang(uiLang, STREET_TEXT.metric.ko, STREET_TEXT.metric.en)}</th>
+            <th className="px-4 py-2.5 text-left font-semibold">{pickLang(uiLang, STREET_TEXT.current.ko, STREET_TEXT.current.en)}</th>
+            <th className="px-4 py-2.5 text-left font-semibold">{pickLang(uiLang, STREET_TEXT.description.ko, STREET_TEXT.description.en)}</th>
+            <th className="px-4 py-2.5 text-left font-semibold">{pickLang(uiLang, STREET_TEXT.interpretation.ko, STREET_TEXT.interpretation.en)}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(row => (
+            <tr key={row.metric} className="border-b border-white/5 align-top">
+              <td className="px-4 py-2.5 font-semibold text-slate-100">{row.metric}</td>
+              <td className="px-4 py-2.5 text-cyan-200 font-semibold">{row.value}</td>
+              <td className="px-4 py-2.5 text-slate-200">{row.desc}</td>
+              <td className="px-4 py-2.5 text-slate-300">{row.read}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -690,6 +827,7 @@ export default function StreetConsensusChart({
   error,
   compact = false,
 }: Props) {
+  const uiLang = useUiLang()
   const controlled = analysis !== undefined || loading !== undefined || error !== undefined
   const [fetchedAnalysis, setFetchedAnalysis] = useState<StockAnalysisResponse | null>(null)
   const [fetchedLoading, setFetchedLoading] = useState(true)
@@ -708,11 +846,15 @@ export default function StreetConsensusChart({
       .catch(e => {
         if (e instanceof DOMException && e.name === 'AbortError') return
         if (!alive) return
-        setFetchedError(e instanceof Error ? e.message : 'Failed to load data')
+        setFetchedError(
+          e instanceof Error
+            ? e.message
+            : pickLang(uiLang, STREET_TEXT.failedToLoadData.ko, STREET_TEXT.failedToLoadData.en),
+        )
       })
       .finally(() => { if (alive) setFetchedLoading(false) })
     return () => { alive = false; ctrl.abort() }
-  }, [controlled, symbol, fetchKey, mode])
+  }, [controlled, symbol, fetchKey, mode, uiLang])
 
   const activeAnalysis = analysis !== undefined ? analysis : fetchedAnalysis
   const activeLoading  = loading  !== undefined ? loading  : fetchedLoading
@@ -744,38 +886,104 @@ export default function StreetConsensusChart({
   }), [displayPrice, currentPe, refPe, consHigh, consMean, consLow, epsLadder])
 
   const upside = calcUpsidePct(displayPrice, consMean)
+  const stats = activeAnalysis?.stats
+  const psr = formatMultiple(stats?.ps_ratio)
+  const pbr = formatMultiple(stats?.pb_ratio)
+  const pFcfRaw = (
+    displayPrice != null &&
+    Number.isFinite(displayPrice) &&
+    stats?.fcf_per_share != null &&
+    Number.isFinite(stats.fcf_per_share) &&
+    stats.fcf_per_share > 0
+  ) ? (displayPrice / stats.fcf_per_share) : null
+  const pFcf = formatMultiple(pFcfRaw)
+  const tPeg = formatMultiple(stats?.peg_ratio)
+  const perNow = currentPe != null ? `${currentPe.toFixed(1)}x` : '--'
+
+  const epsFromStats = toNumber(stats?.eps_reported)
+  const epsLadderActual = useMemo(() => {
+    const arr = (consensus?.eps_ladder ?? []).filter(e => e.kind === 'actual' && toNumber(e.eps) != null)
+    if (arr.length === 0) return null
+    const last = arr[arr.length - 1]
+    return toNumber(last.eps)
+  }, [consensus?.eps_ladder])
+  const epsNow = epsFromStats ?? epsLadderActual
+  const epsNowText = epsNow != null ? `$${epsNow.toFixed(2)}` : '--'
+
+  const metricRows = [
+    {
+      metric: 'PER',
+      value: perNow,
+      desc: pickLang(uiLang, '주가 ÷ 주당순이익(EPS)', 'Price ÷ earnings per share (EPS).'),
+      read: pickLang(uiLang, '높을수록 성장 프리미엄 반영. 동종 업종과 비교', 'Higher implies growth premium. Compare vs peers.'),
+    },
+    {
+      metric: 'EPS',
+      value: epsNowText,
+      desc: pickLang(uiLang, '주당순이익(순이익의 1주당 환산)', 'Earnings per share (net income per share).'),
+      read: pickLang(uiLang, '절대값보다 추세(증가/감소)가 더 중요', 'Trend direction matters more than one absolute value.'),
+    },
+    {
+      metric: 'PSR (P/S)',
+      value: activeLoading ? '--' : psr,
+      desc: pickLang(uiLang, '주가 ÷ 주당매출', 'Price ÷ revenue per share.'),
+      read: pickLang(uiLang, '적자 기업/초기 성장주 비교에 유용', 'Useful for pre-profit and early growth names.'),
+    },
+    {
+      metric: 'P / FCF',
+      value: activeLoading ? '--' : pFcf,
+      desc: pickLang(uiLang, '주가 ÷ 주당잉여현금흐름', 'Price ÷ free cash flow per share.'),
+      read: pickLang(uiLang, '낮을수록 현금창출 대비 가격 부담이 낮음', 'Lower usually means less valuation pressure vs cash generation.'),
+    },
+    {
+      metric: 'PBR',
+      value: activeLoading ? '--' : pbr,
+      desc: pickLang(uiLang, '주가 ÷ 주당순자산(BVPS)', 'Price ÷ book value per share (BVPS).'),
+      read: pickLang(uiLang, '업종별 기준 차이 큼(금융/제조/성장주 다름)', 'Interpretation differs by sector (finance/manufacturing/growth).'),
+    },
+    {
+      metric: 'tPEG',
+      value: activeLoading ? '--' : tPeg,
+      desc: pickLang(uiLang, 'PER ÷ EPS 성장률(트레일링)', 'P/E ÷ trailing EPS growth rate.'),
+      read: pickLang(uiLang, '1 전후면 밸류-성장 균형 구간으로 해석', 'Around 1 can indicate valuation-growth balance.'),
+    },
+  ]
 
   return (
     <section className={`rounded-3xl border border-white/10 bg-slate-950/88 shadow-[0_20px_60px_rgba(0,0,0,0.22)] ${compact ? 'p-4' : 'p-5'}`}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.28em] text-cyan-300/75">Street Consensus · 3-Year Outlook</div>
-          <h3 className="mt-2 text-xl font-black text-white">{ticker} Price Target &amp; Forecast</h3>
+          <div className="text-[11px] uppercase tracking-[0.28em] text-cyan-200/90">
+            {pickLang(uiLang, STREET_TEXT.sectionKicker.ko, STREET_TEXT.sectionKicker.en)}
+          </div>
+          <h3 className="mt-2 text-2xl font-black text-white">
+            {ticker} {pickLang(uiLang, STREET_TEXT.sectionTitleSuffix.ko, STREET_TEXT.sectionTitleSuffix.en)}
+          </h3>
           <div className="mt-3 flex flex-wrap items-baseline gap-3">
             <div className="text-4xl font-black text-cyan-200">
               {consMean != null ? formatPrice(consMean) : formatPrice(displayPrice)}
             </div>
             {upside != null && (
-              <div className={`text-sm font-semibold ${upside >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
-                {formatPct(upside)} 1Y Upside
+              <div className={`text-[14px] font-semibold ${upside >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                {formatPct(upside)} {pickLang(uiLang, STREET_TEXT.upside.ko, STREET_TEXT.upside.en)}
               </div>
             )}
           </div>
           {analystCnt != null && (
-            <div className="mt-1.5 text-xs text-slate-500">
-              Based on {Math.round(analystCnt)} analyst price targets
+            <div className="mt-1.5 text-[12px] text-slate-300">
+              {pickLang(uiLang, STREET_TEXT.basedOn.ko, STREET_TEXT.basedOn.en)} {Math.round(analystCnt)} {pickLang(uiLang, STREET_TEXT.basedOnTargets.ko, STREET_TEXT.basedOnTargets.en)}
             </div>
           )}
         </div>
         {analystCnt != null && (
-          <span className="self-start rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-slate-300">
-            {Math.round(analystCnt)} analysts
+          <span className="self-start rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-slate-200">
+            {Math.round(analystCnt)} {pickLang(uiLang, STREET_TEXT.analysts.ko, STREET_TEXT.analysts.en)}
           </span>
         )}
       </div>
 
       {activeError && (
-        <div className="mt-4 rounded-2xl border border-rose-400/20 bg-rose-400/8 px-4 py-3 text-sm text-rose-100">
+        <div className="mt-4 rounded-2xl border border-rose-400/20 bg-rose-400/8 px-4 py-3 text-base text-rose-100">
           {activeError}
         </div>
       )}
@@ -786,13 +994,25 @@ export default function StreetConsensusChart({
           current={displayPrice}
           forecast={forecast}
           loading={Boolean(activeLoading)}
+          uiLang={uiLang}
         />
       </div>
 
       <div className="mt-4 grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
-        <ForwardPEStrip consensus={consensus} currentPrice={displayPrice} currentPe={currentPe} forecast={forecast} />
-        <MethodologyCard currentPe={currentPe} refPe={refPe} />
+        <div className="space-y-3">
+          <ForwardPEStrip consensus={consensus} currentPrice={displayPrice} currentPe={currentPe} forecast={forecast} uiLang={uiLang} />
+          <div className="grid grid-cols-2 gap-2">
+            <RatioCard label="PSR (P/S)" value={activeLoading ? '--' : psr} hint={pickLang(uiLang, STREET_TEXT.ratioHintPsr.ko, STREET_TEXT.ratioHintPsr.en)} />
+            <RatioCard label="P / FCF" value={activeLoading ? '--' : pFcf} hint={pickLang(uiLang, STREET_TEXT.ratioHintPfcf.ko, STREET_TEXT.ratioHintPfcf.en)} />
+            <RatioCard label="PBR" value={activeLoading ? '--' : pbr} hint={pickLang(uiLang, STREET_TEXT.ratioHintPbr.ko, STREET_TEXT.ratioHintPbr.en)} />
+            <RatioCard label="tPEG" value={activeLoading ? '--' : tPeg} hint={pickLang(uiLang, STREET_TEXT.ratioHintTpeg.ko, STREET_TEXT.ratioHintTpeg.en)} />
+          </div>
+          <MetricGuideTable rows={metricRows} uiLang={uiLang} />
+        </div>
+        <MethodologyCard currentPe={currentPe} refPe={refPe} uiLang={uiLang} />
       </div>
     </section>
   )
 }
+
+

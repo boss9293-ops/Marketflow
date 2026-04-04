@@ -103,7 +103,10 @@
 
   /* Component sizing */
   --font-base: 16px;
-  --font-ui-sans: "Satoshi", var(--font-ui-latin), "Pretendard", "Noto Sans KR", "Segoe UI", system-ui, sans-serif;
+  --font-ui-latin: var(--font-terminal);
+  --font-terminal-ui: var(--font-terminal);
+  --font-terminal-mono: var(--font-terminal);
+  --font-ui-sans: var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', 'IBM Plex Mono', 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 /* ── Reset ───────────────────────────────────────────────────────────────── */
@@ -120,6 +123,37 @@ html, body {
   background: #06090f;
   color: #ffffff;
   font-family: var(--font-ui-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select,
+option {
+  font-family: var(--font-ui-sans);
+}
+
+.font-sans {
+  font-family: var(--font-ui-sans) !important;
+}
+
+.font-mono {
+  font-family: var(--font-terminal-mono) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+p, li, dt, dd {
+  font-weight: 400;
+  line-height: 1.6;
 }
 select option,
 select optgroup {
@@ -289,7 +323,7 @@ html[data-lang-mode='en'] .mf-bil-en {
 
 .mf-dashboard-root {
   font-size: var(--font-base);
-  line-height: 1.45;
+  line-height: 1.6;
   font-family: var(--font-ui-sans);
 }
 .mf-dashboard-root button,

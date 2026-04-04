@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 
+from db_utils import resolve_marketflow_db
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 def scalar_at(value) -> float:
@@ -25,7 +27,10 @@ DATA_DIR     = os.path.join(BACKEND_DIR, '..', 'data')
 OUTPUT_DIR   = os.path.join(BACKEND_DIR, 'output')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-MF_DB    = os.path.join(DATA_DIR, 'marketflow.db')
+MF_DB    = resolve_marketflow_db(
+    required_tables=("ohlcv_daily", "ticker_history_daily", "market_daily"),
+    prefer_engine=True,
+)
 CACHE_DB = os.path.join(DATA_DIR, 'cache.db')
 
 # ── Load QQQ from ticker_history_daily (1999+) ───────────────────────────────

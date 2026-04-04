@@ -7,89 +7,477 @@
   - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 4.7s
- ○ Compiling /risk-v1 ...
- ✓ Compiled /risk-v1 in 17.5s (1602 modules)
- GET /risk-v1 200 in 19668ms
- ✓ Compiled in 2.5s (799 modules)
- GET /risk-v1 200 in 325ms
- ✓ Compiled in 2.8s (1584 modules)
- ✓ Compiled in 2.5s (1584 modules)
- ✓ Compiled in 2.3s (1584 modules)
- GET /risk-v1 200 in 897ms
- GET /risk-v1 200 in 302ms
- ○ Compiling /context ...
- ✓ Compiled /context in 1950ms (1598 modules)
- ○ Compiling /health ...
- ✓ Compiled /health in 869ms (1603 modules)
- ○ Compiling /macro ...
- ✓ Compiled /macro in 6.2s (2152 modules)
- ○ Compiling /api/live-brief ...
- ✓ Compiled /api/live-brief in 1377ms (1121 modules)
- ✓ Compiled (1258 modules)
-[live-brief] openai request start
- ○ Compiling /sectors ...
- ✓ Compiled /sectors in 930ms (2339 modules)
-[live-brief] openai response ok
- POST /api/live-brief 200 in 11801ms
- ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 1135ms (2372 modules)
- POST /api/macro-live/refresh 200 in 24449ms
- GET /dashboard 200 in 559ms
- ○ Compiling /chart ...
- ✓ Compiled /chart in 1188ms (2396 modules)
- ○ Compiling /my-holdings ...
- ✓ Compiled /my-holdings in 915ms (2384 modules)
- ○ Compiling /portfolio ...
- ✓ Compiled /portfolio in 806ms (2386 modules)
- ○ Compiling /my ...
- ✓ Compiled /my in 1311ms (2405 modules)
- ✓ Compiled /health in 304ms (855 modules)
- ✓ Compiled /context in 308ms (853 modules)
- ○ Compiling /state ...
- ✓ Compiled /state in 823ms (1968 modules)
- ✓ Compiled /macro in 493ms (1122 modules)
- ○ Compiling /api/live-brief ...
- ✓ Compiled /api/live-brief in 531ms (1287 modules)
-[live-brief] openai request start
- ○ Compiling /briefing ...
- ✓ Compiled /briefing in 919ms (2400 modules)
-[live-brief] openai response ok
- POST /api/live-brief 200 in 8627ms
- ○ Compiling /vr-survival ...
- ✓ Compiled /vr-survival in 1010ms (2395 modules)
- ○ Compiling /risk-v1 ...
- ✓ Compiled /risk-v1 in 644ms (1279 modules)
- GET /risk-v1 200 in 769ms
- GET /risk-v1 200 in 674ms
- GET /risk-v1 200 in 290ms
- ✓ Compiled in 3.5s (2222 modules)
- GET /risk-v1 200 in 661ms
- GET /risk-v1 200 in 519ms
- ✓ Compiled in 1211ms (1123 modules)
- GET /risk-v1 200 in 319ms
+ ✓ Ready in 5.2s
+ ○ Compiling /api/market-headlines ...
+ ✓ Compiled /api/market-headlines in 994ms (56 modules)
+ GET /api/market-headlines 200 in 1829ms
+ ✓ Compiled /api/terminal/ticker/[symbol]/news in 220ms (61 modules)
+ GET /api/terminal/ticker/TSLA/news?date=2026-04-02 200 in 1689ms
+ ✓ Compiled /api/news in 138ms (63 modules)
+ GET /api/news?symbol=TSLA 200 in 354ms
+ GET /api/market-headlines 200 in 250ms
+ GET /api/market-headlines 200 in 154ms
+ GET /api/terminal/ticker/TSLA/news?date=2026-04-02 200 in 66ms
+ GET /api/news?symbol=TSLA 200 in 180ms
+ GET /api/market-headlines 200 in 219ms
+ GET /api/market-headlines 200 in 203ms
+ ○ Compiling /watchlist ...
+ ✓ Compiled /watchlist in 11.2s (753 modules)
+ GET /watchlist 200 in 11699ms
+ ○ Compiling /api/watchlist ...
+ ✓ Compiled /api/watchlist in 1687ms (593 modules)
+ ✓ Compiled (595 modules)
+ GET /api/watchlist?id=wl-default-core 200 in 2972ms
+ GET /api/watchlist?id=wl-default-core 200 in 2960ms
+ GET /api/market-headlines 200 in 3179ms
+ GET /api/market-headlines 200 in 3198ms
+ ✓ Compiled /api/quote in 363ms (597 modules)
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 609ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 106ms
+ GET /api/auth/session 200 in 4006ms
+ ✓ Compiled /api/news in 321ms (602 modules)
+ ✓ Compiled (604 modules)
+ GET /api/auth/session 200 in 619ms
+ GET /api/market-headlines 200 in 916ms
+ GET /api/news?symbol=NFLX 200 in 918ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 1112ms
+ GET /api/terminal/ticker/TSLA/news?date=2026-04-02 200 in 61ms
+ GET /api/news?symbol=TSLA 200 in 139ms
+ GET /watchlist 200 in 277ms
+ GET /api/auth/session 200 in 56ms
+ GET /api/auth/session 200 in 113ms
+ GET /api/watchlist?id=wl-default-core 200 in 186ms
+ GET /api/watchlist?id=wl-default-core 200 in 187ms
+ GET /api/market-headlines 200 in 382ms
+ GET /api/market-headlines 200 in 440ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 250ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 199ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 126ms
+ GET /api/market-headlines 200 in 237ms
+ GET /api/news?symbol=NFLX 200 in 228ms
+ GET /api/market-headlines 200 in 204ms
+ GET /api/market-headlines 200 in 341ms
+ GET /api/market-headlines 200 in 181ms
+ GET /api/market-headlines 200 in 182ms
+ GET /api/market-headlines 200 in 204ms
+ GET /api/market-headlines 200 in 272ms
+ ✓ Compiled in 1049ms (708 modules)
+ ✓ Compiled in 365ms (694 modules)
+ ✓ Compiled /api/terminal/ticker/[symbol]/news in 221ms (369 modules)
+ GET /api/market-headlines 200 in 595ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 598ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 596ms
+ ○ Compiling /api/news ...
+ ✓ Compiled /api/news in 600ms (371 modules)
+ ✓ Compiled (373 modules)
+ GET /api/watchlist?id=wl-default-core 200 in 1071ms
+ GET /api/news?symbol=NFLX 200 in 1160ms
+ GET /api/market-headlines 200 in 1260ms
+ ✓ Compiled /api/quote in 294ms (375 modules)
+ ✓ Compiled in 1ms (375 modules)
+ ✓ Compiled in 0ms (375 modules)
+ ✓ Compiled in 1ms (375 modules)
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 1092ms
+ GET /api/news?symbol=NFLX 200 in 1066ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 153ms
+ GET /api/market-headlines 200 in 228ms
+ GET /api/news?symbol=NFLX 200 in 128ms
+ ✓ Compiled in 308ms (663 modules)
+ ✓ Compiled /api/terminal/ticker/[symbol]/news in 138ms (364 modules)
+ ✓ Compiled (369 modules)
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 1307ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 1322ms
+ ✓ Compiled /api/news in 147ms (371 modules)
+ GET /api/market-headlines 200 in 1577ms
+ ✓ Compiled (373 modules)
+ GET /api/watchlist?id=wl-default-core 200 in 614ms
+ ✓ Compiled /api/quote in 265ms (375 modules)
+ GET /api/market-headlines 200 in 1083ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 580ms
+ GET /api/news?symbol=NFLX 200 in 1338ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 125ms
+ GET /api/market-headlines 200 in 199ms
+ GET /api/news?symbol=NFLX 200 in 211ms
+ GET /api/news?symbol=NFLX 200 in 157ms
+ ○ Compiling /api/market-headlines ...
+ GET /api/market-headlines 500 in 5317ms
+ GET /watchlist 500 in 37ms
+ ✓ Compiled /_error in 648ms (920 modules)
+ ✓ Compiled /_not-found in 522ms (923 modules)
+ GET /_next/static/webpack/dec180f76aed3f87.webpack.hot-update.json 404 in 1602ms
+ GET /watchlist 200 in 215ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/watchlist in 1951ms (637 modules)
+ ✓ Compiled (639 modules)
+ GET /api/auth/session 200 in 3392ms
+ GET /api/watchlist?id=wl-default-core 200 in 2373ms
+ GET /api/watchlist?id=wl-default-core 200 in 2376ms
+ GET /api/market-headlines 200 in 2582ms
+ GET /api/market-headlines 200 in 2639ms
+ ✓ Compiled /api/quote in 394ms (641 modules)
+ GET /api/auth/session 200 in 1055ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 1219ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 46ms
+ GET /api/market-headlines 200 in 360ms
+ ○ Compiling /api/news ...
+ ✓ Compiled /api/news in 668ms (646 modules)
+ ✓ Compiled (648 modules)
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 1220ms
+ GET /api/news?symbol=NFLX 200 in 1033ms
+ ✓ Compiled in 1391ms (1175 modules)
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 179ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 211ms
+ GET /api/market-headlines 200 in 487ms
+ GET /api/watchlist?id=wl-default-core 200 in 138ms
+ GET /api/news?symbol=NFLX 200 in 184ms
+ GET /api/market-headlines 200 in 299ms
+ GET /api/news?symbol=NFLX 200 in 226ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 306ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 91ms
+ GET /api/market-headlines 200 in 226ms
+ GET /api/news?symbol=NFLX 200 in 182ms
+ ✓ Compiled in 1252ms (1175 modules)
+ GET /api/watchlist?id=wl-default-core 200 in 206ms
+ GET /api/watchlist?id=wl-default-core 200 in 191ms
+ GET /api/market-headlines 200 in 365ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 226ms
+ GET /api/market-headlines 200 in 429ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 47ms
+ GET /api/market-headlines 200 in 660ms
+ ✓ Compiled in 991ms (943 modules)
+ GET /watchlist 200 in 942ms
+ ✓ Compiled /api/auth/[...nextauth] in 492ms (646 modules)
+ GET /api/auth/session 200 in 50ms
+ GET /api/auth/session 200 in 40ms
+ GET /api/watchlist?id=wl-default-core 200 in 141ms
+ GET /api/watchlist?id=wl-default-core 200 in 142ms
+ GET /api/market-headlines 200 in 224ms
+ GET /api/market-headlines 200 in 284ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 283ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 42ms
+ GET /api/market-headlines 200 in 482ms
+ ✓ Compiled in 1360ms (1165 modules)
+ GET /watchlist 200 in 659ms
+ GET /api/auth/session 200 in 82ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/watchlist?id=wl-default-core 200 in 206ms
+ GET /api/watchlist?id=wl-default-core 200 in 221ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 168ms
+ GET /api/market-headlines 200 in 401ms
+ GET /api/market-headlines 200 in 468ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 81ms
+ GET /api/market-headlines 200 in 480ms
+ ✓ Compiled in 1247ms (1165 modules)
+ GET /watchlist 200 in 933ms
+ GET /api/auth/session 200 in 93ms
+ GET /api/auth/session 200 in 61ms
+ GET /api/watchlist?id=wl-default-core 200 in 140ms
+ GET /api/watchlist?id=wl-default-core 200 in 197ms
+ GET /api/market-headlines 200 in 476ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 349ms
+ GET /api/market-headlines 200 in 541ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 45ms
+ GET /api/market-headlines 200 in 562ms
+ ✓ Compiled in 1340ms (1165 modules)
+ GET /watchlist 200 in 738ms
+ GET /api/auth/session 200 in 80ms
+ GET /api/auth/session 200 in 138ms
+ GET /api/watchlist?id=wl-default-core 200 in 218ms
+ GET /api/watchlist?id=wl-default-core 200 in 218ms
+ GET /api/market-headlines 200 in 409ms
+ GET /api/market-headlines 200 in 448ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 254ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 49ms
+ GET /api/market-headlines 200 in 531ms
+ ✓ Compiled in 1040ms (1165 modules)
+ GET /watchlist 200 in 451ms
+ GET /api/auth/session 200 in 70ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/watchlist?id=wl-default-core 200 in 134ms
+ GET /api/watchlist?id=wl-default-core 200 in 193ms
+ GET /api/market-headlines 200 in 378ms
+ GET /api/market-headlines 200 in 393ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 379ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 60ms
+ GET /api/market-headlines 200 in 601ms
+ ✓ Compiled in 1301ms (1165 modules)
+ GET /watchlist 200 in 2198ms
+ GET /api/auth/session 200 in 74ms
+ GET /api/auth/session 200 in 53ms
+ GET /api/watchlist?id=wl-default-core 200 in 135ms
+ GET /api/watchlist?id=wl-default-core 200 in 207ms
+ GET /api/market-headlines 200 in 426ms
+ GET /api/market-headlines 200 in 429ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 290ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 58ms
+ GET /api/market-headlines 200 in 553ms
+ ✓ Compiled in 1122ms (902 modules)
+ GET /watchlist 200 in 1690ms
+ ✓ Compiled /api/auth/[...nextauth] in 221ms (609 modules)
+ GET /api/auth/session 200 in 1195ms
+ ✓ Compiled /api/market-headlines in 239ms (635 modules)
+ ✓ Compiled (637 modules)
+ GET /api/auth/session 200 in 1206ms
+ GET /api/watchlist?id=wl-default-core 200 in 1275ms
+ GET /api/watchlist?id=wl-default-core 200 in 1276ms
+ GET /api/market-headlines 200 in 1609ms
+ GET /api/market-headlines 200 in 1614ms
+ ✓ Compiled /api/quote in 405ms (639 modules)
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 655ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 55ms
+ GET /api/market-headlines 200 in 515ms
+ ✓ Compiled in 1030ms (1165 modules)
+ GET /watchlist 200 in 715ms
+ GET /api/auth/session 200 in 96ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/watchlist?id=wl-default-core 200 in 138ms
+ GET /api/watchlist?id=wl-default-core 200 in 231ms
+ GET /api/market-headlines 200 in 405ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 326ms
+ GET /api/market-headlines 200 in 469ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 49ms
+ GET /api/market-headlines 200 in 523ms
+ ✓ Compiled in 1281ms (1165 modules)
+ GET /watchlist 200 in 528ms
+ GET /api/auth/session 200 in 109ms
+ GET /api/auth/session 200 in 171ms
+ GET /api/watchlist?id=wl-default-core 200 in 240ms
+ GET /api/watchlist?id=wl-default-core 200 in 220ms
+ GET /api/market-headlines 200 in 440ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 253ms
+ GET /api/market-headlines 200 in 472ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 59ms
+ GET /api/market-headlines 200 in 266ms
+ ✓ Compiled /api/terminal/ticker/[symbol]/news in 470ms (644 modules)
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 686ms
+ ✓ Compiled /api/news in 365ms (646 modules)
+ GET /api/news?symbol=NFLX 200 in 688ms
+ GET /api/watchlist?id=wl-default-core 200 in 105ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 178ms
+ ✓ Compiled in 1202ms (1172 modules)
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 179ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 196ms
+ GET /api/market-headlines 200 in 487ms
+ GET /api/watchlist?id=wl-default-core 200 in 182ms
+ GET /api/news?symbol=NFLX 200 in 319ms
+ GET /api/market-headlines 200 in 451ms
+ GET /api/news?symbol=NFLX 200 in 215ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 402ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 120ms
+ GET /api/market-headlines 200 in 241ms
+ GET /api/news?symbol=NFLX 200 in 139ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 682ms (1161 modules)
+ GET /api/watchlist?id=wl-default-core 404 in 1200ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 404 in 192ms
  ○ Compiling /_error ...
- GET /_next/static/webpack/0f3ccc6bf35993b6.webpack.hot-update.json 500 in 3862ms
- GET /vr-survival 500 in 142ms
- GET /vr-survival 500 in 145ms
- ✓ Compiled /_not-found in 5.3s (2432 modules)
- GET /vr-survival 200 in 2629ms
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 3.9s (2423 modules)
- GET /vr-survival 404 in 362ms
- ○ Compiling /vr-survival ...
- ✓ Compiled /vr-survival in 3.7s (2432 modules)
- ✓ Compiled in 2.6s (2443 modules)
- ✓ Compiled in 1729ms (2443 modules)
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 1372ms (2432 modules)
- GET /risk-v1 404 in 311ms
- GET /_next/static/css/app/layout.css?v=1773427318073 404 in 245ms
- GET /_next/static/chunks/main-app.js?v=1773427318073 404 in 284ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 210ms
- GET /_next/static/chunks/app/layout.js 404 in 197ms
- GET /risk-v1 404 in 119ms
- GET /_next/static/css/app/layout.css?v=1773427391365 404 in 250ms
- GET /_next/static/chunks/main-app.js?v=1773427391365 404 in 289ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 283ms
- GET /_next/static/chunks/app/layout.js 404 in 281ms
+ ✓ Compiled /_error in 612ms (934 modules)
+ GET /api/watchlist?id=wl-default-core 500 in 820ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 500 in 144ms
+ GET /api/watchlist?id=wl-default-core 500 in 120ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 500 in 116ms
+ GET /api/watchlist?id=wl-default-core 500 in 95ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 500 in 89ms
+ GET /api/market-headlines 500 in 120ms
+ GET /api/watchlist?id=wl-default-core 500 in 84ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 500 in 77ms
+ GET /api/watchlist?id=wl-default-core 500 in 101ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 500 in 71ms
+ GET /api/watchlist?id=wl-default-core 500 in 79ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 500 in 79ms
+ ✓ Compiled in 1471ms (934 modules)
+ ○ Compiling /api/terminal/ticker/[symbol]/news ...
+ ✓ Compiled /api/terminal/ticker/[symbol]/news in 533ms (932 modules)
+ GET /_next/static/css/app/layout.css?v=1775160239913 500 in 890ms
+ GET /_next/static/css/app/watchlist/page.css?v=1775160239913 500 in 740ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 943ms
+ GET /api/market-headlines 500 in 1066ms
+ GET /api/watchlist?id=wl-default-core 500 in 749ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 200 in 1239ms
+ ✓ Compiled /api/news in 313ms (419 modules)
+ GET /api/market-headlines 500 in 1200ms
+ GET /api/news?symbol=NFLX 500 in 1277ms
+ GET /_next/static/css/app/layout.css?v=1775160241959 500 in 135ms
+ GET /_next/static/css/app/watchlist/page.css?v=1775160241959 500 in 100ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 1219ms
+ GET /api/news?symbol=NFLX 500 in 262ms
+ GET /api/market-headlines 500 in 214ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 899ms
+ GET /api/news?symbol=NFLX 500 in 68ms
+ GET /api/watchlist?id=wl-default-core 500 in 69ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 159ms
+ GET /api/watchlist?id=wl-default-core 500 in 102ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 53ms
+ GET /api/watchlist?id=wl-default-core 500 in 93ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 54ms
+ GET /api/watchlist?id=wl-default-core 500 in 119ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 215ms
+ GET /api/market-headlines 500 in 85ms
+ GET /api/watchlist?id=wl-default-core 500 in 74ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 48ms
+ ✓ Compiled in 1147ms (938 modules)
+ ○ Compiling /api/terminal/ticker/[symbol]/news ...
+ ✓ Compiled /api/terminal/ticker/[symbol]/news in 1056ms (932 modules)
+ GET /api/market-headlines 500 in 1167ms
+ GET /_next/static/css/app/layout.css?v=1775160359929 500 in 1187ms
+ GET /_next/static/css/app/watchlist/page.css?v=1775160359929 500 in 1057ms
+ GET /api/watchlist?id=wl-default-core 500 in 840ms
+ ✓ Compiled /api/news in 281ms (419 modules)
+ GET /api/market-headlines 500 in 897ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 2056ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 2027ms
+ GET /api/news?symbol=NFLX 500 in 941ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 945ms
+ GET /api/news?symbol=NFLX 500 in 115ms
+ GET /api/market-headlines 500 in 173ms
+ GET /api/news?symbol=NFLX 500 in 118ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 901ms
+ ✓ Compiled in 1083ms (948 modules)
+ GET /api/watchlist?id=wl-default-core 500 in 591ms
+ GET /_next/static/css/app/layout.css?v=1775160382673 500 in 186ms
+ GET /_next/static/css/app/watchlist/page.css?v=1775160382673 500 in 154ms
+ GET /api/market-headlines 500 in 355ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 240ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 1138ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 1117ms
+ GET /api/watchlist?id=wl-default-core 500 in 228ms
+ GET /api/market-headlines 500 in 243ms
+ GET /api/news?symbol=NFLX 500 in 243ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 98ms
+ GET /api/news?symbol=NFLX 500 in 184ms
+ GET /api/market-headlines 500 in 217ms
+ GET /api/news?symbol=NFLX 500 in 146ms
+ GET /api/terminal/ticker/NFLX/news?date=2026-04-02 500 in 863ms
+ GET /api/watchlist?id=wl-default-core 500 in 71ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 160ms
+ GET /api/watchlist?id=wl-default-core 500 in 109ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 66ms
+ GET /api/watchlist?id=wl-default-core 500 in 96ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 49ms
+ GET /api/watchlist?id=wl-default-core 500 in 81ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 51ms
+ GET /api/market-headlines 500 in 75ms
+ GET /api/watchlist?id=wl-default-core 500 in 75ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 46ms
+ GET /api/watchlist?id=wl-default-core 500 in 74ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 217ms
+ GET /api/watchlist?id=wl-default-core 500 in 84ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 328ms
+ GET /api/market-headlines 500 in 84ms
+ GET /api/watchlist?id=wl-default-core 500 in 85ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 253ms
+ GET /api/watchlist?id=wl-default-core 500 in 76ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 175ms
+ GET /api/market-headlines 500 in 74ms
+ GET /api/watchlist?id=wl-default-core 500 in 77ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 278ms
+ GET /api/market-headlines 500 in 99ms
+ GET /api/watchlist?id=wl-default-core 500 in 75ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 219ms
+ GET /api/watchlist?id=wl-default-core 500 in 84ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 164ms
+ GET /api/market-headlines 500 in 74ms
+ GET /api/watchlist?id=wl-default-core 500 in 76ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 346ms
+ GET /api/market-headlines 500 in 72ms
+ GET /api/watchlist?id=wl-default-core 500 in 82ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 350ms
+ GET /api/watchlist?id=wl-default-core 500 in 74ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 218ms
+ GET /api/market-headlines 500 in 122ms
+ GET /api/watchlist?id=wl-default-core 500 in 133ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 221ms
+ GET /api/watchlist?id=wl-default-core 500 in 135ms
+ GET /api/market-headlines 500 in 140ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 279ms
+ GET /api/watchlist?id=wl-default-core 500 in 113ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 253ms
+ GET /api/market-headlines 500 in 141ms
+ GET /api/watchlist?id=wl-default-core 500 in 150ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 229ms
+ GET /api/watchlist?id=wl-default-core 500 in 131ms
+ GET /api/market-headlines 500 in 142ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 265ms
+ GET /api/watchlist?id=wl-default-core 500 in 80ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 306ms
+ GET /api/market-headlines 500 in 137ms
+ GET /api/watchlist?id=wl-default-core 500 in 140ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 208ms
+ GET /api/watchlist?id=wl-default-core 500 in 131ms
+ GET /api/market-headlines 500 in 139ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 182ms
+ GET /api/watchlist?id=wl-default-core 500 in 81ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 245ms
+ GET /api/market-headlines 500 in 138ms
+ GET /api/watchlist?id=wl-default-core 500 in 145ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 290ms
+ GET /api/watchlist?id=wl-default-core 500 in 154ms
+ GET /api/market-headlines 500 in 145ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 184ms
+ GET /api/watchlist?id=wl-default-core 500 in 135ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 282ms
+ GET /api/market-headlines 500 in 155ms
+ GET /api/watchlist?id=wl-default-core 500 in 170ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 208ms
+ GET /api/watchlist?id=wl-default-core 500 in 133ms
+ GET /api/market-headlines 500 in 160ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 585ms
+ GET /api/watchlist?id=wl-default-core 500 in 94ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 199ms
+ GET /api/market-headlines 500 in 136ms
+ GET /api/watchlist?id=wl-default-core 500 in 143ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 359ms
+ GET /api/watchlist?id=wl-default-core 500 in 144ms
+ GET /api/market-headlines 500 in 158ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 169ms
+ GET /api/watchlist?id=wl-default-core 500 in 80ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 306ms
+ GET /api/market-headlines 500 in 142ms
+ GET /api/watchlist?id=wl-default-core 500 in 134ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 242ms
+ GET /api/watchlist?id=wl-default-core 500 in 119ms
+ GET /api/market-headlines 500 in 165ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 184ms
+ GET /api/watchlist?id=wl-default-core 500 in 78ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 195ms
+ GET /api/market-headlines 500 in 138ms
+ GET /api/watchlist?id=wl-default-core 500 in 132ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 151ms
+ GET /api/watchlist?id=wl-default-core 500 in 159ms
+ GET /api/market-headlines 500 in 166ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 238ms
+ GET /api/watchlist?id=wl-default-core 500 in 74ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 195ms
+ GET /api/market-headlines 500 in 146ms
+ GET /api/watchlist?id=wl-default-core 500 in 129ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 163ms
+ GET /api/watchlist?id=wl-default-core 500 in 159ms
+ GET /api/market-headlines 500 in 167ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 434ms
+ GET /api/watchlist?id=wl-default-core 500 in 85ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 209ms
+ GET /api/market-headlines 500 in 135ms
+ GET /api/watchlist?id=wl-default-core 500 in 126ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 176ms
+ GET /api/watchlist?id=wl-default-core 500 in 132ms
+ GET /api/market-headlines 500 in 154ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 223ms
+ GET /api/watchlist?id=wl-default-core 500 in 73ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 169ms
+ GET /api/market-headlines 500 in 132ms
+ GET /api/watchlist?id=wl-default-core 500 in 137ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 179ms
+ GET /api/watchlist?id=wl-default-core 500 in 154ms
+ GET /api/market-headlines 500 in 152ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 224ms
+ GET /api/watchlist?id=wl-default-core 500 in 125ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 205ms
+ GET /api/market-headlines 500 in 74ms
+ GET /api/watchlist?id=wl-default-core 500 in 125ms
+ GET /api/quote?symbols=NFLX,AAPL,GOOGL,TSLA,NVDA,IBM,INTC,XOM 200 in 54ms
+ GET /watchlist 200 in 300ms
+ GET /_next/static/css/app/layout.css?v=1775163020031 500 in 52ms
+ GET /_next/static/css/app/watchlist/page.css?v=1775163020031 500 in 83ms
+ GET /_next/static/chunks/main-app.js?v=1775163020031 500 in 65ms
+ GET /_next/static/chunks/app-pages-internals.js 500 in 60ms
+[?25h

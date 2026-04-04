@@ -1,0 +1,63 @@
+# .claudeignore — Project root
+# Generated files and caches that Claude should never read
+
+# JS/TS build & deps
+node_modules/
+.next/
+dist/
+build/
+out/
+.turbo/
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+logs/
+marketflow/logs/
+marketflow/backend/dev-api.*.log
+
+# Temp / backup
+tmp/
+_backup/
+backup/
+marketflow/backup/
+.mc_live_tmp/
+.mc_regime_tmp/
+.mc_regime_tmp2/
+.mc_tmp/
+.mc_ui_tmp/
+.ui_tmp/
+.tmp-smart-analyzer/
+
+# Environment (secrets)
+.env
+.env.local
+.env.*
+
+# Coverage / test artifacts
+coverage/
+.coverage
+
+# Backend generated output — large data files, NOT source
+marketflow/backend/output/
+marketflow/backend/data/snapshots/
+marketflow/backend/storage/
+
+# Binary / large data
+*.parquet
+*.db
+*.sqlite
+*.png
+*.pdf
+*.csv
+
+# Misc IDE
+.vscode/
+.editorconfig

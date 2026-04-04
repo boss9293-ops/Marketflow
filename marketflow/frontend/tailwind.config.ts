@@ -8,6 +8,34 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          'var(--font-ui-sans)',
+          'var(--font-terminal)',
+          'Nanum Gothic Coding',
+          'Noto Sans KR',
+          'IBM Plex Mono',
+          'Roboto Mono',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Consolas',
+          'monospace',
+        ],
+        mono: [
+          'var(--font-terminal-mono)',
+          'var(--font-terminal)',
+          'Nanum Gothic Coding',
+          'Noto Sans KR',
+          'IBM Plex Mono',
+          'Roboto Mono',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Consolas',
+          'monospace',
+        ],
+      },
       colors: {
         // ── Capital OS Design System ─────────────────────────────────────────
         'capital-black': '#000000',

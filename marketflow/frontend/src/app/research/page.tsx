@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+﻿import type { CSSProperties } from 'react'
 import ResearchWorkspace         from '@/components/research/ResearchWorkspace'
 import UnifiedPriorityStrip      from '@/components/priority/UnifiedPriorityStrip'
 import DailyDigestPanel          from '@/components/digest/DailyDigestPanel'
@@ -41,7 +41,7 @@ export default function ResearchPage({
       minHeight: '100vh',
       background: '#0c0e13',
       color: '#e5e7eb',
-      fontFamily: "'Inter','Segoe UI',sans-serif",
+      fontFamily: "var(--font-ui-sans, var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', monospace)",
       padding: '1.35rem 1.5rem',
     }}>
       <div style={{ maxWidth: 1420, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -89,3 +89,4 @@ export default function ResearchPage({
     </main>
   )
 }
+

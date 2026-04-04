@@ -1,4 +1,4 @@
-// Leverage Taming - Risk Engine (Navigator)
+﻿// Leverage Taming - Risk Engine (Navigator)
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const runtime = 'nodejs'
@@ -289,7 +289,7 @@ export default async function CrashNavigatorEnginePage({
       ? null
       : lang === 'en'
         ? `The 3-day cumulative move ${formatPct(latest.evidence.ret_3d)} is in the bottom ${latest.meta.ret3d_tail_pct.toFixed(1)}% of the recent history window.`
-        : `최근 3일 누적 하락 ${formatPct(latest.evidence.ret_3d)}는 (2018~현재) 기준 급락 상위 ${latest.meta.ret3d_tail_pct.toFixed(1)}% 구간입니다.`
+        : `理쒓렐 3???꾩쟻 ?섎씫 ${formatPct(latest.evidence.ret_3d)}??(2018~?꾩옱) 湲곗? 湲됰씫 ?곸쐞 ${latest.meta.ret3d_tail_pct.toFixed(1)}% 援ш컙?낅땲??`
 
   const defenseDistanceAt = (i: number) => {
     const d2 = distanceTo(activeThresholds.def_ret2, ret2[i])
@@ -361,7 +361,7 @@ export default async function CrashNavigatorEnginePage({
   const aiFallback = {
     weather: lang === 'en'
       ? `Current mode is ${latest.state.replace(/_/g, ' ')}.`
-      : `현재 모드는 ${latest.state.replace(/_/g, ' ')}입니다.`,
+      : `?꾩옱 紐⑤뱶??${latest.state.replace(/_/g, ' ')}?낅땲??`,
     evidence: messages.evidence_line,
     action: messages.action_line,
     psychology: messages.psychology_line,
@@ -410,7 +410,7 @@ export default async function CrashNavigatorEnginePage({
       minHeight: '100vh',
       background: '#0a0f1a',
       color: '#e5e7eb',
-      fontFamily: "'Inter','Segoe UI',sans-serif",
+      fontFamily: "var(--font-ui-sans, var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', monospace)",
       padding: '2.6rem 1.95rem',
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
@@ -423,8 +423,8 @@ export default async function CrashNavigatorEnginePage({
           flexDirection: 'column',
           gap: '0.6rem',
         }}>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800 }}>레버리지는 야생마입니다.</div>
-          <div style={{ fontSize: '0.95rem', color: '#cbd5f5' }}>우리는 그것을 길들이는 법을 연구합니다.</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800 }}>?덈쾭由ъ????쇱깮留덉엯?덈떎.</div>
+          <div style={{ fontSize: '0.95rem', color: '#cbd5f5' }}>?곕━??洹멸쾬??湲몃뱾?대뒗 踰뺤쓣 ?곌뎄?⑸땲??</div>
           <LeverageModuleNav activeKey="risk" />
         </div>
 
@@ -440,7 +440,7 @@ export default async function CrashNavigatorEnginePage({
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ fontSize: '0.78rem', color: '#9ca3af', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-              {t('레버리지 길들이기 - 리스크 관리 엔진', 'Leverage Taming - Risk Engine')}
+              {t('?덈쾭由ъ? 湲몃뱾?닿린 - 由ъ뒪??愿由??붿쭊', 'Leverage Taming - Risk Engine')}
             </div>
             <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <Link
@@ -455,7 +455,7 @@ export default async function CrashNavigatorEnginePage({
                   textDecoration: 'none',
                 }}
               >
-                {t('사용 가이드', 'Guide')}
+                {t('?ъ슜 媛?대뱶', 'Guide')}
               </Link>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <Link
@@ -526,7 +526,7 @@ export default async function CrashNavigatorEnginePage({
             </div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{formatPctAbs(defenseDistance)}</div>
             <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-              ret_2d gap: {formatPct(latest.trigger_distance.defense_ret2)} · ret_3d gap: {formatPct(latest.trigger_distance.defense_ret3)}
+              ret_2d gap: {formatPct(latest.trigger_distance.defense_ret2)} 쨌 ret_3d gap: {formatPct(latest.trigger_distance.defense_ret3)}
             </div>
             <div style={{ marginTop: 8, fontSize: '0.9rem', color: '#e5e7eb' }}>
               {t('PANIC Trigger Distance', 'PANIC Trigger Distance')}
@@ -534,16 +534,16 @@ export default async function CrashNavigatorEnginePage({
             <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{formatPctAbs(panicDistance)}</div>
             <div style={{ marginTop: 10, fontSize: '0.78rem', color: flipRisk ? '#fca5a5' : '#94a3b8' }}>
               {t('State Stability (5D flips):', 'State Stability (5D flips):')} {flipCount}{' '}
-              {flipRisk ? t('· High Volatility Flip Risk', '· High Volatility Flip Risk') : ''}
+              {flipRisk ? t('쨌 High Volatility Flip Risk', '쨌 High Volatility Flip Risk') : ''}
             </div>
             {latest.meta.pending_deescalation && (
               <div style={{ marginTop: 6, fontSize: '0.78rem', color: '#93c5fd' }}>
-                {t('상태 안정화 확인 중:', 'Stability check:')} {latest.meta.pending_days}/2
+                {t('?곹깭 ?덉젙???뺤씤 以?', 'Stability check:')} {latest.meta.pending_days}/2
               </div>
             )}
             {latest.meta.false_bounce_guard && (
               <div style={{ marginTop: 8, fontSize: '0.78rem', color: '#fda4af' }}>
-                {t('False Bounce Guard: new low after probe → WATCH revert', 'False Bounce Guard: new low after probe → WATCH revert')}
+                {t('False Bounce Guard: new low after probe ??WATCH revert', 'False Bounce Guard: new low after probe ??WATCH revert')}
               </div>
             )}
           </div>
@@ -581,8 +581,8 @@ export default async function CrashNavigatorEnginePage({
             <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>No DEFENSE trigger in this window.</div>
           ) : (
             <div style={{ fontSize: '0.9rem', color: '#e5e7eb' }}>
-              DEFENSE on {dates[lastDefenseIdx]} → worst DD next 30D: {formatPct(replayWorst)}
-              <span style={{ color: '#94a3b8' }}> · If no sell: {formatPct(replayWorst)}</span>
+              DEFENSE on {dates[lastDefenseIdx]} ??worst DD next 30D: {formatPct(replayWorst)}
+              <span style={{ color: '#94a3b8' }}> 쨌 If no sell: {formatPct(replayWorst)}</span>
             </div>
           )}
         </div>
@@ -592,7 +592,7 @@ export default async function CrashNavigatorEnginePage({
           <div style={{ marginTop: 10, display: 'grid', gap: '0.35rem' }}>
             {last10Log.map((entry) => (
               <div key={entry.log_key} style={{ fontSize: '0.8rem', color: '#cbd5f5' }}>
-                [{entry.date}] {entry.state_from} → {entry.state_to} | {entry.recommended_action_code} | dist {formatPctAbs(entry.trigger_dist_defense)} / {formatPctAbs(entry.trigger_dist_panic)} {entry.note_short ? `· ${entry.note_short}` : ''}
+                [{entry.date}] {entry.state_from} ??{entry.state_to} | {entry.recommended_action_code} | dist {formatPctAbs(entry.trigger_dist_defense)} / {formatPctAbs(entry.trigger_dist_panic)} {entry.note_short ? `쨌 ${entry.note_short}` : ''}
               </div>
             ))}
           </div>
@@ -606,10 +606,11 @@ export default async function CrashNavigatorEnginePage({
         <div style={{ fontSize: '0.84rem', color: '#9ca3af' }}>{messages.psychology_line}</div>
         {flipRisk && (
           <div style={{ fontSize: '0.84rem', color: '#fca5a5' }}>
-            지금은 매우 불안정한 구간입니다. 과도한 행동은 자제하십시오.
+            吏湲덉? 留ㅼ슦 遺덉븞?뺥븳 援ш컙?낅땲?? 怨쇰룄???됰룞? ?먯젣?섏떗?쒖삤.
           </div>
         )}
       </div>
     </main>
   )
 }
+

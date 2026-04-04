@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { type StockAnalysisResponse } from '@/lib/stockAnalysis'
+import { pickLang, useUiLang } from '@/lib/useLangMode'
 
 type DepthType = 'beginner' | 'intermediate' | 'quant'
 
@@ -36,7 +37,47 @@ const fmtPct = (v: number | null | undefined) =>
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_STOCK_DATA === 'true'
 
+const CHART_TEXT = {
+  chartTitle: { ko: '트레이딩뷰 차트', en: 'TradingView Chart' },
+  chartDisabled: { ko: '목업 모드 - 차트 비활성화', en: 'Mock mode - chart disabled' },
+  chartFootnote: { ko: 'TradingView 위젯 - MA 20 / 50 / 120 / 200 기본 로드', en: 'Powered by TradingView (free widget) - MA 20 / 50 / 120 / 200 pre-loaded' },
+  connectionFailed: { ko: '데이터를 불러오지 못했습니다', en: 'Failed to load data' },
+  retry: { ko: '재시도', en: 'RETRY' },
+  tickerNotFound: { ko: '종목을 찾을 수 없습니다', en: 'Ticker not found' },
+  tickerHint: { ko: '유효한 티커인지 확인해 주세요', en: 'Please verify the symbol and try again.' },
+  technicalSignal: { ko: '기술 신호', en: 'Technical Signal' },
+  keyLevels: { ko: '핵심 레벨', en: 'Key Levels' },
+  pricePerformance: { ko: '가격 퍼포먼스', en: 'Price Performance' },
+  analyzing: { ko: '분석 중...', en: 'Analyzing...' },
+  loading: { ko: '로딩 중...', en: 'Loading...' },
+  noData: { ko: '데이터 없음', en: 'No data available' },
+} as const
+
+const textByLang = (lang: 'ko' | 'en', text: { ko: string; en: string }) => pickLang(lang, text.ko, text.en)
+
+const TV_SYMBOL_MAP: Record<string, string> = {
+  SPY: 'AMEX:SPY',
+  QQQ: 'NASDAQ:QQQ',
+  TQQQ: 'NASDAQ:TQQQ',
+  IWM: 'AMEX:IWM',
+  DIA: 'AMEX:DIA',
+  VIX: 'CBOE:VIX',
+  SOXL: 'NASDAQ:SOXL',
+  TECL: 'NASDAQ:TECL',
+  AAPL: 'NASDAQ:AAPL',
+  MSFT: 'NASDAQ:MSFT',
+  NVDA: 'NASDAQ:NVDA',
+}
+
+const resolveTvSymbol = (value: string): string => {
+  const raw = value.trim().toUpperCase()
+  if (!raw) return 'AAPL'
+  if (raw.includes(':')) return raw
+  return TV_SYMBOL_MAP[raw] || raw
+}
+
 export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
+  const uiLang = useUiLang()
   const tvContainerRef = useRef<HTMLDivElement | null>(null)
   const [analysis, setAnalysis] = useState<StockAnalysisResponse | null>(null)
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
@@ -45,10 +86,7 @@ export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
   const [retryKey, setRetryKey] = useState(0)
 
   const tvSymbol = useMemo(() => {
-    const raw = symbol.trim().toUpperCase()
-    if (!raw) return 'NASDAQ:AAPL'
-    if (raw.includes(':')) return raw
-    return `NASDAQ:${raw}`
+    return resolveTvSymbol(symbol)
   }, [symbol])
 
   const baseSymbol = useMemo(() => {
@@ -88,7 +126,7 @@ export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
     return () => { alive = false; ctrl.abort() }
   }, [baseSymbol, retryKey])
 
-  // TradingView widget — MA 20/50/120/200 pre-loaded
+  // TradingView widget ??MA 20/50/120/200 pre-loaded
   useEffect(() => {
     if (USE_MOCK || !tvContainerRef.current) return
     tvContainerRef.current.innerHTML = ''
@@ -218,65 +256,65 @@ export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
       {/* Left: TradingView chart */}
       <div style={{ ...card, padding: '0.6rem 0.6rem 0.9rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0.4rem 0.6rem' }}>
-          <div style={{ color: '#d1d5db', fontWeight: 700 }}>TradingView Chart</div>
+          <div style={{ color: '#d1d5db', fontWeight: 700 }}>{textByLang(uiLang, CHART_TEXT.chartTitle)}</div>
           <div style={{ color: '#6b7280', fontSize: '0.74rem' }}>{tvSymbol}</div>
         </div>
         {USE_MOCK ? (
           <div style={{ width: '100%', height: 660, borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', background: '#0b0f15', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-            Mock mode — chart disabled
+            {textByLang(uiLang, CHART_TEXT.chartDisabled)}
           </div>
         ) : (
           <div ref={tvContainerRef} style={{ width: '100%', height: 660, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: '#0b0f15' }} />
         )}
         <div style={{ color: '#4b5563', fontSize: '0.72rem', marginTop: 6, paddingLeft: 6 }}>
-          Powered by TradingView (free widget) · MA 20 / 50 / 120 / 200 pre-loaded
+          {textByLang(uiLang, CHART_TEXT.chartFootnote)}
         </div>
       </div>
 
       {/* Right: signal cards (or error/loading state) */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {/* Error state — Terminal Signal */}
+        {/* Error state ??Terminal Signal */}
         {analysisError && (
           <div style={{ position: 'relative', background: '#080808', borderLeft: '3px solid #FF5C33', overflow: 'hidden', borderRadius: 2, padding: '22px 20px 22px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200 }}>
-            <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', color: '#FF5C33', opacity: 0.07, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>ERR</div>
+            <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', color: '#FF5C33', opacity: 0.07, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>ERR</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
-              <span style={{ display: 'inline-block', background: 'rgba(255,92,51,0.09)', color: '#FF5C33', fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>CONNECTION_FAILED</span>
-              <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>데이터를 불러올 수 없습니다</div>
-              <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.7 }}>{analysisError}</div>
+              <span style={{ display: 'inline-block', background: 'rgba(255,92,51,0.09)', color: '#FF5C33', fontSize: 9, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>CONNECTION_FAILED</span>
+              <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>{textByLang(uiLang, CHART_TEXT.connectionFailed)}</div>
+              <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', lineHeight: 1.7 }}>{analysisError}</div>
             </div>
             <button
               onClick={() => { setAnalysisError(null); setRetryKey(k => k + 1) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,92,51,0.33)', background: 'transparent', color: '#FF5C33', fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 600, letterSpacing: '1px', padding: '6px 12px', borderRadius: 2, cursor: 'pointer', width: 'fit-content', marginTop: 12 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,92,51,0.33)', background: 'transparent', color: '#FF5C33', fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', fontSize: 10, fontWeight: 600, letterSpacing: '1px', padding: '6px 12px', borderRadius: 2, cursor: 'pointer', width: 'fit-content', marginTop: 12 }}
             >
-              ↻  RETRY
+              {textByLang(uiLang, CHART_TEXT.retry)}
             </button>
           </div>
         )}
 
-        {/* Symbol not found — Terminal Signal */}
+        {/* Symbol not found ??Terminal Signal */}
         {analysisNotFound && (
           <div style={{ position: 'relative', background: '#080808', borderLeft: '3px solid #FF8400', overflow: 'hidden', borderRadius: 2, padding: '22px 20px 22px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200 }}>
-            <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', color: '#FF8400', opacity: 0.06, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>404</div>
+            <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', color: '#FF8400', opacity: 0.06, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>404</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
-              <span style={{ display: 'inline-block', background: 'rgba(255,132,0,0.09)', color: '#FF8400', fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>TICKER_NOT_FOUND</span>
-              <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>종목을 찾을 수 없습니다</div>
-              <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.7 }}>유효하지 않은 티커입니다. 심볼을 다시 확인하세요.</div>
+              <span style={{ display: 'inline-block', background: 'rgba(255,132,0,0.09)', color: '#FF8400', fontSize: 9, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>TICKER_NOT_FOUND</span>
+              <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>{textByLang(uiLang, CHART_TEXT.tickerNotFound)}</div>
+              <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', lineHeight: 1.7 }}>{textByLang(uiLang, CHART_TEXT.tickerHint)}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
               <div style={{ width: 16, height: 1, background: 'rgba(255,132,0,0.27)' }} />
-              <span style={{ color: '#333', fontSize: 9, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '1.5px' }}>AAPL  NVDA  MSFT  QQQ</span>
+              <span style={{ color: '#333', fontSize: 9, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', letterSpacing: '1.5px' }}>AAPL  NVDA  MSFT  QQQ</span>
             </div>
           </div>
         )}
 
-        {/* Normal cards — hidden when error or notFound */}
+        {/* Normal cards ??hidden when error or notFound */}
         <div style={{ display: analysisError || analysisNotFound ? 'none' : 'flex', flexDirection: 'column', gap: 10 }}>
 
         {/* Card 1: Technical Signal */}
         <div style={card}>
-          <div style={sectionTitle}>Technical Signal</div>
+          <div style={sectionTitle}>{textByLang(uiLang, CHART_TEXT.technicalSignal)}</div>
           {loadingAnalysis && !tech ? (
-            <div style={{ color: '#64748b', fontSize: '0.84rem' }}>Analyzing...</div>
+            <div style={{ color: '#64748b', fontSize: '0.84rem' }}>{textByLang(uiLang, CHART_TEXT.analyzing)}</div>
           ) : tech ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, marginBottom: 10 }}>
@@ -304,15 +342,15 @@ export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
               </div>
             </>
           ) : (
-            <div style={{ color: '#64748b', fontSize: '0.82rem' }}>No data available</div>
+            <div style={{ color: '#64748b', fontSize: '0.82rem' }}>{textByLang(uiLang, CHART_TEXT.noData)}</div>
           )}
         </div>
 
         {/* Card 2: Key Levels */}
         <div style={card}>
-          <div style={sectionTitle}>Key Levels</div>
+          <div style={sectionTitle}>{textByLang(uiLang, CHART_TEXT.keyLevels)}</div>
           {loadingAnalysis && levels.length === 0 ? (
-            <div style={{ color: '#64748b', fontSize: '0.84rem' }}>Loading...</div>
+            <div style={{ color: '#64748b', fontSize: '0.84rem' }}>{textByLang(uiLang, CHART_TEXT.loading)}</div>
           ) : levels.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {levels.map(l => (
@@ -328,15 +366,15 @@ export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
               ))}
             </div>
           ) : (
-            <div style={{ color: '#64748b', fontSize: '0.82rem' }}>No data available</div>
+            <div style={{ color: '#64748b', fontSize: '0.82rem' }}>{textByLang(uiLang, CHART_TEXT.noData)}</div>
           )}
         </div>
 
         {/* Card 3: Performance */}
         <div style={card}>
-          <div style={sectionTitle}>Price Performance</div>
+          <div style={sectionTitle}>{textByLang(uiLang, CHART_TEXT.pricePerformance)}</div>
           {loadingAnalysis && !analysis ? (
-            <div style={{ color: '#64748b', fontSize: '0.84rem' }}>Loading...</div>
+            <div style={{ color: '#64748b', fontSize: '0.84rem' }}>{textByLang(uiLang, CHART_TEXT.loading)}</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
               {perfRows.map(r => {
@@ -361,3 +399,4 @@ export default function ChartPanel({ symbol, depth }: ChartPanelProps) {
     </div>
   )
 }
+

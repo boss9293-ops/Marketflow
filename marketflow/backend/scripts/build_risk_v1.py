@@ -7,7 +7,7 @@ Builds Standard Risk System v1 outputs:
   - output/risk_v1_playback.json
   - output/risk_v1_sim.json
 
-Data source: marketflow/data/marketflow.db (ticker_history_daily)
+Data source: marketflow/backend/data/marketflow.db mirror (ticker_history_daily)
 Symbols: QQQ, TQQQ
 """
 from __future__ import annotations
@@ -21,6 +21,8 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
+from db_utils import resolve_marketflow_db
+
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -33,9 +35,11 @@ DATA_DIR = os.path.join(BACKEND_DIR, "..", "data")
 OUTPUT_DIR = os.path.join(BACKEND_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-DB_PATH   = os.path.join(DATA_DIR, "marketflow.db")
+DB_PATH   = resolve_marketflow_db(
+    required_tables=("ohlcv_daily", "ticker_history_daily", "market_daily"),
+    prefer_engine=True,
+)
 CACHE_DB  = os.path.join(DATA_DIR, "cache.db")
-OHLCV_DB  = os.path.join(BACKEND_DIR, "..", "data", "marketflow.db")
 
 
 def load_symbol(con: sqlite3.Connection, symbol: str) -> pd.DataFrame:
@@ -181,10 +185,7 @@ def pct(val: float | None, digits: int = 2) -> float | None:
 
 def load_ohlcv(symbol: str) -> pd.DataFrame:
     """Load close prices from ohlcv_daily (SPY/DIA available 2024+)."""
-    paths_to_try = [
-        OHLCV_DB,
-        os.path.join(BACKEND_DIR, "data", "marketflow.db"),
-    ]
+    paths_to_try = [DB_PATH]
     for db_path in paths_to_try:
         if not os.path.exists(db_path):
             continue
@@ -229,10 +230,7 @@ def load_ohlcv(symbol: str) -> pd.DataFrame:
 
 def load_ohlcv_only(symbol: str) -> pd.DataFrame:
     """Load close prices from ohlcv_daily only, without cache fallback."""
-    paths_to_try = [
-        OHLCV_DB,
-        os.path.join(BACKEND_DIR, "data", "marketflow.db"),
-    ]
+    paths_to_try = [DB_PATH]
     for db_path in paths_to_try:
         if not os.path.exists(db_path):
             continue

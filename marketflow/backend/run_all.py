@@ -42,6 +42,7 @@ SCRIPT_TIMEOUTS: dict[str, int] = {
 }
 
 SCRIPT_TIMEOUTS["build_ai_briefings.py"] = 300
+SCRIPT_TIMEOUTS["build_daily_briefing_v3.py"] = 120
 
 
 SCRIPTS = [
@@ -58,6 +59,7 @@ SCRIPTS = [
     ("validate_kr_outputs.py", "KR Output Contract Validation"),
     # DB/cache chain (order-sensitive: ohlcv first, market_daily reads from ohlcv)
     ("ensure_risk_universe.py", "Ensure Risk Engine Universe Symbols"),
+    ("sync_etf_catalog.py", "Sync ETF Catalog + Universe"),
     ("update_ohlcv.py", "Update OHLCV Daily"),
     ("update_market_daily.py", "Update Market Daily (QQQ/SPY/VIX/rates/FX/commodities)"),
     ("collect_macro_cache.py", "Collect Macro Cache (SQLite)"),
@@ -83,6 +85,7 @@ SCRIPTS = [
     ("build_health_snapshot.py", "Build Health Snapshot Row"),
     ("build_action_snapshot.py", "Build Action Snapshot Row"),
     ("build_daily_briefing.py", "Build Daily Briefing Snapshot"),
+    ("build_daily_briefing_v3.py", "Build Daily Briefing V3 Narrative"),
     ("build_context_news.py", "Build Context News Cache"),
     ("build_market_health.py", "Build Market Health 4-Score"),
     ("risk_engine.py",       "Compute Risk Engine Metrics"),

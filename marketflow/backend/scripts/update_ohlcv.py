@@ -33,6 +33,9 @@ import pandas as pd
 import requests
 import yfinance as yf
 
+from db_utils import daily_data_root
+from ohlcv_sources import load_spooq_rows_for_symbol
+
 
 def repo_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -48,6 +51,24 @@ def get_symbols(conn: sqlite3.Connection, limit: int | None = None) -> List[str]
         sql += f" LIMIT {int(limit)}"
     rows = conn.execute(sql).fetchall()
     return [r[0] for r in rows]
+
+
+def seed_symbols(conn: sqlite3.Connection, symbols: List[str]) -> None:
+    """
+    Ensure requested symbols exist in universe_symbols so foreign keys and
+    incremental updates can proceed even when the universe row was missing.
+    """
+    now = datetime.now().isoformat(timespec="seconds")
+    for symbol in symbols:
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO universe_symbols
+              (symbol, name, sector, industry, exchange, market_cap, is_active, is_top100, last_updated)
+            VALUES (?, ?, NULL, NULL, NULL, NULL, 1, 0, ?)
+            """,
+            (symbol, symbol, now),
+        )
+    conn.commit()
 
 
 def get_last_dates_bulk(conn: sqlite3.Connection) -> Dict[str, str]:
@@ -234,11 +255,13 @@ def validate_required_tables(conn: sqlite3.Connection) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit",   type=int,   default=None,  help="limit symbols for test run")
+    parser.add_argument("--symbols", nargs="*", default=None, help="explicit symbols to update")
     parser.add_argument("--years",   type=int,   default=2,     help="history years for full fetch (default: 2)")
     parser.add_argument("--sleep",   type=float, default=0.05,  help="sleep between sequential fetches (used only with --workers 1)")
     parser.add_argument("--full",    action="store_true",       help="force full re-fetch ignoring DB last date")
     parser.add_argument("--retry",   type=int,   default=2,     help="max retry attempts per symbol (default: 2)")
     parser.add_argument("--workers", type=int,   default=8,     help="parallel fetch workers (default: 8; 1=sequential)")
+    parser.add_argument("--daily-data-dir", default=daily_data_root(), help="Local Spooq Daily_data folder for backfill fallback")
     args = parser.parse_args()
 
     path = db_path()
@@ -254,7 +277,12 @@ def main() -> int:
 
     try:
         validate_required_tables(conn)
-        symbols = get_symbols(conn, args.limit)
+        if args.symbols:
+            symbols = [s.upper() for s in args.symbols if s and s.strip()]
+            seed_symbols(conn, symbols)
+            print(f"[INFO] Seeded requested symbols: {len(symbols)}")
+        else:
+            symbols = get_symbols(conn, args.limit)
         print(f"[INFO] Symbols to update: {len(symbols)}")
 
         if not symbols:
@@ -297,6 +325,16 @@ def main() -> int:
                     if last_date else None
                 )
                 try:
+                    if last_date is None:
+                        local_rows, _bad_rows, local_path = load_spooq_rows_for_symbol(
+                            symbol,
+                            source_dir=args.daily_data_dir,
+                            start_date=start_date,
+                            source_label="spooq",
+                        )
+                        if local_rows:
+                            source_hint = f"spooq:{local_path.name}" if local_path else "spooq"
+                            return symbol, local_rows, source_hint
                     # Fast path: try yfinance first
                     rows, source = fetch_yfinance_rows(symbol, start_date=start_date, years=args.years)
                     if rows:
@@ -340,6 +378,21 @@ def main() -> int:
                         (pd.to_datetime(last_date) + timedelta(days=1)).strftime("%Y-%m-%d")
                         if last_date else None
                     )
+                    if last_date is None:
+                        local_rows, _bad_rows, local_path = load_spooq_rows_for_symbol(
+                            symbol,
+                            source_dir=args.daily_data_dir,
+                            start_date=start_date,
+                            source_label="spooq",
+                        )
+                        if local_rows:
+                            cnt = upsert_rows(conn, local_rows)
+                            total_upserted += cnt
+                            mode_tag = f"local backfill from {local_path.name}" if local_path else "local backfill"
+                            print(f"[INFO] [{i}/{len(needs_update)}] {symbol}: {cnt} rows (spooq, {mode_tag})")
+                            if args.sleep > 0:
+                                time.sleep(args.sleep + random.uniform(0, args.sleep * 0.5))
+                            continue
                     rows, source = fetch_rows_with_retry(
                         symbol, start_date=start_date, years=args.years, max_retries=args.retry
                     )

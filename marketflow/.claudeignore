@@ -1,0 +1,27 @@
+# .claudeignore — marketflow/
+node_modules/
+.next/
+dist/
+build/
+out/
+*.log
+coverage/
+.env
+.env.local
+.env.*
+__pycache__/
+.venv/
+.pytest_cache/
+backup/
+logs/
+tmp/
+output/
+data/snapshots/
+storage/
+.pytest_cache/
+*.parquet
+*.db
+*.sqlite
+*.png
+*.pdf
+*.csv

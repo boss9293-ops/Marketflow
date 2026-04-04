@@ -91,6 +91,38 @@ def fetch_from_ohlcv(db: str, symbol: str) -> pd.Series:
         return pd.Series(dtype="float64")
 
 
+def fetch_from_cache(symbol: str) -> pd.Series:
+    """Read a cached series from data/cache.db when a local series is already available."""
+    cache_db = os.path.join(repo_root(), "data", "cache.db")
+    if not os.path.exists(cache_db):
+        return pd.Series(dtype="float64")
+    try:
+        conn = sqlite3.connect(cache_db)
+        df = pd.read_sql_query(
+            "SELECT date, value FROM series_data WHERE symbol = ? ORDER BY date ASC",
+            conn,
+            params=(symbol,),
+        )
+        conn.close()
+        if df.empty:
+            return pd.Series(dtype="float64")
+        df["date"] = pd.to_datetime(df["date"], errors="coerce", format="mixed").dt.tz_localize(None)
+        df = df.dropna(subset=["date"])
+        series = df.set_index("date")["value"]
+        series = series[~series.index.duplicated(keep="last")]
+        return series
+    except Exception:
+        return pd.Series(dtype="float64")
+
+
+def fetch_preferred_series(cache_symbol: Optional[str], candidates: List[str], years: int, days: int) -> Tuple[pd.Series, Optional[str]]:
+    if cache_symbol:
+        cached = fetch_from_cache(cache_symbol)
+        if not cached.empty:
+            return cached, f"cache:{cache_symbol}"
+    return fetch_with_fallback(candidates, years, days)
+
+
 def sync_ticker_history_daily(conn: sqlite3.Connection, db_path_str: str, log_write) -> None:
     """Sync ticker_history_daily from ohlcv_daily (incremental: only new dates).
 
@@ -150,7 +182,7 @@ def sync_ticker_history_daily(conn: sqlite3.Connection, db_path_str: str, log_wr
         ]
 
         conn.executemany(
-            "INSERT INTO ticker_history_daily (symbol, date, open, high, low, close, volume) VALUES (?,?,?,?,?,?,?)",
+            "INSERT OR REPLACE INTO ticker_history_daily (symbol, date, open, high, low, close, volume) VALUES (?,?,?,?,?,?,?)",
             new_rows,
         )
         conn.commit()
@@ -233,7 +265,7 @@ def main() -> int:
             else:
                 log_write(f"[INFO] {col.upper():<6} source=ohlcv_daily:{sym} rows={len(s)} last={s.index[-1].strftime('%Y-%m-%d')}")
 
-        # --- Non-equity columns: yfinance (VIX, rates, FX, commodities) ---
+        # --- Non-equity columns: prefer local cache series when available, fallback to yfinance ---
         yf_targets: Dict[str, List[str]] = {
             "vix":   ["^VIX"],
             "move":  ["^MOVE", "MOVE"],
@@ -244,8 +276,15 @@ def main() -> int:
             "oil":   ["CL=F", "BZ=F"],
             "btc":   ["BTC-USD"],
         }
+        cache_targets: Dict[str, str] = {
+            "vix": "VIX",
+            "us10y": "DGS10",
+            "us2y": "DGS2",
+            "gold": "GLD",
+            "btc": "BTC",
+        }
         for col, candidates in yf_targets.items():
-            s, used = fetch_with_fallback(candidates, args.years, args.days)
+            s, used = fetch_preferred_series(cache_targets.get(col), candidates, args.years, args.days)
             series_map[col] = s
             meta[col] = (used, len(s))
             if used is None or s.empty:

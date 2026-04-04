@@ -238,7 +238,7 @@ const computeBestWorst5d = (arr: LivePoint[], key: keyof LivePoint): BestWorst |
 
 export default function LiveTimeline({ series, currentMps, currentVix, dataDate, outputLang }: LiveTimelineProps) {
   const uiLang = useLangMode()
-  const contentLang = useContentLang()
+  const contentLang = useContentLang(outputLang ?? 'ko')
   const resolvedOutputLang = outputLang ?? contentLang
   const [selectedWindow, setSelectedWindow] = useState<WindowMode>('YTD')
   const contextSeriesRaw = useMemo(() => {
@@ -750,22 +750,22 @@ export default function LiveTimeline({ series, currentMps, currentVix, dataDate,
           <div className="mt-4 space-y-4 text-base leading-[1.7] text-slate-300">
             <div>
               <div className="text-xs uppercase tracking-wider text-slate-400">MPS (0-100)</div>
-              <div>유동성, 금리, 변동성, 신용을 종합한 매크로 압력 지표입니다. 70/85는 고압 및 위기 구간입니다.</div>
-              <div className="text-xs text-slate-400 mt-2">해석: 상승/유지 = 압력 누적, 급락 = 압력 해소</div>
+              <div>{pickLang(uiLang, '유동성, 금리, 변동성, 신용을 종합한 매크로 압력 지표입니다. 70/85는 고압 및 위기 구간입니다.', 'Composite macro pressure score from liquidity, rates, volatility, and credit. 70/85 mark high-pressure and crisis zones.')}</div>
+              <div className="text-xs text-slate-400 mt-2">{pickLang(uiLang, '해석: 상승/유지 = 압력 누적, 급락 = 압력 해소', 'Reading: rising/flat = pressure building, sharp decline = pressure release')}</div>
             </div>
             <div>
               <div className="text-xs uppercase tracking-wider text-slate-400">VIX</div>
-              <div>25/35는 변동성 임계 구간이며, 레벨만큼 기울기(상승 속도)가 중요합니다.</div>
-              <div className="text-xs text-slate-400 mt-2">해석: 급상승은 가격 스트레스 선행 신호</div>
+              <div>{pickLang(uiLang, '25/35는 변동성 임계 구간이며, 레벨만큼 기울기(상승 속도)가 중요합니다.', '25/35 are volatility thresholds, and slope (speed of rise) matters as much as level.')}</div>
+              <div className="text-xs text-slate-400 mt-2">{pickLang(uiLang, '해석: 급상승은 가격 스트레스 선행 신호', 'Reading: sharp spikes often lead price stress')}</div>
             </div>
             <div>
               <div className="text-xs uppercase tracking-wider text-slate-400">QQQ / TQQQ</div>
-              <div>가격 반응은 QQQ/TQQQ로 확인하며, 레버리지는 단기 변동성에 과민합니다.</div>
-              <div className="text-xs text-slate-400 mt-2">{windowLabel}는 누적 반응이며 드로우다운과 구분합니다.</div>
+              <div>{pickLang(uiLang, '가격 반응은 QQQ/TQQQ로 확인하며, 레버리지는 단기 변동성에 과민합니다.', 'Track price reaction via QQQ/TQQQ; leverage is highly sensitive to short-term volatility.')}</div>
+              <div className="text-xs text-slate-400 mt-2">{pickLang(uiLang, `${windowLabel}는 누적 반응이며 드로우다운과 구분합니다.`, `${windowLabel} is cumulative response, distinct from drawdown.`)}</div>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-wider text-slate-400">Stress Day</div>
-              <div>MPS {'>='} 70 또는 VIX {'>='} 25 인 날을 의미합니다.</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{pickLang(uiLang, '스트레스 데이', 'Stress Day')}</div>
+              <div>{pickLang(uiLang, `MPS ${'>='} 70 또는 VIX ${'>='} 25 인 날을 의미합니다.`, `Days when MPS ${'>='} 70 or VIX ${'>='} 25.`)}</div>
             </div>
           </div>
         </div>

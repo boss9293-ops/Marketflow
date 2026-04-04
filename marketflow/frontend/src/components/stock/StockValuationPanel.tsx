@@ -36,13 +36,24 @@ function isFiniteNumber(value: unknown): value is number {
 
 export default function StockValuationPanel({ analysis, loading, compact = false }: Props) {
   const valuation = analysis?.valuation
+  const stats = analysis?.stats
   const valuationState = analysis?.valuation_state
   const currentPe = formatMultiple(analysis?.current_pe)
+  const psr = formatMultiple(stats?.ps_ratio)
+  const tPeg = formatMultiple(stats?.peg_ratio)
+  const pFcfRaw =
+    isFiniteNumber(analysis?.current_price) &&
+    isFiniteNumber(stats?.fcf_per_share) &&
+    stats.fcf_per_share > 0
+      ? analysis.current_price / stats.fcf_per_share
+      : null
+  const pFcf = formatMultiple(pFcfRaw)
   const sectorPe = formatMultiple(analysis?.sector_pe)
   const pe3y = formatMultiple(analysis?.historical_pe?.pe_3y)
   const pe5y = formatMultiple(analysis?.historical_pe?.pe_5y)
   const epsTtm = formatPrice(valuation?.eps_ttm)
   const epsFwd = formatPrice(valuation?.eps_forward)
+  const fcfPerShare = formatPrice(stats?.fcf_per_share)
   const grossMargin = formatPct(valuation?.gross_margin)
   const operatingMargin = formatPct(valuation?.operating_margin)
   const netMargin = formatPct(valuation?.net_margin)
@@ -76,9 +87,27 @@ export default function StockValuationPanel({ analysis, loading, compact = false
 
       <div className={`grid ${compact ? 'gap-2.5 md:grid-cols-2 xl:grid-cols-4' : 'gap-3 md:grid-cols-2 xl:grid-cols-4'}`}>
         <MetricCard compact={compact} label="Current PE" value={loading ? '--' : currentPe} accent="text-cyan-200" helper={!loading && currentPe === '--' ? missingFeed : undefined} />
+        <MetricCard compact={compact} label="PSR (P/S)" value={loading ? '--' : psr} accent="text-emerald-200" helper={!loading && psr === '--' ? missingCoverage : undefined} />
+        <MetricCard
+          compact={compact}
+          label="P / FCF"
+          value={loading ? '--' : pFcf}
+          accent="text-amber-200"
+          helper={!loading ? (pFcf === '--' ? 'Requires positive FCF/share' : 'Derived from price / FCF/share') : undefined}
+        />
+        <MetricCard compact={compact} label="tPEG" value={loading ? '--' : tPeg} accent="text-fuchsia-200" helper={!loading && tPeg === '--' ? missingCoverage : undefined} />
+      </div>
+
+      <div className={`mt-4 grid ${compact ? 'gap-2.5 md:grid-cols-2 xl:grid-cols-4' : 'gap-3 md:grid-cols-2 xl:grid-cols-4'}`}>
         <MetricCard compact={compact} label="Sector PE" value={loading ? '--' : sectorPe} accent="text-emerald-200" helper={!loading && sectorPe === '--' ? 'Sector sample not available' : undefined} />
         <MetricCard compact={compact} label="Historical PE 3Y" value={loading ? '--' : pe3y} accent="text-amber-200" helper={!loading && pe3y === '--' ? missingCoverage : undefined} />
         <MetricCard compact={compact} label="Historical PE 5Y" value={loading ? '--' : pe5y} accent="text-fuchsia-200" helper={!loading && pe5y === '--' ? missingCoverage : undefined} />
+        <MetricCard
+          compact={compact}
+          label="Multiple Source"
+          value={loading ? '--' : (valuation?.historical_multiple_source || 'price-history')}
+          helper={!loading && !valuation?.historical_multiple_source ? missingCoverage : undefined}
+        />
       </div>
 
       <div className={`mt-4 grid ${compact ? 'gap-2.5 md:grid-cols-2 xl:grid-cols-4' : 'gap-3 md:grid-cols-2 xl:grid-cols-4'}`}>
@@ -92,13 +121,9 @@ export default function StockValuationPanel({ analysis, loading, compact = false
         <MetricCard compact={compact} label="Net Margin" value={loading ? '--' : netMargin} helper={!loading && netMargin === '--' ? missingCoverage : undefined} />
         <MetricCard compact={compact} label="Debt / Equity" value={loading ? '--' : debtToEquity} helper={!loading && debtToEquity === '--' ? limitedCoverage : undefined} />
         <MetricCard compact={compact} label="Current Ratio" value={loading ? '--' : currentRatio} helper={!loading && currentRatio === '--' ? limitedCoverage : undefined} />
-        <MetricCard
-          compact={compact}
-          label="Multiple Source"
-          value={loading ? '--' : (valuation?.historical_multiple_source || 'price-history')}
-          helper={!loading && !valuation?.historical_multiple_source ? missingCoverage : undefined}
-        />
+        <MetricCard compact={compact} label="FCF / Share" value={loading ? '--' : fcfPerShare} helper={!loading && fcfPerShare === '--' ? missingCoverage : undefined} />
       </div>
     </section>
   )
 }
+

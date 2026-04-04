@@ -35,7 +35,7 @@ export default function RiskV1ClientShell({
         minHeight: '100vh',
         background: '#080b10',
         color: '#e5e7eb',
-        fontFamily: "'Inter', 'Segoe UI', sans-serif",
+        fontFamily: "var(--font-ui-sans, var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', monospace)",
         padding: '24px',
       }}
     >

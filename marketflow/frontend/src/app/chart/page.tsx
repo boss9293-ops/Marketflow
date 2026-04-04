@@ -19,6 +19,27 @@ const panelStyle = {
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_STOCK_DATA === 'true'
 
+const TV_SYMBOL_MAP: Record<string, string> = {
+  SPY: 'AMEX:SPY',
+  QQQ: 'NASDAQ:QQQ',
+  TQQQ: 'NASDAQ:TQQQ',
+  IWM: 'AMEX:IWM',
+  DIA: 'AMEX:DIA',
+  VIX: 'CBOE:VIX',
+  SOXL: 'NASDAQ:SOXL',
+  TECL: 'NASDAQ:TECL',
+  AAPL: 'NASDAQ:AAPL',
+  MSFT: 'NASDAQ:MSFT',
+  NVDA: 'NASDAQ:NVDA',
+}
+
+const resolveTvSymbol = (value: string): string => {
+  const raw = value.trim().toUpperCase()
+  if (!raw) return 'AAPL'
+  if (raw.includes(':')) return raw
+  return TV_SYMBOL_MAP[raw] || raw
+}
+
 const SYMBOL_META: Record<string, { name: string; exchange: string; sector: string }> = {
   // Mega-cap tech
   AAPL: { name: 'Apple Inc.', exchange: 'NASDAQ', sector: 'Technology' },
@@ -96,23 +117,7 @@ export default function StockAnalysisPage() {
   }, [])
 
   const tvSymbol = useMemo(() => {
-    const raw = committedSymbol.trim().toUpperCase()
-    if (!raw) return 'NASDAQ:AAPL'
-    if (raw.includes(':')) return raw
-    const map: Record<string, string> = {
-      SPY: 'AMEX:SPY',
-      QQQ: 'NASDAQ:QQQ',
-      TQQQ: 'NASDAQ:TQQQ',
-      IWM: 'AMEX:IWM',
-      DIA: 'AMEX:DIA',
-      VIX: 'CBOE:VIX',
-      SOXL: 'NASDAQ:SOXL',
-      TECL: 'NASDAQ:TECL',
-      AAPL: 'NASDAQ:AAPL',
-      MSFT: 'NASDAQ:MSFT',
-      NVDA: 'NASDAQ:NVDA',
-    }
-    return map[raw] || `NASDAQ:${raw}`
+    return resolveTvSymbol(committedSymbol)
   }, [committedSymbol])
 
   const baseSymbol = useMemo(() => {
@@ -260,26 +265,29 @@ export default function StockAnalysisPage() {
               whiteSpace: 'nowrap',
             }}
           >
-            ↻ Refresh
+            Refresh
           </button>
         )}
       </div>
 
-      {/* Active Panel — chart is conditionally mounted (TradingView widget is heavy) */}
-      {activeTab === 'chart' && (
-        <ChartPanel symbol={tvSymbol} depth={depth} />
-      )}
+      {/* Active Panel ??chart is conditionally mounted (TradingView widget is heavy) */}
+      <div style={{ zoom: '110%' }}>
+        {activeTab === 'chart' && (
+          <ChartPanel symbol={tvSymbol} depth={depth} />
+        )}
 
-      {/* Data panels stay mounted to preserve fetched data across tab switches */}
-      <div style={{ display: activeTab === 'valuation' ? undefined : 'none' }}>
-        <ValuationPanel symbol={committedSymbol} fetchKey={valKey} />
-      </div>
-      <div style={{ display: activeTab === 'statistics' ? undefined : 'none' }}>
-        <StatisticsPanel symbol={committedSymbol} fetchKey={statsKey} />
-      </div>
-      <div style={{ display: activeTab === 'financials' ? undefined : 'none' }}>
-        <FinancialsPanel symbol={committedSymbol} fetchKey={finKey} />
+        {/* Data panels stay mounted to preserve fetched data across tab switches */}
+        <div style={{ display: activeTab === 'valuation' ? undefined : 'none' }}>
+          <ValuationPanel symbol={committedSymbol} fetchKey={valKey} />
+        </div>
+        <div style={{ display: activeTab === 'statistics' ? undefined : 'none' }}>
+          <StatisticsPanel symbol={committedSymbol} fetchKey={statsKey} />
+        </div>
+        <div style={{ display: activeTab === 'financials' ? undefined : 'none' }}>
+          <FinancialsPanel symbol={committedSymbol} fetchKey={finKey} />
+        </div>
       </div>
     </div>
   )
 }
+

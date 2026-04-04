@@ -7,7 +7,7 @@ type Props = {
   onChange: (tab: TabType) => void
 }
 
-const MONO = '"JetBrains Mono", monospace'
+const MONO = 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace'
 
 const tabs: { key: TabType; label: string }[] = [
   { key: 'chart',      label: 'chart_analysis' },
@@ -32,14 +32,14 @@ export default function TopicTabs({ activeTab, onChange }: Props) {
               border:'none',
               borderBottom: isActive ? '2px solid #22C55E' : '2px solid transparent',
               color: isActive ? '#E5E5E5' : '#7A8598',
-              fontSize:12,
+              fontSize:13,
               fontFamily:MONO,
               fontWeight: isActive ? 500 : 400,
               cursor:'pointer',
               marginBottom:-1,
             }}
           >
-            {isActive && <span style={{ color:'#22C55E', fontWeight:600, fontSize:11 }}>{'>'}&nbsp;</span>}
+            {isActive && <span style={{ color:'#22C55E', fontWeight:600, fontSize:12 }}>{'>'}&nbsp;</span>}
             {tab.label}
           </button>
         )
@@ -47,3 +47,4 @@ export default function TopicTabs({ activeTab, onChange }: Props) {
     </div>
   )
 }
+

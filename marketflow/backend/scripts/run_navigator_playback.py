@@ -4,7 +4,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-DB = 'marketflow/data/marketflow.db'
+from db_utils import resolve_marketflow_db
+
+DB = resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
 SYM = 'TQQQ'
 START = '2018-01-01'
 OUTDIR = 'marketflow/backend/output'

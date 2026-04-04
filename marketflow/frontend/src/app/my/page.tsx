@@ -17,6 +17,11 @@ import {
   CartesianGrid,
 } from 'recharts'
 
+import NarrativeBlocks, {
+  mapPortfolioNarrative,
+  type StructuredNarrative,
+} from '@/components/narrative/NarrativeBlocks'
+
 type HoldingPosition = {
   symbol?: string
   date?: string
@@ -446,6 +451,7 @@ export default function MyPage() {
   const [saJsonInput, setSaJsonInput] = useState('')
   const [credsLoading, setCredsLoading] = useState(false)
   const [credsOpen, setCredsOpen] = useState(false)
+  const [portfolioNarrative, setPortfolioNarrative] = useState<StructuredNarrative | null>(null)
 
   async function fetchHoldings() {
     setLoading(true)
@@ -975,6 +981,126 @@ export default function MyPage() {
   const activeSymbolCount = Array.isArray(activePositionsRows)
     ? activePositionsRows.filter((r) => !!asText(r.symbol)).length
     : 0
+
+  useEffect(() => {
+    if (loading) return
+
+    const controller = new AbortController()
+    let active = true
+    setPortfolioNarrative(null)
+
+    const fallbackPayload = {
+      summary: concentrationTone === 'high' ? 'Overexposed' : concentrationTone === 'mid' ? 'Aligned' : 'Defensive',
+      structure: diversificationText,
+      risk: topWeight
+        ? `Risk is concentrated in ${topWeight.symbol} at ${topWeight.pct.toFixed(1)}%.`
+        : 'Risk concentration is not available.',
+      alignment:
+        typeof cashRatioPct === 'number'
+          ? `Cash buffer is ${cashRatioPct.toFixed(1)}%.`
+          : 'Cash buffer is not available.',
+      action:
+        concentrationTone === 'high'
+          ? 'Reduce the largest concentration first and keep sizing tight.'
+          : concentrationTone === 'mid'
+            ? 'Keep the current structure under MSS + Track and watch concentration.'
+            : 'Maintain the defensive tilt and avoid adding leverage too early.',
+      tqqq:
+        pnlTone === 'plus'
+          ? 'TQQQ remains a separate leverage decision from the core stock basket.'
+          : 'TQQQ should stay separate from the core basket until structure improves.',
+    }
+
+    const loadPortfolioNarrative = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/narrative/portfolio`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            portfolio_data: data,
+            engine_data: {
+              as_of_date: data.as_of_date,
+              total_equity: summary.total_equity,
+              total_cost: summary.total_cost,
+              total_pnl: summary.total_pnl,
+              total_pnl_pct: summary.total_pnl_pct,
+              cash: summary.cash,
+              cash_ratio_pct: cashRatioPct,
+              top_weight_symbol: topWeight?.symbol || null,
+              top_weight_pct: topWeight?.pct ?? null,
+              top3_weight_pct: top3WeightPct,
+              concentration_tone: concentrationTone,
+              diversification_text: diversificationText,
+              pnl_tone: pnlTone,
+            },
+          }),
+          cache: 'no-store',
+          signal: controller.signal,
+        })
+
+        const json = await response.json().catch(() => null)
+        if (!response.ok) {
+          throw new Error(typeof json?.error === 'string' ? json.error : 'Failed to load portfolio narrative.')
+        }
+
+        if (!active) return
+        setPortfolioNarrative(mapPortfolioNarrative(json))
+      } catch {
+        if (!active) return
+        setPortfolioNarrative(mapPortfolioNarrative(fallbackPayload))
+      }
+    }
+
+    void loadPortfolioNarrative()
+    return () => {
+      active = false
+      controller.abort()
+    }
+  }, [
+    API_BASE,
+    cashRatioPct,
+    concentrationTone,
+    data,
+    diversificationText,
+    loading,
+    pnlTone,
+    summary.cash,
+    summary.total_cost,
+    summary.total_equity,
+    summary.total_pnl,
+    summary.total_pnl_pct,
+    top3WeightPct,
+    topWeight?.pct,
+    topWeight?.symbol,
+  ])
+
+  const resolvedPortfolioNarrative = useMemo(
+    () =>
+      portfolioNarrative ??
+      mapPortfolioNarrative({
+        summary: concentrationTone === 'high' ? 'Overexposed' : concentrationTone === 'mid' ? 'Aligned' : 'Defensive',
+        structure: diversificationText,
+        risk: topWeight
+          ? `Risk is concentrated in ${topWeight.symbol} at ${topWeight.pct.toFixed(1)}%.`
+          : 'Risk concentration is not available.',
+        alignment:
+          typeof cashRatioPct === 'number'
+            ? `Cash buffer is ${cashRatioPct.toFixed(1)}%.`
+            : 'Cash buffer is not available.',
+        action:
+          concentrationTone === 'high'
+            ? 'Reduce the largest concentration first and keep sizing tight.'
+            : concentrationTone === 'mid'
+              ? 'Keep the current structure under MSS + Track and watch concentration.'
+              : 'Maintain the defensive tilt and avoid adding leverage too early.',
+        tqqq:
+          pnlTone === 'plus'
+            ? 'TQQQ remains a separate leverage decision from the core stock basket.'
+            : 'TQQQ should stay separate from the core basket until structure improves.',
+      }),
+    [cashRatioPct, concentrationTone, diversificationText, pnlTone, portfolioNarrative, topWeight],
+  )
+
   const snapshotExtraRows = useMemo(() => {
     const duplicateKeys = [
       '평가액',
@@ -1167,10 +1293,17 @@ export default function MyPage() {
               {concentrationTone === 'high' ? '집중 높음' : concentrationTone === 'mid' ? '집중 중간' : '분산 양호'}
             </div>
           </div>
-          <div style={{ color: '#dce9f8', fontSize: '0.78rem', lineHeight: 1.45 }}>
+          <div style={{ color: '#dce9f8', fontSize: '0.78rem', lineHeight: 1.45, display: 'none' }}>
             {diversificationText} {typeof cashRatioPct === 'number' ? `현금 ${cashRatioPct.toFixed(1)}%.` : ''}{' '}
             {typeof summary.total_pnl_pct === 'number' ? `누적 수익률 ${fmtPct(summary.total_pnl_pct)}.` : ''}
           </div>
+          {resolvedPortfolioNarrative ? (
+            <NarrativeBlocks data={resolvedPortfolioNarrative} density="compact" />
+          ) : (
+            <div style={{ color: '#8b93a8', fontSize: '0.78rem', lineHeight: 1.45 }}>
+              Portfolio narrative is unavailable.
+            </div>
+          )}
         </div>
       </section>
 

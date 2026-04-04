@@ -11,8 +11,11 @@ import csv
 import sqlite3
 from datetime import datetime, date
 
+from db_utils import daily_data_root, resolve_marketflow_db
+from ohlcv_sources import load_spooq_rows_for_symbol
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(os.path.dirname(ROOT), 'data', 'marketflow.db')
+DB_PATH = resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
 CSV_PATH = os.path.join(os.path.dirname(ROOT), 'data', 'tqqq_history.csv')
 BT_DIR = os.path.join(os.path.dirname(ROOT), 'data', 'backtests')
 os.makedirs(BT_DIR, exist_ok=True)
@@ -160,6 +163,24 @@ def load_prices(ticker: str):
                 return rows
         except Exception:
             pass
+    try:
+        local_rows, _bad_rows, _local_path = load_spooq_rows_for_symbol(
+            ticker,
+            source_dir=daily_data_root(),
+        )
+        if local_rows:
+            rows = [
+                {
+                    'date': row[1],
+                    'close': float(row[5]),
+                    'high': float(row[3] or row[5]),
+                    'low': float(row[4] or row[5]),
+                }
+                for row in local_rows
+            ]
+            return rows
+    except Exception:
+        pass
     if ticker.upper() == 'TQQQ' and os.path.exists(CSV_PATH):
         with open(CSV_PATH, encoding='utf-8') as f:
             for r in csv.DictReader(f):

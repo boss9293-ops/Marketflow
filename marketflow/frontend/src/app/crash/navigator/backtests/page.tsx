@@ -1,4 +1,4 @@
-import LeverageModuleNav from '@/components/crash/LeverageModuleNav'
+﻿import LeverageModuleNav from '@/components/crash/LeverageModuleNav'
 
 export default function BacktestsPlaceholder() {
   return (
@@ -7,7 +7,7 @@ export default function BacktestsPlaceholder() {
         minHeight: '100vh',
         background: '#0a0f1a',
         color: '#e5e7eb',
-        fontFamily: "'Inter','Segoe UI',sans-serif",
+        fontFamily: "var(--font-ui-sans, var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', monospace)",
         padding: '3.2rem 2.2rem',
       }}
     >
@@ -31,10 +31,10 @@ export default function BacktestsPlaceholder() {
             }}
           >
             <div style={{ fontSize: '2.6rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              레버리지는 야생마입니다.
+              ?덈쾭由ъ????쇱깮留덉엯?덈떎.
             </div>
             <div style={{ fontSize: '1.05rem', color: '#cbd5f5', letterSpacing: '-0.01em' }}>
-              우리는 그것을 길들이는 법을 연구합니다.
+              ?곕━??洹멸쾬??湲몃뱾?대뒗 踰뺤쓣 ?곌뎄?⑸땲??
             </div>
             <LeverageModuleNav activeKey="backtests" />
           </div>
@@ -53,9 +53,9 @@ export default function BacktestsPlaceholder() {
             <div style={{ fontSize: '0.8rem', color: '#c9a86a', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
               Research Phase
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>백테스트 센터</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>諛깊뀒?ㅽ듃 ?쇳꽣</div>
             <div style={{ fontSize: '0.98rem', color: '#cbd5f5' }}>
-              준비 중입니다. 검증 가능한 결과만 표시하도록 구성할 예정입니다.
+              以鍮?以묒엯?덈떎. 寃利?媛?ν븳 寃곌낵留??쒖떆?섎룄濡?援ъ꽦???덉젙?낅땲??
             </div>
           </div>
         </section>
@@ -63,3 +63,4 @@ export default function BacktestsPlaceholder() {
     </main>
   )
 }
+

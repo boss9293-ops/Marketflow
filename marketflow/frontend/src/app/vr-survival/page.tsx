@@ -134,7 +134,7 @@ export default async function VRSurvivalPage({
         background:
           'radial-gradient(circle at top left, rgba(56,189,248,0.12), transparent 28%), radial-gradient(circle at top right, rgba(244,63,94,0.10), transparent 26%), linear-gradient(180deg, #090c13 0%, #0c0e13 48%, #090b10 100%)',
         color: '#e5e7eb',
-        fontFamily: "'Inter','Segoe UI',sans-serif",
+        fontFamily: "var(--font-ui-sans, var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', monospace)",
         padding: '1.35rem 1.5rem',
       }}
     >
@@ -277,4 +277,5 @@ const navLinkStyle: CSSProperties = {
   background: 'rgba(255,255,255,0.02)',
   transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
 }
+
 

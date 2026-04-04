@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { Nanum_Gothic_Coding } from 'next/font/google'
 import './globals.css'
 import ClientLayout from '@/components/ClientLayout'
-import { CONTENT_LANG_COOKIE, UI_LANG_COOKIE, normalizeContentLang, normalizeUiLang } from '@/lib/uiLang'
+import { CONTENT_LANG_COOKIE, UI_LANG_COOKIE, normalizeUiLang } from '@/lib/uiLang'
 
 const terminalFont = Nanum_Gothic_Coding({
   subsets: ['latin'],
@@ -23,7 +23,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const initialUiLang = normalizeUiLang(cookies().get(UI_LANG_COOKIE)?.value)
-  const initialContentLang = normalizeContentLang(cookies().get(CONTENT_LANG_COOKIE)?.value)
+  const rawContentLang = cookies().get(CONTENT_LANG_COOKIE)?.value
+  const initialContentLang = rawContentLang === 'ko' || rawContentLang === 'en' ? rawContentLang : initialUiLang
 
   return (
     <html lang={initialUiLang} data-lang-mode={initialUiLang} data-content-lang={initialContentLang}>

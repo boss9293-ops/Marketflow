@@ -31,6 +31,8 @@ import traceback
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from symbol_registry import ROOM_SECTION_META, ROOM_SECTIONS, get_etf_display_name, room_symbols
+
 
 # ─── ETF universe ─────────────────────────────────────────────────────────────
 ETF_LEVERAGE = ["TQQQ", "SOXL", "SPXL", "TECL", "FNGU", "SQQQ"]
@@ -71,7 +73,7 @@ ETF_NAMES: Dict[str, str] = {
     "DGRO": "iShares Core Dividend Growth ETF",
 }
 
-ALL_ETFS = list(dict.fromkeys(ETF_LEVERAGE + ETF_HOT + ETF_THEME + ETF_DIVIDEND))
+ALL_ETFS = room_symbols()
 
 RERUN_HINT = "python backend/scripts/build_etf_room.py"
 LOOKBACK_DAYS = 260   # fetch only 60 days of OHLCV per symbol (cheap)
@@ -174,7 +176,7 @@ def compute_metrics(
     ind: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """Compute ETF row metrics from OHLCV history."""
-    name = ETF_NAMES.get(symbol, symbol)
+    name = get_etf_display_name(symbol)
 
     if not ohlcv:
         return {
@@ -281,11 +283,13 @@ def main() -> int:
     path = db_path()
     if not os.path.exists(path):
         print(f"[WARN] DB not found: {path}")
+        section_order = list(ROOM_SECTIONS.keys())
         payload = {
             "date": None,
             "generated_at": now_iso(),
-            "universe": {k: [] for k in ("leverage", "hot", "theme", "dividend")},
-            "sections": {k: {"items": [], "sort": ""} for k in ("hot", "leverage", "theme", "dividend")},
+            "section_order": section_order,
+            "universe": {k: [] for k in section_order},
+            "sections": {k: {"items": [], "sort": ROOM_SECTION_META.get(k, {}).get("sort", "")} for k in section_order},
             "notes": {"coverage": {"ok": 0, "missing": ALL_ETFS}},
             "rerun_hint": RERUN_HINT,
             "status": "no_db",
@@ -314,21 +318,18 @@ def main() -> int:
 
         as_of = max(as_of_dates) if as_of_dates else None
 
-        sections: Dict[str, Any] = {
-            "hot":      build_section(ETF_HOT,      metrics_map, "ret_5d"),
-            "leverage": build_section(ETF_LEVERAGE, metrics_map, "ret_5d"),
-            "theme":    build_section(ETF_THEME,    metrics_map, "ret_5d"),
-            "dividend": build_section(ETF_DIVIDEND, metrics_map, "ret_20d"),
-        }
+        section_order = list(ROOM_SECTIONS.keys())
+        sections: Dict[str, Any] = {}
+        for section_key, symbols in ROOM_SECTIONS.items():
+            sort_key = ROOM_SECTION_META.get(section_key, {}).get("sort", "ret_5d desc").split()[0]
+            sections[section_key] = build_section(list(symbols), metrics_map, sort_key)
 
         payload: Dict[str, Any] = {
             "date": as_of,
             "generated_at": now_iso(),
+            "section_order": section_order,
             "universe": {
-                "leverage": ETF_LEVERAGE,
-                "hot":      ETF_HOT,
-                "theme":    ETF_THEME,
-                "dividend": ETF_DIVIDEND,
+                key: list(symbols) for key, symbols in ROOM_SECTIONS.items()
             },
             "sections": sections,
             "notes": {

@@ -4,7 +4,6 @@ import {
   type EvidenceSheetExportRequest,
   type EvidenceRow,
   type ETDateString,
-  type MarketHeadline,
   type NewsDetail,
   type NewsClickLogRequest,
   type TerminalMvpApiClient,
@@ -118,13 +117,6 @@ const TICKER_NEWS_BY_SYMBOL: Record<string, Array<Omit<TickerNewsItem, 'dateET'>
   ],
 }
 
-const MARKET_HEADLINES_TEMPLATE: Array<Omit<MarketHeadline, 'dateET'>> = [
-  { id: 'mh-1', publishedAtET: '2026-03-11T15:46:00-05:00', timeET: '15:46 ET', headline: 'Oracle posts first 20%+ growth in 15 years and lifts cloud target.', source: 'Bloomberg', summary: 'Cloud guidance revision drives software tape into close.', url: 'https://example.com/news/market-1' },
-  { id: 'mh-2', publishedAtET: '2026-03-11T15:19:00-05:00', timeET: '15:19 ET', headline: 'After-hours buying accelerates as software backlog revisions surprise.', source: 'Reuters', summary: 'Enterprise demand signal boosts late-session sentiment.', url: 'https://example.com/news/market-2' },
-  { id: 'mh-3', publishedAtET: '2026-03-11T15:16:00-05:00', timeET: '15:16 ET', headline: 'Active managers rotate from gold into energy on macro repricing.', source: 'Financial Times', summary: 'Positioning shift indicates tactical risk rebalancing.', url: 'https://example.com/news/market-3' },
-  { id: 'mh-4', publishedAtET: '2026-03-11T11:32:00-05:00', timeET: '11:32 ET', headline: 'Recession odds drift higher after mixed labor and inflation signals.', source: 'WSJ', summary: 'Macro uncertainty remains elevated across rates-sensitive sectors.', url: 'https://example.com/news/market-4' },
-]
-
 const delay = (ms = 80) => new Promise((resolve) => setTimeout(resolve, ms))
 const MOCK_EVIDENCE_BY_SESSION: Record<string, EvidenceRow[]> = {}
 
@@ -172,9 +164,6 @@ const buildTickerNews = (symbol: string, dateET: ETDateString): TickerNewsItem[]
   }))
   return generic
 }
-
-const buildMarketHeadlines = (dateET: ETDateString): MarketHeadline[] =>
-  MARKET_HEADLINES_TEMPLATE.map((item) => ({ ...item, dateET }))
 
 const buildNewsDetail = (newsId: string, dateET: ETDateString): NewsDetail => ({
   id: newsId,
@@ -234,13 +223,19 @@ export function createMockClient(): TerminalMvpApiClient {
                  const changePct = q.changePercent ?? 0
                  const dayLow = q.dayLow
                  const dayHigh = q.dayHigh
+                 const source = String(q.source || '')
+                 const quoteMode = source.includes('realtime') ? 'live' : 'delayed'
 
                  return {
                     ...item,
                     companyName: q.name || item.companyName,
                     lastPrice: `$${price.toFixed(2)}`,
                     changePercent: `${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%`,
-                    rangeLabel: `Day Range: $${dayLow?.toFixed(2) ?? '--'} - $${dayHigh?.toFixed(2) ?? '--'}`
+                    rangeLabel: `Day Range: $${dayLow?.toFixed(2) ?? '--'} - $${dayHigh?.toFixed(2) ?? '--'}`,
+                    quoteSource: source || 'unknown',
+                    quoteMode,
+                    quoteAsOf: typeof q.asOf === 'string' ? q.asOf : undefined,
+                    quoteStale: Boolean(q.stale),
                  }
               }
               return item
@@ -280,15 +275,18 @@ export function createMockClient(): TerminalMvpApiClient {
         const res = await fetch('/api/market-headlines', { cache: 'no-store' })
         if (res.ok) {
           const data = await res.json()
-          if (data.headlines && data.headlines.length > 0) {
-            return envelope({ headlines: data.headlines }, dateET)
-          }
+          return envelope(
+            {
+              headlines: Array.isArray(data.headlines) ? data.headlines : [],
+              health: data?.health,
+            },
+            dateET,
+          )
         }
       } catch (err) {
         console.warn('[Terminal MVP] market-headlines API failed:', err)
       }
-      await delay()
-      return envelope({ headlines: buildMarketHeadlines(dateET) }, dateET)
+      return envelope({ headlines: [] }, dateET)
     },
 
     async getNewsDetail(newsId: string) {
@@ -342,9 +340,9 @@ export function createMockClient(): TerminalMvpApiClient {
           dateET: payload.dateET,
           sourceType: 'brief',
           sourceId: `${payload.symbol.toLowerCase()}-brief-0930`,
-          title: `${payload.symbol} 09:30 ET 오픈 브리프`,
+          title: `${payload.symbol} 09:30 ET brief`,
           source: 'Terminal Brief Engine',
-          summary: '오픈 구간의 핵심 수급/체크포인트 요약입니다.',
+          summary: 'Open checkpoint summary with key context and checks.',
           publishedAtET: `${payload.dateET}T09:30:00 ET`,
           publishedAtTs: Date.now() - 1000 * 60 * 60 * 5,
           aiRelevancy: 0.84,
@@ -359,7 +357,7 @@ export function createMockClient(): TerminalMvpApiClient {
           sourceId: `${payload.symbol.toLowerCase()}-news-1`,
           title: `${payload.symbol} intraday sentiment update`,
           source: 'Reuters',
-          summary: '중요 헤드라인 기반 당일 심리 변화 설명입니다.',
+          summary: 'Headline-based intraday move explanation placeholder.',
           publishedAtET: `${payload.dateET}T12:05:00 ET`,
           publishedAtTs: Date.now() - 1000 * 60 * 60 * 2,
           aiRelevancy: 0.79,
@@ -375,8 +373,8 @@ export function createMockClient(): TerminalMvpApiClient {
           question: payload.question,
           questionType: 'general_daily_summary' as const,
           answerKo:
-            `${payload.symbol} ${payload.dateET} 기준으로 세션을 생성했습니다. ` +
-            '오픈 브리프와 당일 뉴스를 근거로 요약하면, 장중 해석은 뉴스 모멘텀 대비 가격 반응 확인이 핵심입니다.',
+            `${payload.symbol} ${payload.dateET} session generated. ` +
+            'Open brief and same-day headlines indicate price reaction check is the core intraday task.',
         },
         payload.dateET,
       )

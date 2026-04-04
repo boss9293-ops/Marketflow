@@ -8,18 +8,14 @@ import numpy as np
 import json, os, sqlite3
 from datetime import datetime, timedelta
 
+from db_utils import resolve_marketflow_db
+
 
 PORTFOLIO = ['SPY', 'QQQ', 'IWM', 'TLT', 'GLD']
 
 
 def get_ohlcv_db() -> str:
-    base = os.path.dirname(__file__)
-    for p in [os.path.join(base, '..', '..', 'data', 'marketflow.db'),
-              os.path.join(base, '..', 'data', 'marketflow.db')]:
-        n = os.path.normpath(p)
-        if os.path.exists(n):
-            return n
-    return ''
+    return resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
 
 
 def load_close_from_db(symbol: str, lookback_days: int = 400) -> pd.Series | None:

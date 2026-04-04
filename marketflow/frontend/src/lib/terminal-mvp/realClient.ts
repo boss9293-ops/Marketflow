@@ -28,6 +28,8 @@ const readErrorMessage = async (res: Response): Promise<string> => {
 }
 
 async function fetchJson<TResponse>(input: string, init?: RequestInit): Promise<TResponse> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 15000)
   const res = await fetch(input, {
     ...init,
     headers: {
@@ -35,6 +37,9 @@ async function fetchJson<TResponse>(input: string, init?: RequestInit): Promise<
       ...(init?.headers ?? {}),
     },
     cache: 'no-store',
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timer)
   })
   if (!res.ok) {
     throw new Error(await readErrorMessage(res))

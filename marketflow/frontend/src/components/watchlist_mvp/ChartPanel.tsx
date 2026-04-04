@@ -3,15 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import styles from '@/components/watchlist_mvp/watchlistMvp.module.css'
+import type { WatchlistItem } from '@/lib/terminal-mvp/types'
 
 type ChartPanelProps = {
   selectedSymbol: string
-  selectedItem: {
-    symbol: string
-    lastPrice: string
-    changePercent: string
-    rangeLabel: string
-  } | null
+  selectedItem: WatchlistItem | null
   isLoading: boolean
   errorMessage: string | null
 }
@@ -82,7 +78,7 @@ const loadTradingViewScript = (): Promise<void> => {
   return tradingViewScriptPromise
 }
 
-const applyApprox40TradingDaysRange = (widgetInstance: unknown) => {
+const applyDefaultThreeMonthRange = (widgetInstance: unknown) => {
   const widget = widgetInstance as {
     onChartReady?: (cb: () => void) => void
     chart?: () => { setVisibleRange?: (range: { from: number; to: number }) => void }
@@ -91,11 +87,10 @@ const applyApprox40TradingDaysRange = (widgetInstance: unknown) => {
   if (!widget.onChartReady) return
 
   widget.onChartReady(() => {
-    const chart = widget.chart?.() ?? widget.activeChart?.()
+    const chart = widget.activeChart?.() ?? widget.chart?.()
     if (!chart?.setVisibleRange) return
-    // Approximate 40 trading sessions with 56 calendar days.
     const to = Math.floor(Date.now() / 1000)
-    const from = to - 56 * 24 * 60 * 60
+    const from = to - 92 * 24 * 60 * 60
     chart.setVisibleRange({ from, to })
   })
 }
@@ -151,9 +146,7 @@ export default function ChartPanel({
           locale: 'en',
           allow_symbol_change: false,
           withdateranges: false,
-          favorites: {
-            intervals: ['1', 'D'],
-          },
+          favorites: { intervals: ['1', 'D'] },
           hide_side_toolbar: true,
           hide_top_toolbar: true,
           overrides: {
@@ -173,7 +166,7 @@ export default function ChartPanel({
             'mainSeriesProperties.areaStyle.linecolor': '#c8c8c8',
           },
         })
-        applyApprox40TradingDaysRange(widget)
+        applyDefaultThreeMonthRange(widget)
       } catch (error) {
         if (cancelled) return
         setWidgetError(
@@ -201,39 +194,10 @@ export default function ChartPanel({
         <div>
           <p className={styles.panelLabel}>Price Console</p>
           <h3 className={styles.panelTitle}>{currentSymbol}</h3>
-          <p className={styles.panelSubtle}>
-            TradingView Advanced Chart ({tradingViewSymbol}, D, America/New_York)
-          </p>
         </div>
         <div className={styles.chartPriceBox}>
           <p className={styles.chartPrice}>{selectedItem?.lastPrice ?? '--'}</p>
           <p className={isDown ? styles.chartChangeDown : styles.chartChangeUp}>{changePct}</p>
-        </div>
-      </div>
-
-      <p className={styles.chartRangeLabel}>
-        {selectedItem?.rangeLabel ?? 'Day range metadata unavailable.'}
-      </p>
-      <div className={styles.ohlcvRow}>
-        <div className={styles.ohlcvCell}>
-          <span className={styles.ohlcvKey}>O</span>
-          <span className={styles.ohlcvValue}>--</span>
-        </div>
-        <div className={styles.ohlcvCell}>
-          <span className={styles.ohlcvKey}>H</span>
-          <span className={styles.ohlcvValue}>--</span>
-        </div>
-        <div className={styles.ohlcvCell}>
-          <span className={styles.ohlcvKey}>L</span>
-          <span className={styles.ohlcvValue}>--</span>
-        </div>
-        <div className={styles.ohlcvCell}>
-          <span className={styles.ohlcvKey}>C</span>
-          <span className={styles.ohlcvValue}>{selectedItem?.lastPrice ?? '--'}</span>
-        </div>
-        <div className={styles.ohlcvCell}>
-          <span className={styles.ohlcvKey}>VOL</span>
-          <span className={styles.ohlcvValue}>--</span>
         </div>
       </div>
 

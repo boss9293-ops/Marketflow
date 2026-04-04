@@ -28,12 +28,8 @@ interface EtfRoomData {
   date?: string | null
   generated_at?: string
   status?: string
-  sections?: {
-    hot?: EtfSection
-    leverage?: EtfSection
-    theme?: EtfSection
-    dividend?: EtfSection
-  }
+  section_order?: string[]
+  sections?: Record<string, EtfSection | undefined>
   notes?: { coverage?: { ok?: number; missing?: string[] } }
   rerun_hint?: string
 }
@@ -144,10 +140,17 @@ function RsiBadge({ v }: { v: number | null | undefined }) {
 
 // ─── Section table ────────────────────────────────────────────────────────────
 const SECTION_META: Record<string, { title: string; dot: string }> = {
-  hot:      { title: 'Hot ETFs',       dot: '#22c55e' },
-  leverage: { title: 'Leverage ETFs',  dot: '#ef4444' },
-  theme:    { title: 'Theme ETFs',     dot: '#a78bfa' },
-  dividend: { title: 'Dividend ETFs',  dot: '#fbbf24' },
+  hot:          { title: 'Hot ETFs',          dot: '#22c55e' },
+  index:        { title: 'Index ETFs',        dot: '#00D9FF' },
+  sector:       { title: 'Sector ETFs',       dot: '#10b981' },
+  leverage:     { title: 'Leverage ETFs',     dot: '#ef4444' },
+  reverse:      { title: 'Reverse ETFs',      dot: '#f97316' },
+  ark:          { title: 'ARK ETFs',          dot: '#a78bfa' },
+  dividend:     { title: 'Dividend ETFs',     dot: '#fbbf24' },
+  crypto:       { title: 'Crypto ETFs',       dot: '#8b5cf6' },
+  theme:        { title: 'Theme ETFs',        dot: '#60a5fa' },
+  fixed_income:  { title: 'Fixed Income ETFs', dot: '#64748b' },
+  commodity:    { title: 'Commodity ETFs',    dot: '#f59e0b' },
 }
 
 function SectionTable({ sectionKey, section }: { sectionKey: string; section: EtfSection }) {
@@ -214,8 +217,8 @@ function SectionTable({ sectionKey, section }: { sectionKey: string; section: Et
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function EtfRoomPage() {
   const data = loadCache()
-
-  const SECTION_ORDER = ['hot', 'leverage', 'theme', 'dividend'] as const
+  const DEFAULT_SECTION_ORDER = ['hot', 'index', 'sector', 'leverage', 'reverse', 'ark', 'dividend', 'crypto', 'theme', 'fixed_income', 'commodity'] as const
+  const sectionOrder = (data?.section_order?.length ? data.section_order : Array.from(DEFAULT_SECTION_ORDER)) as string[]
 
   if (!data) {
     return (
@@ -295,8 +298,8 @@ export default function EtfRoomPage() {
         </div>
       )}
 
-      {/* 4 sections */}
-      {SECTION_ORDER.map((key) => {
+      {/* ETF sections */}
+      {sectionOrder.map((key) => {
         const section = data.sections?.[key]
         if (!section) return null
         return <SectionTable key={key} sectionKey={key} section={section} />

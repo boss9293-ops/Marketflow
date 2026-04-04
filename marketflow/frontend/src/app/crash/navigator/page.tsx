@@ -1,36 +1,36 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 
 const MODULES = [
   {
     key: 'risk',
-    title: '리스크 관리 엔진',
-    description: '급락 가속, 방어 모드, 구조적 하락을 탐지하고 단계별 대응을 제시합니다.',
-    cta: { label: '엔진 실행', href: '/crash/navigator/engine' },
+    title: '由ъ뒪??愿由??붿쭊',
+    description: '湲됰씫 媛?? 諛⑹뼱 紐⑤뱶, 援ъ“???섎씫???먯??섍퀬 ?④퀎蹂???묒쓣 ?쒖떆?⑸땲??',
+    cta: { label: '?붿쭊 ?ㅽ뻾', href: '/crash/navigator/engine' },
     active: true,
   },
   {
     key: 'infinite',
-    title: '무한매수 전략',
-    description: '변동성 기반 분할매수 전략 연구 공간입니다.',
-    status: '준비중',
+    title: '臾댄븳留ㅼ닔 ?꾨왂',
+    description: '蹂?숈꽦 湲곕컲 遺꾪븷留ㅼ닔 ?꾨왂 ?곌뎄 怨듦컙?낅땲??',
+    status: '以鍮꾩쨷',
   },
   {
     key: 'backtests',
-    title: '백테스트 센터',
-    description: '레버리지 전략을 데이터 기반으로 검증하는 공간입니다.',
-    status: '준비중',
+    title: '諛깊뀒?ㅽ듃 ?쇳꽣',
+    description: '?덈쾭由ъ? ?꾨왂???곗씠??湲곕컲?쇰줈 寃利앺븯??怨듦컙?낅땲??',
+    status: '以鍮꾩쨷',
   },
   {
     key: 'templates',
-    title: '전략 템플릿',
-    description: '검증된 전략 설정값 및 운용 템플릿을 제공합니다.',
-    status: '준비중',
+    title: '?꾨왂 ?쒗뵆由?',
+    description: '寃利앸맂 ?꾨왂 ?ㅼ젙媛?諛??댁슜 ?쒗뵆由우쓣 ?쒓났?⑸땲??',
+    status: '以鍮꾩쨷',
   },
   {
     key: 'playbook',
-    title: '리스크 플레이북',
-    description: '폭락/패닉 구간에서의 행동 매뉴얼을 정리합니다.',
-    status: '준비중',
+    title: '由ъ뒪???뚮젅?대턿',
+    description: '??씫/?⑤땳 援ш컙?먯꽌???됰룞 留ㅻ돱?쇱쓣 ?뺣━?⑸땲??',
+    status: '以鍮꾩쨷',
   },
 ]
 
@@ -46,7 +46,7 @@ export default function LeverageTamingLanding() {
         minHeight: '100vh',
         background: '#0a0f1a',
         color: '#e5e7eb',
-        fontFamily: "'Inter','Segoe UI',sans-serif",
+        fontFamily: "var(--font-ui-sans, var(--font-terminal), 'Nanum Gothic Coding', 'Noto Sans KR', monospace)",
         padding: '3.2rem 2.2rem',
       }}
     >
@@ -78,15 +78,15 @@ export default function LeverageTamingLanding() {
                 whiteSpace: 'nowrap',
               }}
             >
-              레버리지는 야생마입니다.
+              ?덈쾭由ъ????쇱깮留덉엯?덈떎.
             </div>
             <div style={{ fontSize: '1.15rem', color: '#cbd5f5', letterSpacing: '-0.01em' }}>
-              우리는 그것을 길들이는 법을 연구합니다.
+              ?곕━??洹멸쾬??湲몃뱾?대뒗 踰뺤쓣 ?곌뎄?⑸땲??
             </div>
             <div style={{ fontSize: '1rem', color: '#94a3b8', lineHeight: 1.6 }}>
-              본 공간은 레버리지 자산(TQQQ, SOXL 등)을 통제하기 위한
+              蹂?怨듦컙? ?덈쾭由ъ? ?먯궛(TQQQ, SOXL ?????듭젣?섍린 ?꾪븳
               <br />
-              리스크 관리 및 전략 연구 모듈입니다.
+              由ъ뒪??愿由?諛??꾨왂 ?곌뎄 紐⑤뱢?낅땲??
             </div>
           </div>
           <div
@@ -135,14 +135,14 @@ export default function LeverageTamingLanding() {
                 textDecoration: 'none',
               }}
             >
-              엔진 실행
+              ?붿쭊 ?ㅽ뻾
             </Link>
           </div>
         </section>
 
         <section>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.8rem' }}>
-            연구 모듈
+            ?곌뎄 紐⑤뱢
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.1rem' }}>
           {MODULES.map((module) => (
@@ -190,7 +190,7 @@ export default function LeverageTamingLanding() {
                     textDecoration: 'none',
                   }}
                 >
-                  {module.cta?.label ?? '엔진 실행'}
+                  {module.cta?.label ?? '?붿쭊 ?ㅽ뻾'}
                 </Link>
               ) : (
                 <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>{module.status}</div>
@@ -220,3 +220,4 @@ export default function LeverageTamingLanding() {
     </main>
   )
 }
+

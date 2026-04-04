@@ -3,6 +3,7 @@
 // Displays the most recently stored generated brief
 // Distinguished from NarrativeBriefCard (live view) by showing generated timestamp
 // =============================================================================
+import Link from 'next/link'
 import type { DailyBrief } from '@/types/brief'
 
 const SESSION_COLOR: Record<string, string> = {
@@ -51,6 +52,13 @@ interface Props {
   brief: DailyBrief | null
 }
 
+const toSnippet = (value: string, max = 170): string => {
+  const cleaned = String(value || '').replace(/\s+/g, ' ').trim()
+  if (!cleaned) return ''
+  if (cleaned.length <= max) return cleaned
+  return `${cleaned.slice(0, max).trimEnd()}…`
+}
+
 export default function LatestBriefCard({ brief }: Props) {
   if (!brief) {
     return (
@@ -71,6 +79,7 @@ export default function LatestBriefCard({ brief }: Props) {
   const ts = new Date(as_of)
   const tsLabel = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     + ' ' + ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+  const summarySnippet = toSnippet(nv.summary, 170)
 
   return (
     <div style={{
@@ -103,7 +112,40 @@ export default function LatestBriefCard({ brief }: Props) {
 
       {/* Summary */}
       <div style={{ color: '#94A3B8', fontSize: '0.67rem', lineHeight: 1.55 }}>
-        {nv.summary}
+        {summarySnippet}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: '0.45rem' }}>
+        <Link
+          href="/briefing"
+          style={{
+            textDecoration: 'none',
+            border: '1px solid rgba(125,211,252,0.28)',
+            background: 'rgba(14,165,233,0.10)',
+            color: '#BAE6FD',
+            borderRadius: 999,
+            padding: '2px 9px',
+            fontSize: '0.63rem',
+            fontWeight: 700,
+          }}
+        >
+          Full Briefing →
+        </Link>
+        <Link
+          href="/news"
+          style={{
+            textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.14)',
+            background: 'rgba(255,255,255,0.04)',
+            color: '#CBD5E1',
+            borderRadius: 999,
+            padding: '2px 9px',
+            fontSize: '0.63rem',
+            fontWeight: 700,
+          }}
+        >
+          News Detail →
+        </Link>
       </div>
 
       {/* Key points */}

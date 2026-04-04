@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -8,63 +8,60 @@ import BilLabel from '@/components/BilLabel'
 import { UI_TEXT } from '@/lib/uiText'
 
 const homeItem = { href: '/dashboard', label: UI_TEXT.nav.dashboard, icon: 'home' as const }
-const newsLabel = ((UI_TEXT.nav as Record<string, { ko: string; en: string }>).news) ?? { ko: '뉴스', en: 'News' }
 
-// ── Zone OS: Market OS ────────────────────────────────────────────────────────
+// ?? Zone OS: Market OS ????????????????????????????????????????????????????????
 const osItems = [
-  { href: '/news', label: newsLabel, subLabel: { ko: '뉴스 → 종목', en: 'News to Stock' }, dot: '#facc15' },
   { href: '/briefing', label: UI_TEXT.nav.briefing, dot: '#a855f7' },
-  { href: '/macro', label: UI_TEXT.nav.macro, subLabel: { ko: '환경 압력', en: 'Environment Pressure' }, dot: '#38bdf8' },
-  { href: '/chart', label: UI_TEXT.nav.chart, subLabel: { ko: '차트 · 종목 분석', en: 'Chart & Ticker' }, dot: '#22d3ee' },
+  { href: '/macro', label: UI_TEXT.nav.macro, dot: '#38bdf8' },
+  { href: '/chart', label: UI_TEXT.nav.chart, dot: '#22d3ee' },
   { href: '/watchlist', label: UI_TEXT.nav.terminal, dot: '#f59e0b' },
   { href: '/sectors', label: UI_TEXT.nav.sectors, dot: '#14b8a6' },
-  { href: '/sectors/rrg', label: UI_TEXT.nav.rrg, subLabel: { ko: '섹터 로테이션 그래프', en: 'Relative Rotation' }, dot: '#14b8a6' },
+  { href: '/sectors/rrg', label: UI_TEXT.nav.rrg, dot: '#14b8a6' },
 ]
 
-// ── Top Hubs (Moved to top) ──────────────────────────────────────────────────
+// ?? Top Hubs (Moved to top) ??????????????????????????????????????????????????
 const topHubItems = [
-  { href: '/crash', label: UI_TEXT.nav.crashHub, dot: '#ef4444', subLabel: { ko: '허브 · 제품 선택', en: 'Hub · Select System' }, vrStyle: true },
-  { href: '/crash/navigator', label: UI_TEXT.nav.leverageHub, dot: '#f97316', subLabel: { ko: '모듈 허브', en: 'Module Hub' } },
+  { href: '/crash', label: UI_TEXT.nav.crashHub, dot: '#ef4444', vrStyle: true },
+  { href: '/crash/navigator', label: UI_TEXT.nav.leverageHub, dot: '#f97316' },
 ]
 
-// ── Zone RM: 위험관리엔진 ────────────────────────────────────────────────────
+// ?? Zone RM: ?꾪뿕愿由ъ뿏吏?????????????????????????????????????????????????????
 const crashItems = [
-  { href: '/risk-v1', label: UI_TEXT.nav.standardRisk, dot: '#6366f1', subLabel: { ko: '리스크 환경 가이드', en: 'Risk Environment' } },
+  { href: '/risk-v1', label: UI_TEXT.nav.standardRisk, dot: '#6366f1' },
 ]
 
-// ── Zone LV: 레버리지 길들이기 ───────────────────────────────────────────────
+// ?? Zone LV: ?덈쾭由ъ? 湲몃뱾?닿린 ???????????????????????????????????????????????
 const lvItems = [
-  { href: '/vr-survival', label: UI_TEXT.nav.vrSurvival, dot: '#a78bfa', subLabel: { ko: 'TQQQ 생존 시스템', en: 'Leverage Survival' } },
-  { href: '/backtest', label: UI_TEXT.nav.backtests, dot: '#22c55e', subLabel: { ko: '전략 검증 레퍼런스', en: 'Reference' } },
+  { href: '/vr-survival', label: UI_TEXT.nav.vrSurvival, dot: '#a78bfa' },
+  { href: '/backtest', label: UI_TEXT.nav.backtests, dot: '#22c55e' },
 ]
 
-// ── Zone RE: 개인자산관리 ────────────────────────────────────────────────────
+// ?? Zone RE: 媛쒖씤?먯궛愿由?????????????????????????????????????????????????????
 const vrTestItems = [
-  { href: '/vr-simulator', label: UI_TEXT.nav.vrTest, dot: '#c4ff0d', subLabel: { ko: 'VR G-Value 백테스트', en: 'VR G-Value Backtest' } },
-  { href: '/strategy-sim', label: UI_TEXT.nav.strategySim, dot: '#f59e0b', subLabel: { ko: '매수 전략 백테스터', en: 'DCA Backtester' } },
+  { href: '/vr-simulator', label: UI_TEXT.nav.vrTest, dot: '#c4ff0d' },
+  { href: '/strategy-sim', label: UI_TEXT.nav.strategySim, dot: '#f59e0b' },
 ]
 
 const reItems = [
-  { href: '/retirement', label: UI_TEXT.nav.retirement, dot: '#86efac', subLabel: { ko: '장기 자산 배분', en: 'Long-term Allocation' } },
-  { href: '/portfolio', label: UI_TEXT.nav.portfolio, dot: '#38bdf8', subLabel: { ko: '포지션 관리', en: 'Position Management' } },
-  { href: '/my-holdings', label: UI_TEXT.nav.holdings, dot: '#a3e635', subLabel: { ko: '편입 트래킹', en: 'Holdings Tracker' } },
+  { href: '/retirement', label: UI_TEXT.nav.retirement, dot: '#86efac' },
+  { href: '/portfolio', label: UI_TEXT.nav.portfolio, dot: '#38bdf8' },
+  { href: '/my-holdings', label: UI_TEXT.nav.holdings, dot: '#a3e635' },
 ]
 
-// ── Zone TO: Tools ───────────────────────────────────────────────────────────
+// ?? Zone TO: Tools ???????????????????????????????????????????????????????????
 const toolItems = [
-  { href: '/opportunity-signals', label: UI_TEXT.nav.opportunitySignals, subLabel: { ko: 'VCP', en: 'Pattern Scanner' }, dot: '#22c55e', icon: 'scan' as const },
+  { href: '/opportunity-signals', label: UI_TEXT.nav.opportunitySignals, dot: '#22c55e', icon: 'scan' as const },
   { href: '/calendar', label: UI_TEXT.nav.calendar, dot: '#84cc16' },
-  { href: '/lab', label: UI_TEXT.nav.lab, dot: '#f472b6', subLabel: { ko: 'Crash/Research', en: 'Crash/Research' } },
+  { href: '/lab', label: UI_TEXT.nav.lab, dot: '#f472b6' },
   {
     href: '/smart-money',
     label: UI_TEXT.nav.smartFlow,
-    subLabel: { ko: '프록시 플로우 지수', en: 'Proxy flow index' },
     dot: '#38bdf8',
-    tooltip: '기관 데이터(13F)가 아닌 거래량·상대강도·추세의 프록시\n레짐 적합 시 참고용',
+    tooltip: 'Proxy flow signal based on volume and price behavior (reference only).',
   },
 ]
 
-// ── Zone KR: KR Market (collapsed) ──────────────────────────────────────────
+// ?? Zone KR: KR Market (collapsed) ??????????????????????????????????????????
 const krItems = [
   { href: '/kr-market', label: UI_TEXT.nav.overview, dot: '#f43f5e' },
   { href: '/kr-market/signals', label: UI_TEXT.nav.signals, dot: '#f59e0b' },
@@ -187,11 +184,6 @@ function NavLinks({
             />
             <span style={{ lineHeight: 1, color: 'inherit', minWidth: 0, display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               <BilLabel ko={item.label.ko} en={item.label.en} variant="micro" showEn={!compact} />
-              {!compact && 'subLabel' in item && item.subLabel && (
-                <span style={{ color: '#9aa8bb', marginTop: 2, lineHeight: 1 }}>
-                  <BilLabel ko={item.subLabel.ko} en={item.subLabel.en} variant="micro" showEn={false} />
-                </span>
-              )}
             </span>
           </Link>
         )
@@ -379,8 +371,8 @@ export default function Sidebar({
           className="hover:bg-[rgba(201,168,76,0.12)] hover:border-[rgba(201,168,76,0.4)]"
           onClick={overlay ? onClose : undefined}
         >
-          <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>⬡</span>
-          {!compact && <span style={{ fontSize: '0.82rem', letterSpacing: '0.04em' }}>들어가기</span>}
+          <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>↩</span>
+          {!compact && <span style={{ fontSize: '0.82rem', letterSpacing: '0.04em' }}>돌아가기</span>}
         </Link>
       </div>
 
@@ -467,7 +459,7 @@ export default function Sidebar({
       </div>
       {vrTestOpen && <NavLinks items={vrTestItems} pathname={pathname} compact={compact} onNavigate={overlay ? onClose : undefined} />}
 
-      {/* Zone LV: 레버리지 길들이기 */}
+      {/* Zone LV: ?덈쾭由ъ? 湲몃뱾?닿린 */}
       <div
         style={{
           marginTop: '0.72rem',
@@ -489,7 +481,7 @@ export default function Sidebar({
       </div>
       {lvOpen && <NavLinks items={lvItems} pathname={pathname} compact={compact} onNavigate={overlay ? onClose : undefined} />}
 
-      {/* Zone RE: 개인자산관리 */}
+      {/* Zone RE: 媛쒖씤?먯궛愿由?*/}
       <div
         style={{
           marginTop: '0.72rem',
@@ -576,7 +568,7 @@ export default function Sidebar({
           }}
           className="hover:bg-white/5 hover:text-white"
         >
-          <span style={{ fontSize: '1.1rem', opacity: pathname === '/admin/service' ? 1 : 0.7 }}>⚙️</span>
+          <span style={{ fontSize: '1.1rem', opacity: pathname === '/admin/service' ? 1 : 0.7 }}>S</span>
           {!compact && <span style={{ fontSize: '0.86rem', fontWeight: pathname === '/admin/service' ? 600 : 500 }}>Service Mode</span>}
         </a>
       </div>
@@ -620,10 +612,12 @@ export default function Sidebar({
             zIndex: 91,
           }}
         >
-          ✕
+          X
         </button>
         {aside}
       </div>
     </>
   )
 }
+
+

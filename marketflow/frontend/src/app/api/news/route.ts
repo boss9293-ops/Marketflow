@@ -2,6 +2,45 @@ import { NextResponse } from 'next/server'
 
 // Format timestamp to YYYY-MM-DD for Finnhub API
 const formatDate = (date: Date) => date.toISOString().split('T')[0]
+const FETCH_ATTEMPTS = 2
+const RETRY_DELAY_MS = 250
+
+const fetchWithTimeout = async (
+  input: string,
+  init: RequestInit,
+  timeoutMs = 4500,
+): Promise<Response> => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms))
+
+const fetchWithRetry = async (
+  input: string,
+  init: RequestInit,
+  timeoutMs = 4500,
+  attempts = FETCH_ATTEMPTS,
+): Promise<Response | null> => {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetchWithTimeout(input, init, timeoutMs)
+      if (response.ok) return response
+    } catch {
+      // noop
+    }
+    if (attempt < attempts) {
+      await sleep(RETRY_DELAY_MS * attempt)
+    }
+  }
+  return null
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -21,15 +60,15 @@ export async function GET(request: Request) {
   if (finnhubKey) {
     try {
       const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${formatDate(fromDate)}&to=${formatDate(toDate)}&token=${finnhubKey}`
-      const res = await fetch(url, { cache: 'no-store' })
-      
-      if (res.ok) {
+      const res = await fetchWithRetry(url, { cache: 'no-store' }, 4500)
+
+      if (res) {
         const data = await res.json()
         if (Array.isArray(data) && data.length > 0) {
           // Sort by newest first
           data.sort((a, b) => b.datetime - a.datetime)
           
-          // Map to 09:30 and 16:00 structured format ("하루 2차례")
+          // Map to 09:30 and 16:00 checkpoints.
           const latestItems = data.slice(0, 2)
           
       const mapped = latestItems.map((item: any, i: number) => {
@@ -59,8 +98,8 @@ export async function GET(request: Request) {
   // Fallback Free / Yahoo Finance Search API
   try {
     const yhUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${symbol}&newsCount=2`
-    const yhRes = await fetch(yhUrl, { cache: 'no-store' })
-    if (yhRes.ok) {
+    const yhRes = await fetchWithRetry(yhUrl, { cache: 'no-store' }, 4500)
+    if (yhRes) {
       const data = await yhRes.json()
       if (data.news && data.news.length > 0) {
                 

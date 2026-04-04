@@ -2,6 +2,7 @@
 // NarrativeBriefCard.tsx  (WO-SA28)
 // Forecast-style narrative brief — readable in 10-20 seconds
 // =============================================================================
+import Link from 'next/link'
 import type { NarrativeViewPayload } from '@/types/narrative'
 import PremiumLockCard from '@/components/common/PremiumLockCard'
 
@@ -44,6 +45,13 @@ function Divider() {
 interface Props {
   view:       NarrativeViewPayload | null
   isPremium?: boolean
+}
+
+const toSnippet = (value: string, max = 165): string => {
+  const cleaned = String(value || '').replace(/\s+/g, ' ').trim()
+  if (!cleaned) return ''
+  if (cleaned.length <= max) return cleaned
+  return `${cleaned.slice(0, max).trimEnd()}…`
 }
 
 export default function NarrativeBriefCard({ view, isPremium = false }: Props) {
@@ -98,7 +106,40 @@ export default function NarrativeBriefCard({ view, isPremium = false }: Props) {
         lineHeight:   1.55,
         marginBottom: '0.1rem',
       }}>
-        {view.summary}
+        {toSnippet(view.summary, 165)}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: '0.45rem' }}>
+        <Link
+          href="/briefing"
+          style={{
+            textDecoration: 'none',
+            border: '1px solid rgba(125,211,252,0.28)',
+            background: 'rgba(14,165,233,0.10)',
+            color: '#BAE6FD',
+            borderRadius: 999,
+            padding: '2px 9px',
+            fontSize: '0.63rem',
+            fontWeight: 700,
+          }}
+        >
+          Full Briefing →
+        </Link>
+        <Link
+          href="/news"
+          style={{
+            textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.14)',
+            background: 'rgba(255,255,255,0.04)',
+            color: '#CBD5E1',
+            borderRadius: 999,
+            padding: '2px 9px',
+            fontSize: '0.63rem',
+            fontWeight: 700,
+          }}
+        >
+          News Detail →
+        </Link>
       </div>
 
       {/* ── Premium gate ── */}

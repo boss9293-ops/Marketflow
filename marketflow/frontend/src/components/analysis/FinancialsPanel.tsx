@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { useEffect, useState } from 'react'
+import { pickLang, useUiLang } from '@/lib/useLangMode'
 
 function fmtMult(v: number | null | undefined): string {
   if (v == null || !isFinite(v)) return '--'
@@ -59,6 +60,55 @@ const C_GRID   = 'rgba(255,255,255,0.10)'
 const CARD_BG  = 'rgba(15,23,42,0.82)'
 const CARD_HDR = 'rgba(30,41,59,0.72)'
 
+const FIN_TEXT = {
+  noData: { ko: '데이터 없음', en: 'No data' },
+  loading: { ko: '재무 데이터를 불러오는 중...', en: 'Loading financials...' },
+  connectionFailed: { ko: '연결 실패', en: 'CONNECTION_FAILED' },
+  loadFailed: { ko: '재무 데이터를 불러오지 못했습니다.', en: 'Unable to load financial data.' },
+  noDataAvailable: { ko: '사용 가능한 데이터가 없습니다.', en: 'No data available' },
+  tickerNotFound: { ko: '종목 없음', en: 'TICKER_NOT_FOUND' },
+  noFinancialData: { ko: '재무 데이터를 찾지 못했습니다.', en: 'No financial data found.' },
+  unavailableForTicker: { ko: '해당 티커의 재무제표를 제공하지 않습니다.', en: 'Financial statements are unavailable for this ticker.' },
+  annualFinancials: { ko: '연간 재무', en: 'Annual Financials' },
+  latestFY: { ko: '최신 회계연도', en: 'Latest FY' },
+  capitalStructure: { ko: '자본 구조', en: 'Capital Structure' },
+  revenueEarnings5y: { ko: '매출 & 이익 - 5년', en: 'Revenue & Earnings - 5 Year' },
+  profitWaterfall: { ko: '이익 폭포 차트', en: 'Profit Waterfall' },
+  pePsRatio5y: { ko: 'P/E · P/S 추이 - 5년', en: 'P/E / P/S Ratio History - 5 Year' },
+  epsHistoryForward: { ko: 'EPS 추이 & 선행 추정치', en: 'EPS History & Forward Estimates' },
+  marginTrend5y: { ko: '마진 추이 - 5년', en: 'Margin Trend - 5 Year' },
+  leftRightAxisHint: { ko: '좌측 = P/E, 우측 = P/S', en: 'Left = P/E, Right = P/S' },
+  consensusEstimate: { ko: '컨센서스 추정치', en: 'Consensus estimate' },
+  reportedEps: { ko: '실적 EPS', en: 'Reported EPS' },
+  revenueLegend: { ko: '매출', en: 'Revenue' },
+  netIncomeLegend: { ko: '순이익', en: 'Net Income' },
+  netMarginLegend: { ko: '순이익률', en: 'Net Margin %' },
+  cogs: { ko: '-매출원가', en: '-COGS' },
+  grossProfit: { ko: '매출총이익', en: 'Gross Profit' },
+  opExp: { ko: '-영업비용', en: '-Op. Exp' },
+  opIncome: { ko: '영업이익', en: 'Op. Income' },
+  peRatio: { ko: 'P/E 비율', en: 'P/E Ratio' },
+  psRatio: { ko: 'P/S 비율', en: 'P/S Ratio' },
+  epsConsensus: { ko: 'EPS 추정 (컨센서스)', en: 'EPS Estimate (Consensus)' },
+  grossShort: { ko: '총마진', en: 'Gross' },
+  operatingShort: { ko: '영업', en: 'Operating' },
+  netShort: { ko: '순이익', en: 'Net' },
+  marketCapLabel: { ko: '시가총액', en: 'Market Cap' },
+  enterpriseValueLabel: { ko: '기업가치', en: 'Enterprise Value' },
+  totalDebtLabel: { ko: '총부채', en: 'Total Debt' },
+  cashEquivLabel: { ko: '현금성자산', en: 'Cash & Equiv.' },
+  cashLabel: { ko: '현금', en: 'Cash' },
+  revenueRow: { ko: '매출', en: 'Revenue' },
+  grossProfitRow: { ko: '매출총이익', en: 'Gross Profit' },
+  operatingIncomeRow: { ko: '영업이익', en: 'Operating Income' },
+  netIncomeRow: { ko: '순이익', en: 'Net Income' },
+  epsDilutedRow: { ko: 'EPS (희석)', en: 'EPS (Diluted)' },
+  grossMarginRow: { ko: '매출총이익률', en: 'Gross Margin' },
+  operatingMarginRow: { ko: '영업이익률', en: 'Operating Margin' },
+  netMarginRow: { ko: '순이익률', en: 'Net Margin' },
+  fetchFailed: { ko: '불러오기에 실패했습니다.', en: 'Failed' },
+} as const
+
 // Hover card: position:fixed, follows mouse via hoverAt()
 const HOVER_CARD_BASE: React.CSSProperties = {
   position: 'fixed',
@@ -112,7 +162,8 @@ function autoScale(vals: (number|null)[], padFrac = 0.20, minRange = 0) {
 
 // ?? Chart 1: Revenue & Earnings ????????????????????????????????????????????
 function RevenueTrendChart({ rows }: { rows: IncomeRow[] }) {
-  if (!rows.length) return <div style={{ color: '#64748b', fontSize: '0.9rem' }}>No data</div>
+  const uiLang = useUiLang()
+  if (!rows.length) return <div style={{ color: '#64748b', fontSize: '0.9rem' }}>{pickLang(uiLang, FIN_TEXT.noData.ko, FIN_TEXT.noData.en)}</div>
   const W = 560, H = 280, PL = 62, PR = 52, PT = 32, PB = 40
   const cW = W - PL - PR, cH = H - PT - PB
   const maxVal = Math.max(...rows.map(r => r.revenue ?? 0), 1)
@@ -158,13 +209,13 @@ function RevenueTrendChart({ rows }: { rows: IncomeRow[] }) {
             FY{hoverRow.fiscalYear?.slice(-2) ?? '--'}
           </div>
           <div style={{ color: '#f8fafc', fontSize: '0.88rem', fontWeight: 800, marginTop: 3 }}>
-            Revenue {fmtB(hoverRow.revenue, 1)}
+            {pickLang(uiLang, FIN_TEXT.revenueLegend.ko, FIN_TEXT.revenueLegend.en)} {fmtB(hoverRow.revenue, 1)}
           </div>
           <div style={{ color: '#cbd5e1', fontSize: '0.78rem', marginTop: 3 }}>
-            Net Income {fmtB(hoverRow.netIncome, 1)}
+            {pickLang(uiLang, FIN_TEXT.netIncomeLegend.ko, FIN_TEXT.netIncomeLegend.en)} {fmtB(hoverRow.netIncome, 1)}
           </div>
           <div style={{ color: C_MARGIN, fontSize: '0.78rem', marginTop: 2 }}>
-            Net Margin {fmtPct(hoverRow.netMargin)}
+            {pickLang(uiLang, FIN_TEXT.netMarginLegend.ko, FIN_TEXT.netMarginLegend.en)} {fmtPct(hoverRow.netMargin)}
           </div>
         </div>
       )}
@@ -236,7 +287,11 @@ function RevenueTrendChart({ rows }: { rows: IncomeRow[] }) {
         <text x={W-2} y={PT+10} textAnchor="end" fill={C_MARGIN} fontSize={8}>{`${(marginMin * 100).toFixed(0)}~${(marginMax * 100).toFixed(0)}%`}</text>
       </svg>
       <div style={{ display:'flex', gap:20, justifyContent:'center', marginTop:6 }}>
-        {[{color:C_REV,label:'Revenue'},{color:C_NET,label:'Net Income'},{color:C_MARGIN,label:'Net Margin %'}].map(({color,label}) => (
+        {[
+          { color: C_REV, label: pickLang(uiLang, FIN_TEXT.revenueLegend.ko, FIN_TEXT.revenueLegend.en) },
+          { color: C_NET, label: pickLang(uiLang, FIN_TEXT.netIncomeLegend.ko, FIN_TEXT.netIncomeLegend.en) },
+          { color: C_MARGIN, label: pickLang(uiLang, FIN_TEXT.netMarginLegend.ko, FIN_TEXT.netMarginLegend.en) },
+        ].map(({color,label}) => (
           <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
             <div style={{ width:13, height:13, background:color, borderRadius:3, opacity:0.95 }}/>
             <span style={{ color:'#e2e8f0', fontSize:'0.82rem', fontWeight:500 }}>{label}</span>
@@ -249,7 +304,8 @@ function RevenueTrendChart({ rows }: { rows: IncomeRow[] }) {
 
 // ?? Chart 2: Horizontal Waterfall ????????????????????????????????????????
 function WaterfallChart({ row }: { row: IncomeRow | null }) {
-  if (!row || !row.revenue) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>No data</div>
+  const uiLang = useUiLang()
+  if (!row || !row.revenue) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>{pickLang(uiLang, FIN_TEXT.noData.ko, FIN_TEXT.noData.en)}</div>
   const rev   = row.revenue
   const cogs  = row.cogs ?? (rev - (row.grossProfit ?? rev))
   const gross = row.grossProfit ?? (rev - cogs)
@@ -258,12 +314,12 @@ function WaterfallChart({ row }: { row: IncomeRow | null }) {
   const net   = row.netIncome ?? opInc
 
   const steps = [
-    { label:'Revenue',      value:rev,   isNeg:false, color:C_REV    },
-    { label:'-COGS',        value:cogs,  isNeg:true,  color:C_NEG    },
-    { label:'Gross Profit', value:gross, isNeg:false, color:C_POS    },
-    { label:'-Op. Exp',     value:opEx,  isNeg:true,  color:C_NEG    },
-    { label:'Op. Income',   value:opInc, isNeg:false, color:C_POS    },
-    { label:'Net Income',   value:net,   isNeg:false, color:'#a78bfa' },
+    { label: pickLang(uiLang, FIN_TEXT.revenueLegend.ko, FIN_TEXT.revenueLegend.en), value: rev, isNeg: false, color: C_REV },
+    { label: pickLang(uiLang, FIN_TEXT.cogs.ko, FIN_TEXT.cogs.en), value: cogs, isNeg: true, color: C_NEG },
+    { label: pickLang(uiLang, FIN_TEXT.grossProfit.ko, FIN_TEXT.grossProfit.en), value: gross, isNeg: false, color: C_POS },
+    { label: pickLang(uiLang, FIN_TEXT.opExp.ko, FIN_TEXT.opExp.en), value: opEx, isNeg: true, color: C_NEG },
+    { label: pickLang(uiLang, FIN_TEXT.opIncome.ko, FIN_TEXT.opIncome.en), value: opInc, isNeg: false, color: C_POS },
+    { label: pickLang(uiLang, FIN_TEXT.netIncomeLegend.ko, FIN_TEXT.netIncomeLegend.en), value: net, isNeg: false, color: '#a78bfa' },
   ]
 
   const W = 480, ROW_H = 32, PAD_V = 12
@@ -305,7 +361,8 @@ function WaterfallChart({ row }: { row: IncomeRow | null }) {
 
 // ?? Chart 3: P/E 쨌 P/S History ????????????????????????????????????????????
 function PERatioChart({ rows }: { rows: RatioRow[] }) {
-  if (rows.length < 2) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>No data</div>
+  const uiLang = useUiLang()
+  if (rows.length < 2) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>{pickLang(uiLang, FIN_TEXT.noData.ko, FIN_TEXT.noData.en)}</div>
 
   const W = 560, H = 220, PL = 44, PR = 52, PT = 20, PB = 32
   const cH = H - PT - PB, cW = W - PL - PR
@@ -313,7 +370,7 @@ function PERatioChart({ rows }: { rows: RatioRow[] }) {
 
   const peVals = rows.map(r => r.pe).filter((v): v is number => v != null)
   const psVals = rows.map(r => r.ps).filter((v): v is number => v != null)
-  if (!peVals.length && !psVals.length) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>No data</div>
+  if (!peVals.length && !psVals.length) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>{pickLang(uiLang, FIN_TEXT.noData.ko, FIN_TEXT.noData.en)}</div>
   const { min:peMin, max:peMax, range:peRange } = autoScale(peVals, 0.20, 5)
   const { min:psMin, max:psMax, range:psRange } = autoScale(psVals, 0.20, 2)
 
@@ -424,7 +481,10 @@ function PERatioChart({ rows }: { rows: RatioRow[] }) {
       </svg>
 
       <div style={{ display:'flex', gap:20, justifyContent:'center', marginTop:4 }}>
-        {[{color:C_PE,label:'P/E Ratio',dash:false},{color:C_PS,label:'P/S Ratio',dash:true}].map(({color,label,dash}) => (
+        {[
+          { color: C_PE, label: pickLang(uiLang, FIN_TEXT.peRatio.ko, FIN_TEXT.peRatio.en), dash: false },
+          { color: C_PS, label: pickLang(uiLang, FIN_TEXT.psRatio.ko, FIN_TEXT.psRatio.en), dash: true },
+        ].map(({color,label,dash}) => (
           <div key={label} style={{ display:'flex', alignItems:'center', gap:7 }}>
             <svg width={22} height={14}>
               <line x1={0} y1={7} x2={22} y2={7} stroke={color} strokeWidth={2.5}
@@ -434,7 +494,7 @@ function PERatioChart({ rows }: { rows: RatioRow[] }) {
             <span style={{ color:'#e2e8f0', fontSize:'0.82rem', fontWeight:500 }}>{label}</span>
           </div>
         ))}
-        <div style={{ color:'#64748b', fontSize:'0.78rem', alignSelf:'center' }}>Left = P/E, Right = P/S</div>
+        <div style={{ color:'#64748b', fontSize:'0.78rem', alignSelf:'center' }}>{pickLang(uiLang, FIN_TEXT.leftRightAxisHint.ko, FIN_TEXT.leftRightAxisHint.en)}</div>
       </div>
     </div>
   )
@@ -442,10 +502,11 @@ function PERatioChart({ rows }: { rows: RatioRow[] }) {
 
 // ?? Chart 4: EPS History + Forward Estimates ???????????????????????????????
 function EpsChart({ rows, estimates }: { rows: IncomeRow[]; estimates: EpsEstimate[] }) {
+  const uiLang = useUiLang()
   const histEps = rows.map(r => ({ year: r.fiscalYear ?? '--', eps: r.eps, isFuture: false }))
   const fwdEps  = estimates.map(e => ({ year: e.year, eps: e.epsAvg, epsH: e.epsHigh, epsL: e.epsLow, isFuture: true }))
   const allItems = [...histEps, ...fwdEps]
-  if (!allItems.length) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>No data</div>
+  if (!allItems.length) return <div style={{ color:'#64748b', fontSize:'0.9rem' }}>{pickLang(uiLang, FIN_TEXT.noData.ko, FIN_TEXT.noData.en)}</div>
 
   const W = 560, H = 260, PL = 52, PR = 20, PT = 28, PB = 40
   const cH = H - PT - PB, cW = W - PL - PR
@@ -486,9 +547,9 @@ function EpsChart({ rows, estimates }: { rows: IncomeRow[]; estimates: EpsEstima
             EPS {hoverItem.eps != null ? `$${hoverItem.eps.toFixed(2)}` : '--'}
           </div>
           {hoverItem.isFuture ? (
-            <div style={{ color: '#cbd5e1', fontSize: '0.76rem', marginTop: 3 }}>Consensus estimate</div>
+            <div style={{ color: '#cbd5e1', fontSize: '0.76rem', marginTop: 3 }}>{pickLang(uiLang, FIN_TEXT.consensusEstimate.ko, FIN_TEXT.consensusEstimate.en)}</div>
           ) : (
-            <div style={{ color: '#cbd5e1', fontSize: '0.76rem', marginTop: 3 }}>Reported EPS</div>
+            <div style={{ color: '#cbd5e1', fontSize: '0.76rem', marginTop: 3 }}>{pickLang(uiLang, FIN_TEXT.reportedEps.ko, FIN_TEXT.reportedEps.en)}</div>
           )}
           {hoverItem.isFuture && epsHover?.epsH != null && epsHover?.epsL != null && (
             <div style={{ color: '#a78bfa', fontSize: '0.76rem', marginTop: 2 }}>
@@ -564,8 +625,8 @@ function EpsChart({ rows, estimates }: { rows: IncomeRow[]; estimates: EpsEstima
 
       <div style={{ display:'flex', gap:20, justifyContent:'center', marginTop:6 }}>
         {[
-          { color:C_REV,     label:'EPS Reported',            isFwd:false },
-          { color:'#94a3b8', label:'EPS Estimate (Consensus)', isFwd:true  },
+          { color: C_REV, label: pickLang(uiLang, FIN_TEXT.reportedEps.ko, FIN_TEXT.reportedEps.en), isFwd: false },
+          { color: '#94a3b8', label: pickLang(uiLang, FIN_TEXT.epsConsensus.ko, FIN_TEXT.epsConsensus.en), isFwd: true },
         ].map(({ color, label, isFwd }) => (
           <div key={label} style={{ display:'flex', alignItems:'center', gap:7 }}>
             {isFwd
@@ -582,6 +643,7 @@ function EpsChart({ rows, estimates }: { rows: IncomeRow[]; estimates: EpsEstima
 
 // ?? Chart 5: Margin Trend ??????????????????????????????????????????????????
 function MarginHistoryChart({ rows }: { rows: IncomeRow[] }) {
+  const uiLang = useUiLang()
   if (rows.length < 2) return null
   const W = 560, H = 240, PL = 46, PR = 86, PT = 16, PB = 36
   const cH = H - PT - PB, cW = W - PL - PR
@@ -589,9 +651,9 @@ function MarginHistoryChart({ rows }: { rows: IncomeRow[] }) {
 
   type MD = { key: keyof IncomeRow; label: string; color: string }
   const defs: MD[] = [
-    { key:'grossMargin',     label:'Gross',     color:'#a78bfa' },
-    { key:'operatingMargin', label:'Operating', color:C_MARGIN },
-    { key:'netMargin',       label:'Net',       color:C_NET },
+    { key: 'grossMargin', label: pickLang(uiLang, FIN_TEXT.grossShort.ko, FIN_TEXT.grossShort.en), color: '#a78bfa' },
+    { key: 'operatingMargin', label: pickLang(uiLang, FIN_TEXT.operatingShort.ko, FIN_TEXT.operatingShort.en), color: C_MARGIN },
+    { key: 'netMargin', label: pickLang(uiLang, FIN_TEXT.netShort.ko, FIN_TEXT.netShort.en), color: C_NET },
   ]
 
   const allVals = rows.flatMap(r => defs.map(d => r[d.key] as number|null).filter((v): v is number => v != null))
@@ -653,9 +715,9 @@ function MarginHistoryChart({ rows }: { rows: IncomeRow[] }) {
           <div style={{ color: '#7dd3fc', fontSize: '0.66rem', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700 }}>
             FY{hoverRow.fiscalYear?.slice(-2) ?? '--'}
           </div>
-          <div style={{ color: '#a78bfa', fontSize: '0.82rem', marginTop: 4, fontWeight: 700 }}>Gross {fmtPct(hoverRow.grossMargin, 1)}</div>
-          <div style={{ color: C_MARGIN, fontSize: '0.82rem', marginTop: 2, fontWeight: 700 }}>Operating {fmtPct(hoverRow.operatingMargin, 1)}</div>
-          <div style={{ color: C_NET, fontSize: '0.82rem', marginTop: 2, fontWeight: 700 }}>Net {fmtPct(hoverRow.netMargin, 1)}</div>
+          <div style={{ color: '#a78bfa', fontSize: '0.82rem', marginTop: 4, fontWeight: 700 }}>{pickLang(uiLang, FIN_TEXT.grossShort.ko, FIN_TEXT.grossShort.en)} {fmtPct(hoverRow.grossMargin, 1)}</div>
+          <div style={{ color: C_MARGIN, fontSize: '0.82rem', marginTop: 2, fontWeight: 700 }}>{pickLang(uiLang, FIN_TEXT.operatingShort.ko, FIN_TEXT.operatingShort.en)} {fmtPct(hoverRow.operatingMargin, 1)}</div>
+          <div style={{ color: C_NET, fontSize: '0.82rem', marginTop: 2, fontWeight: 700 }}>{pickLang(uiLang, FIN_TEXT.netShort.ko, FIN_TEXT.netShort.en)} {fmtPct(hoverRow.netMargin, 1)}</div>
         </div>
       )}
       <svg
@@ -700,7 +762,8 @@ function MarginHistoryChart({ rows }: { rows: IncomeRow[] }) {
 
 // ?? Capital Structure ??????????????????????????????????????????????????????
 function CapitalStructureCard({ bs, marketCap }: { bs: BalanceRow|null; marketCap: number|null }) {
-  if (!bs) return <div style={{ color:'#64748b', fontSize:'0.85rem' }}>No data</div>
+  const uiLang = useUiLang()
+  if (!bs) return <div style={{ color:'#64748b', fontSize:'0.85rem' }}>{pickLang(uiLang, FIN_TEXT.noData.ko, FIN_TEXT.noData.en)}</div>
   const cash   = bs.cash ?? 0
   const debt   = bs.totalDebt ?? 0
   const equity = marketCap ?? (bs.totalEquity ?? 0)
@@ -708,9 +771,9 @@ function CapitalStructureCard({ bs, marketCap }: { bs: BalanceRow|null; marketCa
   // Use equity+debt+cash as denominator so each segment shows its true share
   const total  = Math.max(equity + debt + cash, 1)
   const items = [
-    { label:'Market Cap', value:equity, pct: equity / total, color:C_REV },
-    { label:'Total Debt',  value:debt,   pct: debt   / total, color:C_NEG },
-    { label:'Cash',        value:cash,   pct: cash   / total, color:C_POS },
+    { label: pickLang(uiLang, FIN_TEXT.marketCapLabel.ko, FIN_TEXT.marketCapLabel.en), value: equity, pct: equity / total, color: C_REV },
+    { label: pickLang(uiLang, FIN_TEXT.totalDebtLabel.ko, FIN_TEXT.totalDebtLabel.en), value: debt, pct: debt / total, color: C_NEG },
+    { label: pickLang(uiLang, FIN_TEXT.cashLabel.ko, FIN_TEXT.cashLabel.en), value: cash, pct: cash / total, color: C_POS },
   ]
   const W = 560, BAR_Y = 6, BAR_H = 22, LEGEND_Y = 36, H = 54
   const PL = 4, PR = 52
@@ -720,10 +783,10 @@ function CapitalStructureCard({ bs, marketCap }: { bs: BalanceRow|null; marketCa
     <div>
       <div style={{ display:'flex', gap:14, marginBottom:8, flexWrap:'wrap' }}>
         {[
-          {label:'Market Cap',       value:equity},
-          {label:'Enterprise Value', value:ev},
-          {label:'Total Debt',       value:debt},
-          {label:'Cash & Equiv.',    value:cash},
+          { label: pickLang(uiLang, FIN_TEXT.marketCapLabel.ko, FIN_TEXT.marketCapLabel.en), value: equity },
+          { label: pickLang(uiLang, FIN_TEXT.enterpriseValueLabel.ko, FIN_TEXT.enterpriseValueLabel.en), value: ev },
+          { label: pickLang(uiLang, FIN_TEXT.totalDebtLabel.ko, FIN_TEXT.totalDebtLabel.en), value: debt },
+          { label: pickLang(uiLang, FIN_TEXT.cashEquivLabel.ko, FIN_TEXT.cashEquivLabel.en), value: cash },
         ].map(({label,value}) => (
           <div key={label}>
             <div style={{ color:'#94a3b8', fontSize:'0.63rem', letterSpacing:'0.07em', textTransform:'uppercase' }}>{label}</div>
@@ -787,6 +850,7 @@ function CapitalStructureCard({ bs, marketCap }: { bs: BalanceRow|null; marketCa
 
 // ?? Key Metrics Table ??????????????????????????????????????????????????????
 function MetricsTable({ rows }: { rows: IncomeRow[] }) {
+  const uiLang = useUiLang()
   if (!rows.length) return null
   const latest = rows[rows.length-1]
   const prev   = rows.length > 1 ? rows[rows.length-2] : null
@@ -797,14 +861,14 @@ function MetricsTable({ rows }: { rows: IncomeRow[] }) {
   }
   type Fmt = (v: number|null) => string
   const rows2: {label:string;curr:number|null;pv:number|null;fmt:Fmt}[] = [
-    {label:'Revenue',          curr:latest.revenue,         pv:prev?.revenue??null,         fmt:v=>fmtB(v)},
-    {label:'Gross Profit',     curr:latest.grossProfit,     pv:prev?.grossProfit??null,     fmt:v=>fmtB(v)},
-    {label:'Operating Income', curr:latest.operatingIncome, pv:prev?.operatingIncome??null, fmt:v=>fmtB(v)},
-    {label:'Net Income',       curr:latest.netIncome,       pv:prev?.netIncome??null,       fmt:v=>fmtB(v)},
-    {label:'EPS (Diluted)',    curr:latest.eps,             pv:prev?.eps??null,             fmt:v=>v!=null?`$${v.toFixed(2)}`:'--'},
-    {label:'Gross Margin',     curr:latest.grossMargin,     pv:null,                        fmt:v=>fmtPct(v)},
-    {label:'Operating Margin', curr:latest.operatingMargin, pv:null,                        fmt:v=>fmtPct(v)},
-    {label:'Net Margin',       curr:latest.netMargin,       pv:null,                        fmt:v=>fmtPct(v)},
+    { label: pickLang(uiLang, FIN_TEXT.revenueRow.ko, FIN_TEXT.revenueRow.en), curr: latest.revenue, pv: prev?.revenue ?? null, fmt: v => fmtB(v) },
+    { label: pickLang(uiLang, FIN_TEXT.grossProfitRow.ko, FIN_TEXT.grossProfitRow.en), curr: latest.grossProfit, pv: prev?.grossProfit ?? null, fmt: v => fmtB(v) },
+    { label: pickLang(uiLang, FIN_TEXT.operatingIncomeRow.ko, FIN_TEXT.operatingIncomeRow.en), curr: latest.operatingIncome, pv: prev?.operatingIncome ?? null, fmt: v => fmtB(v) },
+    { label: pickLang(uiLang, FIN_TEXT.netIncomeRow.ko, FIN_TEXT.netIncomeRow.en), curr: latest.netIncome, pv: prev?.netIncome ?? null, fmt: v => fmtB(v) },
+    { label: pickLang(uiLang, FIN_TEXT.epsDilutedRow.ko, FIN_TEXT.epsDilutedRow.en), curr: latest.eps, pv: prev?.eps ?? null, fmt: v => v != null ? `$${v.toFixed(2)}` : '--' },
+    { label: pickLang(uiLang, FIN_TEXT.grossMarginRow.ko, FIN_TEXT.grossMarginRow.en), curr: latest.grossMargin, pv: null, fmt: v => fmtPct(v) },
+    { label: pickLang(uiLang, FIN_TEXT.operatingMarginRow.ko, FIN_TEXT.operatingMarginRow.en), curr: latest.operatingMargin, pv: null, fmt: v => fmtPct(v) },
+    { label: pickLang(uiLang, FIN_TEXT.netMarginRow.ko, FIN_TEXT.netMarginRow.en), curr: latest.netMargin, pv: null, fmt: v => fmtPct(v) },
   ]
   return (
     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 12px', marginTop:8, paddingTop:8, borderTop:'1px solid rgba(255,255,255,0.08)' }}>
@@ -826,6 +890,7 @@ function MetricsTable({ rows }: { rows: IncomeRow[] }) {
 
 // ?? Main ??????????????????????????????????????????????????????????????????
 export default function FinancialsPanel({ symbol = 'AAPL', fetchKey = 0 }: Props) {
+  const uiLang = useUiLang()
   const [data, setData]       = useState<FinancialsData|null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string|null>(null)
@@ -837,34 +902,34 @@ export default function FinancialsPanel({ symbol = 'AAPL', fetchKey = 0 }: Props
     setLoading(true); setError(null)
     fetch(`/api/analyze/financials?symbol=${ticker}`, { signal: ctrl.signal })
       .then(r => r.json()).then(d => { if (alive) setData(d) })
-      .catch(err => { if (err?.name==='AbortError'||!alive) return; setError(err?.message??'Failed') })
+      .catch(err => { if (err?.name==='AbortError'||!alive) return; setError(err?.message ?? FIN_TEXT.fetchFailed.en) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive=false; ctrl.abort() }
   }, [symbol, fetchKey])
 
-  if (loading) return <div style={{ padding:48, textAlign:'center', color:'#94a3b8', fontSize:'0.95rem' }}>Loading financials...</div>
+  if (loading) return <div style={{ padding:48, textAlign:'center', color:'#94a3b8', fontSize:'0.95rem' }}>{pickLang(uiLang, FIN_TEXT.loading.ko, FIN_TEXT.loading.en)}</div>
   if (error || !data) return (
     <div style={{ position: 'relative', background: '#080808', borderLeft: '3px solid #FF5C33', overflow: 'hidden', borderRadius: 2, padding: '22px 20px 22px 22px', margin: '1rem', minHeight: 200 }}>
-      <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', color: '#FF5C33', opacity: 0.07, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>ERR</div>
+      <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', color: '#FF5C33', opacity: 0.07, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>ERR</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
-        <span style={{ display: 'inline-block', background: 'rgba(255,92,51,0.09)', color: '#FF5C33', fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>CONNECTION_FAILED</span>
-        <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>Unable to load financial data.</div>
-        <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.7 }}>{error || 'No data available'}</div>
+        <span style={{ display: 'inline-block', background: 'rgba(255,92,51,0.09)', color: '#FF5C33', fontSize: 9, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>{pickLang(uiLang, FIN_TEXT.connectionFailed.ko, FIN_TEXT.connectionFailed.en)}</span>
+        <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>{pickLang(uiLang, FIN_TEXT.loadFailed.ko, FIN_TEXT.loadFailed.en)}</div>
+        <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', lineHeight: 1.7 }}>{error || pickLang(uiLang, FIN_TEXT.noDataAvailable.ko, FIN_TEXT.noDataAvailable.en)}</div>
       </div>
     </div>
   )
 
   if (!data.incomeStatements && !data.balanceSheets) return (
     <div style={{ position: 'relative', background: '#080808', borderLeft: '3px solid #FF8400', overflow: 'hidden', borderRadius: 2, padding: '22px 20px 22px 22px', margin: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200 }}>
-      <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: '"JetBrains Mono", monospace', color: '#FF8400', opacity: 0.06, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>404</div>
+      <div style={{ position: 'absolute', fontSize: 128, fontWeight: 800, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', color: '#FF8400', opacity: 0.06, top: 10, right: -10, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>404</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
-        <span style={{ display: 'inline-block', background: 'rgba(255,132,0,0.09)', color: '#FF8400', fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>TICKER_NOT_FOUND</span>
-        <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>No financial data found.</div>
-        <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.7 }}>Financial statements are unavailable for this ticker.</div>
+        <span style={{ display: 'inline-block', background: 'rgba(255,132,0,0.09)', color: '#FF8400', fontSize: 9, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', fontWeight: 600, letterSpacing: '0.8px', padding: '3px 8px', borderRadius: 2, width: 'fit-content' }}>{pickLang(uiLang, FIN_TEXT.tickerNotFound.ko, FIN_TEXT.tickerNotFound.en)}</span>
+        <div style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>{pickLang(uiLang, FIN_TEXT.noFinancialData.ko, FIN_TEXT.noFinancialData.en)}</div>
+        <div style={{ color: '#4a4a4a', fontSize: 11, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', lineHeight: 1.7 }}>{pickLang(uiLang, FIN_TEXT.unavailableForTicker.ko, FIN_TEXT.unavailableForTicker.en)}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
         <div style={{ width: 16, height: 1, background: 'rgba(255,132,0,0.27)' }} />
-        <span style={{ color: '#333', fontSize: 9, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '1.5px' }}>AAPL  NVDA  MSFT  QQQ</span>
+        <span style={{ color: '#333', fontSize: 9, fontFamily: 'var(--font-terminal), "Nanum Gothic Coding", "Noto Sans KR", monospace', letterSpacing: '1.5px' }}>AAPL  NVDA  MSFT  QQQ</span>
       </div>
     </div>
   )
@@ -885,15 +950,15 @@ export default function FinancialsPanel({ symbol = 'AAPL', fetchKey = 0 }: Props
         border:'1px solid rgba(255,255,255,0.09)', borderRadius:10,
       }}>
         <span style={{ color:'#f1f5f9', fontWeight:800, fontSize:'1.0rem' }}>{data.symbol}</span>
-        <span style={{ color:'#94a3b8', fontSize:'0.82rem' }}>Annual Financials</span>
+        <span style={{ color:'#94a3b8', fontSize:'0.82rem' }}>{pickLang(uiLang, FIN_TEXT.annualFinancials.ko, FIN_TEXT.annualFinancials.en)}</span>
         <span style={{ marginLeft:'auto', color:'#cbd5e1', fontSize:'0.76rem', fontWeight:600, background:'rgba(255,255,255,0.08)', padding:'2px 8px', borderRadius:5 }}>
-          Latest FY: {latestYear}
+          {pickLang(uiLang, FIN_TEXT.latestFY.ko, FIN_TEXT.latestFY.en)}: {latestYear}
         </span>
       </div>
 
       {/* Capital Structure ??full width top */}
       <div style={{ marginBottom:8 }}>
-        <Card title="Capital Structure">
+        <Card title={pickLang(uiLang, FIN_TEXT.capitalStructure.ko, FIN_TEXT.capitalStructure.en)}>
           <CapitalStructureCard bs={latestBal} marketCap={data.marketCap}/>
         </Card>
       </div>
@@ -901,24 +966,24 @@ export default function FinancialsPanel({ symbol = 'AAPL', fetchKey = 0 }: Props
       {/* 2-col grid */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(480px,1fr))', gap:8, alignItems:'stretch' }}>
 
-        <Card title="Revenue &amp; Earnings - 5 Year">
+        <Card title={pickLang(uiLang, FIN_TEXT.revenueEarnings5y.ko, FIN_TEXT.revenueEarnings5y.en)}>
           <RevenueTrendChart rows={inc}/>
           <MetricsTable rows={inc}/>
         </Card>
 
-        <Card title={`Profit Waterfall - FY${latestYear}`}>
+        <Card title={`${pickLang(uiLang, FIN_TEXT.profitWaterfall.ko, FIN_TEXT.profitWaterfall.en)} - FY${latestYear}`}>
           <WaterfallChart row={latestInc}/>
         </Card>
 
-        <Card title="P/E / P/S Ratio History - 5 Year">
+        <Card title={pickLang(uiLang, FIN_TEXT.pePsRatio5y.ko, FIN_TEXT.pePsRatio5y.en)}>
           <PERatioChart rows={data.ratioHistory}/>
         </Card>
 
-        <Card title="EPS History &amp; Forward Estimates">
+        <Card title={pickLang(uiLang, FIN_TEXT.epsHistoryForward.ko, FIN_TEXT.epsHistoryForward.en)}>
           <EpsChart rows={inc} estimates={data.epsEstimates}/>
         </Card>
 
-        <Card title="Margin Trend - 5 Year">
+        <Card title={pickLang(uiLang, FIN_TEXT.marginTrend5y.ko, FIN_TEXT.marginTrend5y.en)}>
           <MarginHistoryChart rows={inc}/>
         </Card>
 
@@ -926,5 +991,6 @@ export default function FinancialsPanel({ symbol = 'AAPL', fetchKey = 0 }: Props
     </div>
   )
 }
+
 
 

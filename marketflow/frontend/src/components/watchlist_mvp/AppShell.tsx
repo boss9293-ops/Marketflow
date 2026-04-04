@@ -11,6 +11,7 @@ import {
   type ETDateString,
   type EvidenceRow,
   type NewsDetail,
+  type MarketHeadlinesHealth,
   type TickerBrief,
   type TickerNewsItem,
   type Watchlist,
@@ -26,18 +27,202 @@ const formatDateET = (date: Date): ETDateString =>
     day: '2-digit',
   }).format(date)
 
-const parseEtTimeToMinutes = (value: string): number => {
-  const matched = value.match(/^(\d{1,2}):(\d{2})/)
-  if (!matched) return -1
-  const hours = Number(matched[1])
-  const minutes = Number(matched[2])
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) return -1
-  return hours * 60 + minutes
+const MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
+const MARKET_CLOSE_MINUTES_ET = 16 * 60
+
+const pad2 = (value: number): string => String(value).padStart(2, '0')
+
+const toYmd = (year: number, month: number, day: number): string =>
+  `${year}-${pad2(month)}-${pad2(day)}`
+
+const getEtClockParts = (now: Date = new Date()): {
+  year: number
+  month: number
+  day: number
+  weekday: string
+  hour: number
+  minute: number
+} => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: ET_TIMEZONE,
+    weekday: 'short',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(now)
+  const read = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? ''
+
+  return {
+    year: Number(read('year') || '0'),
+    month: Number(read('month') || '0'),
+    day: Number(read('day') || '0'),
+    weekday: read('weekday'),
+    hour: Number(read('hour') || '0'),
+    minute: Number(read('minute') || '0'),
+  }
+}
+
+const nthWeekdayOfMonth = (
+  year: number,
+  month: number,
+  weekday: number,
+  nth: number,
+): number => {
+  const firstDow = new Date(Date.UTC(year, month - 1, 1)).getUTCDay()
+  const offset = (weekday - firstDow + 7) % 7
+  return 1 + offset + (nth - 1) * 7
+}
+
+const lastWeekdayOfMonth = (year: number, month: number, weekday: number): number => {
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const lastDow = new Date(Date.UTC(year, month - 1, lastDay)).getUTCDay()
+  const offset = (lastDow - weekday + 7) % 7
+  return lastDay - offset
+}
+
+const observedFixedHolidayYmd = (year: number, month: number, day: number): string => {
+  const observed = new Date(Date.UTC(year, month - 1, day))
+  const dow = observed.getUTCDay()
+  if (dow === 6) observed.setUTCDate(observed.getUTCDate() - 1)
+  else if (dow === 0) observed.setUTCDate(observed.getUTCDate() + 1)
+  return toYmd(
+    observed.getUTCFullYear(),
+    observed.getUTCMonth() + 1,
+    observed.getUTCDate(),
+  )
+}
+
+const easterSundayUTC = (year: number): Date => {
+  const a = year % 19
+  const b = Math.floor(year / 100)
+  const c = year % 100
+  const d = Math.floor(b / 4)
+  const e = b % 4
+  const f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4)
+  const k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
+const holidaySetByYear = new Map<number, Set<string>>()
+
+const getUsMarketHolidaySet = (year: number): Set<string> => {
+  const cached = holidaySetByYear.get(year)
+  if (cached) return cached
+
+  const holidays = new Set<string>()
+  const addIfYearMatches = (ymd: string) => {
+    if (ymd.startsWith(`${year}-`)) holidays.add(ymd)
+  }
+
+  addIfYearMatches(observedFixedHolidayYmd(year, 1, 1)) // New Year's Day
+  holidays.add(toYmd(year, 1, nthWeekdayOfMonth(year, 1, 1, 3))) // MLK Day
+  holidays.add(toYmd(year, 2, nthWeekdayOfMonth(year, 2, 1, 3))) // Presidents Day
+  holidays.add(toYmd(year, 5, lastWeekdayOfMonth(year, 5, 1))) // Memorial Day
+  addIfYearMatches(observedFixedHolidayYmd(year, 6, 19)) // Juneteenth
+  addIfYearMatches(observedFixedHolidayYmd(year, 7, 4)) // Independence Day
+  holidays.add(toYmd(year, 9, nthWeekdayOfMonth(year, 9, 1, 1))) // Labor Day
+  holidays.add(toYmd(year, 11, nthWeekdayOfMonth(year, 11, 4, 4))) // Thanksgiving
+  addIfYearMatches(observedFixedHolidayYmd(year, 12, 25)) // Christmas
+
+  const goodFriday = easterSundayUTC(year)
+  goodFriday.setUTCDate(goodFriday.getUTCDate() - 2)
+  holidays.add(toYmd(goodFriday.getUTCFullYear(), goodFriday.getUTCMonth() + 1, goodFriday.getUTCDate()))
+
+  holidaySetByYear.set(year, holidays)
+  return holidays
+}
+
+const isUsMarketHolidayET = (now: Date = new Date()): boolean => {
+  const { year, month, day } = getEtClockParts(now)
+  if (!year || !month || !day) return false
+  const ymd = toYmd(year, month, day)
+  return getUsMarketHolidaySet(year).has(ymd)
+}
+
+const isRegularSessionOpenET = (now: Date = new Date()): boolean => {
+  const { weekday, hour, minute } = getEtClockParts(now)
+  if (weekday === 'Sat' || weekday === 'Sun') return false
+  if (isUsMarketHolidayET(now)) return false
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return false
+
+  const totalMinutes = hour * 60 + minute
+  return totalMinutes >= MARKET_OPEN_MINUTES_ET && totalMinutes < MARKET_CLOSE_MINUTES_ET
+}
+
+type MarketHeadlineView = {
+  id: string
+  dateET: string
+  publishedAtET: string
+  timeET: string
+  headline: string
+  source: string
+  url: string
+}
+
+const getHeadlineEpoch = (item: MarketHeadlineView): number => {
+  const ts = Date.parse(item.publishedAtET || '')
+  if (Number.isFinite(ts)) return ts
+  const fallbackTs = Date.parse(`${item.dateET}T00:00:00-05:00`)
+  return Number.isFinite(fallbackTs) ? fallbackTs : 0
+}
+
+const sortHeadlines = (items: MarketHeadlineView[]): MarketHeadlineView[] =>
+  [...items].sort((a, b) => getHeadlineEpoch(b) - getHeadlineEpoch(a))
+
+const normalizeHeadlines = (
+  rows: Array<{
+    id: string
+    dateET: string
+    publishedAtET: string
+    timeET: string
+    headline: string
+    source: string
+    url: string
+  }>,
+): MarketHeadlineView[] =>
+  sortHeadlines(
+    rows.map((item) => ({
+      id: item.id,
+      dateET: item.dateET,
+      publishedAtET: item.publishedAtET,
+      timeET: item.timeET,
+      headline: item.headline,
+      source: item.source,
+      url: item.url,
+    })),
+  )
+
+const mergeHeadlines = (
+  previous: MarketHeadlineView[],
+  incoming: MarketHeadlineView[],
+): MarketHeadlineView[] => {
+  const merged = new Map<string, MarketHeadlineView>()
+  for (const item of [...incoming, ...previous]) {
+    const key = item.id || `${item.dateET}|${item.timeET}|${item.source}|${item.headline}`
+    const existing = merged.get(key)
+    if (!existing || getHeadlineEpoch(item) > getHeadlineEpoch(existing)) {
+      merged.set(key, item)
+    }
+  }
+  return sortHeadlines(Array.from(merged.values()))
 }
 
 type InitStatus = 'loading' | 'ready' | 'empty' | 'error'
 type SectionStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error'
 type AskStatus = 'idle' | 'submitting' | 'ready' | 'error'
+
+const WATCHLIST_QUOTE_REFRESH_MS = 20_000
 
 export default function AppShell() {
   const service = useMemo(() => createDashboardService({ mode: 'hybrid' }), [])
@@ -52,12 +237,8 @@ export default function AppShell() {
   const [tickerBriefs, setTickerBriefs] = useState<TickerBrief[]>([])
   const [tickerNews, setTickerNews] = useState<TickerNewsItem[]>([])
 
-  const [marketHeadlines, setMarketHeadlines] = useState<Array<{
-    id: string
-    timeET: string
-    headline: string
-    source: string
-  }>>([])
+  const [marketHeadlines, setMarketHeadlines] = useState<MarketHeadlineView[]>([])
+  const [marketHeadlinesHealth, setMarketHeadlinesHealth] = useState<MarketHeadlinesHealth | null>(null)
 
   const [initStatus, setInitStatus] = useState<InitStatus>('loading')
   const [initError, setInitError] = useState<string | null>(null)
@@ -96,16 +277,8 @@ export default function AppShell() {
         setWatchlists(snapshot.watchlists)
         setSelectedWatchlistId(snapshot.selectedWatchlistId)
         setWatchlistItems(snapshot.watchlistItems)
-        setMarketHeadlines(
-          snapshot.marketHeadlines
-            .map((h) => ({
-              id: h.id,
-              timeET: h.timeET,
-              headline: h.headline,
-              source: h.source,
-            }))
-            .sort((a, b) => parseEtTimeToMinutes(b.timeET) - parseEtTimeToMinutes(a.timeET)),
-        )
+        setMarketHeadlines(normalizeHeadlines(snapshot.marketHeadlines))
+        setMarketHeadlinesHealth(snapshot.marketHeadlinesHealth ?? null)
 
         if (!snapshot.watchlistItems.length) {
           setInitStatus('empty')
@@ -126,6 +299,89 @@ export default function AppShell() {
       cancelled = true
     }
   }, [selectedDateET, service])
+
+  useEffect(() => {
+    if (initStatus !== 'ready') return
+    if (!isRegularSessionOpenET()) return
+
+    let cancelled = false
+    let timer: ReturnType<typeof setInterval> | null = null
+
+    const refreshHeadlines = async () => {
+      if (!isRegularSessionOpenET()) return
+      try {
+        const headlinesRes = await service.getMarketHeadlines(selectedDateET)
+        if (cancelled) return
+        const incoming = normalizeHeadlines(headlinesRes.data.headlines)
+        setMarketHeadlines((previous) => mergeHeadlines(previous, incoming))
+        setMarketHeadlinesHealth(headlinesRes.data.health ?? null)
+      } catch {
+        // Keep existing panel data if refresh fails.
+        if (cancelled) return
+        setMarketHeadlinesHealth({
+          status: 'degraded',
+          updatedAt: new Date().toISOString(),
+          sources: [],
+          message: 'Headline refresh failed. Showing last cached data.',
+        })
+      }
+    }
+
+    void refreshHeadlines()
+    timer = setInterval(() => {
+      if (!isRegularSessionOpenET()) {
+        if (timer) clearInterval(timer)
+        timer = null
+        return
+      }
+      void refreshHeadlines()
+    }, 90_000)
+
+    return () => {
+      cancelled = true
+      if (timer) clearInterval(timer)
+    }
+  }, [initStatus, selectedDateET, service])
+
+  useEffect(() => {
+    if (initStatus !== 'ready' || !selectedWatchlistId) return
+    if (!isRegularSessionOpenET()) return
+
+    let cancelled = false
+    let timer: ReturnType<typeof setInterval> | null = null
+
+    const refreshWatchlistQuotes = async () => {
+      if (!isRegularSessionOpenET()) return
+      try {
+        const itemsRes = await service.getWatchlistItems(selectedWatchlistId)
+        if (cancelled) return
+        const nextItems = itemsRes.data.items
+        setWatchlistItems(nextItems)
+        setSelectedSymbol((current) => {
+          if (!nextItems.length) return ''
+          if (current && nextItems.some((item) => item.symbol === current)) return current
+          return nextItems[0].symbol
+        })
+      } catch {
+        // Keep the previous snapshot when quote refresh fails.
+      }
+    }
+
+    void refreshWatchlistQuotes()
+    timer = setInterval(() => {
+      if (!isRegularSessionOpenET()) {
+        if (timer) clearInterval(timer)
+        timer = null
+        return
+      }
+      void refreshWatchlistQuotes()
+    }, WATCHLIST_QUOTE_REFRESH_MS)
+
+    return () => {
+      cancelled = true
+      if (timer) clearInterval(timer)
+    }
+  }, [initStatus, selectedWatchlistId, service])
 
   useEffect(() => {
     if (!selectedSymbol || initStatus === 'error' || initStatus === 'empty') return
@@ -334,9 +590,6 @@ export default function AppShell() {
         selectedSymbol={selectedSymbol}
         selectedItem={selectedItem}
         dateET={selectedDateET}
-        briefs={tickerBriefs}
-        briefsStatus={briefsStatus}
-        briefsError={briefsError}
         timeline={tickerNews}
         timelineStatus={timelineStatus}
         timelineError={timelineError}
@@ -369,6 +622,7 @@ export default function AppShell() {
         chartError={briefsStatus === 'error' ? briefsError : null}
         isHeadlinesLoading={initStatus === 'loading'}
         headlinesError={initStatus === 'error' ? initError : null}
+        headlinesHealth={marketHeadlinesHealth}
       />
     </div>
   )

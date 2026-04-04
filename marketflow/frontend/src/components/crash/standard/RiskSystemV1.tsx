@@ -2563,12 +2563,20 @@ function OverviewTab({
                   })()}
                   {(() => {
                     const narrative = tc.state === 'Normal'
-                      ? `Yen, oil, VIX, and gold are all below the Z=2.5 threshold. No material external shock is visible.`
+                      ? pickLang(uiLang, '엔·유가·VIX·금이 모두 Z=2.5 임계치 아래입니다. 의미 있는 외부 충격은 아직 보이지 않습니다.', 'Yen, oil, VIX, and gold are all below the Z=2.5 threshold. No material external shock is visible.')
                       : tc.state === 'Shock Watch'
-                        ? `${tc.triggered_sensors.map(s => s.name).join(', ')} triggered (${tc.score}/${tc.max_score}). One sensor is not enough for confirmation, but follow-through should be watched.`
-                        : `Composite shock detected: ${tc.shock_type}. ${tc.triggered_sensors.map(s => s.badge + ' Z' + (s.z > 0 ? '+' : '') + s.z.toFixed(1)).join(', ')}.`
+                        ? pickLang(
+                            uiLang,
+                            `${tc.triggered_sensors.map(s => s.name).join(', ')} 신호가 감지되었습니다 (${tc.score}/${tc.max_score}). 단일 센서만으로는 확정할 수 없으니 후속 움직임을 확인하세요.`,
+                            `${tc.triggered_sensors.map(s => s.name).join(', ')} triggered (${tc.score}/${tc.max_score}). One sensor is not enough for confirmation, but follow-through should be watched.`
+                          )
+                        : pickLang(
+                            uiLang,
+                            `복합 충격 감지: ${tc.shock_type}. ${tc.triggered_sensors.map(s => s.badge + ' Z' + (s.z > 0 ? '+' : '') + s.z.toFixed(1)).join(', ')}.`,
+                            `Composite shock detected: ${tc.shock_type}. ${tc.triggered_sensors.map(s => s.badge + ' Z' + (s.z > 0 ? '+' : '') + s.z.toFixed(1)).join(', ')}.`
+                          )
                     return (
-                      <div style={{ fontSize: '0.84rem', color: isNormal ? '#e5e7eb' : '#fde68a', lineHeight: 1.6, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 8 }}>
+                      <div style={{ fontSize: '0.92rem', color: isNormal ? '#e5e7eb' : '#fde68a', lineHeight: 1.65, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 8 }}>
                         {narrative}
                       </div>
                     )
@@ -2584,7 +2592,7 @@ function OverviewTab({
               const mss = data.current.score
               const totalScore = tr.total
               const stage = tr.crisis_stage.stage
-                      const stageLabel = getCrisisStageLabel(tr.crisis_stage.stage, tr.crisis_stage.label)
+              const stageLabel = getCrisisStageLabel(tr.crisis_stage.stage, tr.crisis_stage.label)
               const taeState = data.track_a_early?.state ?? 'Normal'
               const taState = data.track_a?.state ?? 'Normal'
               const tcState = data.track_c?.state ?? 'Normal'
@@ -2598,38 +2606,107 @@ function OverviewTab({
               const shockWarn  = tcState !== 'Normal'
               const warnCount  = [mssWarn, stressWarn, stageWarn, earlyWarn, creditWarn, shockWarn].filter(Boolean).length
 
-              let cColor = '#22c55e', cLabel = 'Stable Zone'
+              const stageLabelKo = (() => {
+                const koMap: Record<string, string> = {
+                  Normal: '정상',
+                  'Equity Selloff': '주식 급락',
+                  'Loan Stress': '대출 스트레스',
+                  'Credit Stress': '신용 스트레스',
+                  'Financial Stress': '금융 스트레스',
+                  'Policy Shock': '정책 충격',
+                  Panic: '패닉',
+                }
+                return koMap[stageLabel] ?? `단계 ${stage}`
+              })()
+
+              let cColor = '#22c55e'
+              let cLabel = pickLang(uiLang, '안정 구간', 'Stable Zone')
               if (warnCount >= 3 || (stageWarn && (creditWarn || mssWarn))) {
-                cColor = '#ef4444'; cLabel = 'High Alert'
+                cColor = '#ef4444'
+                cLabel = pickLang(uiLang, '고위험 경보', 'High Alert')
               } else if (warnCount >= 2) {
-                cColor = '#f97316'; cLabel = 'Escalating'
+                cColor = '#f97316'
+                cLabel = pickLang(uiLang, '경계 상승', 'Escalating')
               } else if (warnCount >= 1) {
-                cColor = '#f59e0b'; cLabel = 'Needs Monitoring'
+                cColor = '#f59e0b'
+                cLabel = pickLang(uiLang, '모니터링 필요', 'Needs Monitoring')
               }
 
               // Narrative parts
               const p1 = !mssWarn
-                ? `Market structure (MSS ${mss.toFixed(0)}) remains constructive in ${trackBLevel}.`
-                : `Market structure (MSS ${mss.toFixed(0)}) is below 100 and structural softening is underway.`
+                ? pickLang(
+                    uiLang,
+                    `시장 구조(MSS ${mss.toFixed(0)})는 ${trackBLevel} 구간에서 아직 지지력을 유지하고 있습니다.`,
+                    `Market structure (MSS ${mss.toFixed(0)}) remains constructive in ${trackBLevel}.`
+                  )
+                : pickLang(
+                    uiLang,
+                    `시장 구조(MSS ${mss.toFixed(0)})가 100 아래로 내려와 구조적 약화가 진행 중입니다.`,
+                    `Market structure (MSS ${mss.toFixed(0)}) is below 100 and structural softening is underway.`
+                  )
               const p2 = stageWarn
-                ? `Crisis propagation has entered '${getCrisisStageLabel(tr.crisis_stage.stage, tr.crisis_stage.label)}'. This is not collapse yet, but caution is warranted.`
-                : `Crisis propagation is at stage ${stage} with no major escalation signal.`
+                ? pickLang(
+                    uiLang,
+                    `위기 전이 단계가 '${stageLabelKo}'에 진입했습니다. 아직 붕괴 구간은 아니지만 경계가 필요합니다.`,
+                    `Crisis propagation has entered '${stageLabel}'. This is not collapse yet, but caution is warranted.`
+                  )
+                : pickLang(
+                    uiLang,
+                    `위기 전이는 ${stage}단계로, 뚜렷한 추가 악화 신호는 아직 없습니다.`,
+                    `Crisis propagation is at stage ${stage} with no major escalation signal.`
+                  )
               const p3 = !stressWarn
-                ? `Total 12-layer risk (${totalScore}/120) is still below the warning threshold of 50.`
-                : `Total 12-layer risk (${totalScore}/120) has entered the warning zone.`
+                ? pickLang(
+                    uiLang,
+                    `총 12-레이어 리스크(${totalScore}/120)는 경고 기준선 50 아래에 있습니다.`,
+                    `Total 12-layer risk (${totalScore}/120) is still below the warning threshold of 50.`
+                  )
+                : pickLang(
+                    uiLang,
+                    `총 12-레이어 리스크(${totalScore}/120)가 경고 구간에 진입했습니다.`,
+                    `Total 12-layer risk (${totalScore}/120) has entered the warning zone.`
+                  )
               const p4 = !creditWarn && !shockWarn
-                ? `Track A credit and Track C shock signals remain contained.`
+                ? pickLang(
+                    uiLang,
+                    'Track A 신용 신호와 Track C 외부 충격 신호는 아직 통제 범위에 있습니다.',
+                    'Track A credit and Track C shock signals remain contained.'
+                  )
                 : creditWarn
-                  ? `Track A credit warning (${taState}) is active and requires a defensive review.`
-                  : `Track C shock warning (${tcState}) is active and needs follow-through monitoring.`
+                  ? pickLang(
+                      uiLang,
+                      `Track A 신용 경고(${taState})가 활성화되어 방어적 점검이 필요합니다.`,
+                      `Track A credit warning (${taState}) is active and requires a defensive review.`
+                    )
+                  : pickLang(
+                      uiLang,
+                      `Track C 외부 충격 경고(${tcState})가 활성화되어 후속 확인이 필요합니다.`,
+                      `Track C shock warning (${tcState}) is active and needs follow-through monitoring.`
+                    )
 
               const watchFor = warnCount === 0
-                ? `All major inputs are stable. Maintain current positioning.`
+                ? pickLang(
+                    uiLang,
+                    '주요 입력이 모두 안정적입니다. 현재 포지션을 유지하세요.',
+                    'All major inputs are stable. Maintain current positioning.'
+                  )
                 : stageWarn && !creditWarn
-                  ? `The next key decision is whether Track A confirms. As long as Track A stays Normal, maintain position discipline.`
+                  ? pickLang(
+                      uiLang,
+                      '다음 핵심 판단은 Track A 확인 여부입니다. Track A가 Normal을 유지하면 포지션 규율을 지키세요.',
+                      'The next key decision is whether Track A confirms. As long as Track A stays Normal, maintain position discipline.'
+                    )
                   : creditWarn
-                    ? `Credit warning is active. Consider leverage reduction and additional defensive sizing.`
-                    : `If MSS falls further or Track A confirms, reduce risk promptly.`
+                    ? pickLang(
+                        uiLang,
+                        '신용 경고가 활성화되었습니다. 레버리지 축소와 방어 비중 확대를 검토하세요.',
+                        'Credit warning is active. Consider leverage reduction and additional defensive sizing.'
+                      )
+                    : pickLang(
+                        uiLang,
+                        'MSS가 추가 하락하거나 Track A가 확인되면 리스크를 신속히 축소하세요.',
+                        'If MSS falls further or Track A confirms, reduce risk promptly.'
+                      )
 
               return (
                 <div style={{
@@ -2642,20 +2719,20 @@ function OverviewTab({
                 }}>
                   {/* Header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.72rem', color: '#e5e7eb', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.78rem', color: '#e5e7eb', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
                       {pickLang(uiLang, '핵심 근거', 'Core Evidence')}
                     </span>
                     <span style={{
-                      fontSize: '0.99rem', fontWeight: 700, color: cColor,
+                      fontSize: '1.06rem', fontWeight: 700, color: cColor,
                       background: `${cColor}20`, border: `1px solid ${cColor}44`,
                       borderRadius: 6, padding: '2px 10px',
                     }}>{cLabel}</span>
                     {warnCount > 0 && (
-                      <span style={{ fontSize: '0.78rem', color: cColor, background: `${cColor}15`, borderRadius: 999, padding: '1px 8px', border: `1px solid ${cColor}33` }}>
+                      <span style={{ fontSize: '0.84rem', color: cColor, background: `${cColor}15`, borderRadius: 999, padding: '1px 8px', border: `1px solid ${cColor}33` }}>
                         {pickLang(uiLang, `${warnCount}개의 활성 경고`, `${warnCount} active warning${warnCount === 1 ? '' : 's'}`)}
                       </span>
                     )}
-                    <span style={{ fontSize: '0.72rem', color: '#e5e7eb', marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#e5e7eb', marginLeft: 'auto' }}>
                       {pickLang(uiLang, '최상위 최종 판단 뒤의 세부 매트릭스', 'Detail matrix behind the top-level final decision')}
                     </span>
                   </div>
@@ -2663,13 +2740,13 @@ function OverviewTab({
                   {/* ── AI Insight: Summary ── */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '8px 10px', background: 'rgba(165,180,252,0.04)', borderRadius: 7, border: '1px solid rgba(165,180,252,0.12)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#a5b4fc', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(165,180,252,0.15)', borderRadius: 4, padding: '1px 7px' }}>{pickLang(uiLang, 'AI 인사이트', 'AI Insight')}</span>
-                      <span style={{ fontSize: '0.72rem', color: '#475569' }}>— 현재 시장 상황 요약</span>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#a5b4fc', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(165,180,252,0.15)', borderRadius: 4, padding: '1px 7px' }}>{pickLang(uiLang, 'AI 인사이트', 'AI Insight')}</span>
+                      <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>— {pickLang(uiLang, '현재 시장 상황 요약', 'Current market snapshot')}</span>
                     </div>
                     {[p1, p2, p3, p4].map((p, i) => (
-                      <span key={i} style={{ fontSize: '0.78rem', color: '#cbd5e1', lineHeight: 1.6 }}>• {p}</span>
+                      <span key={i} style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: 1.65 }}>• {p}</span>
                     ))}
-                    <div style={{ marginTop: 4, paddingTop: 5, borderTop: '1px solid rgba(165,180,252,0.1)', fontSize: '0.78rem', color: '#cbd5e1' }}>
+                    <div style={{ marginTop: 4, paddingTop: 5, borderTop: '1px solid rgba(165,180,252,0.1)', fontSize: '0.86rem', color: '#cbd5e1', lineHeight: 1.65 }}>
                       <span style={{ color: '#a5b4fc', fontWeight: 700 }}>구독자 시사점: </span>{watchFor}
                     </div>
                   </div>

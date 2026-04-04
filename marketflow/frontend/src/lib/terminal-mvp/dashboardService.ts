@@ -27,10 +27,13 @@ export type DashboardSnapshot = {
   selectedWatchlistId: string | null
   watchlistItems: GetWatchlistItemsResponse['data']['items']
   marketHeadlines: GetMarketHeadlinesResponse['data']['headlines']
+  marketHeadlinesHealth?: GetMarketHeadlinesResponse['data']['health']
 }
 
 export type DashboardService = {
   getDashboardSnapshot(dateET: ETDateString): Promise<DashboardSnapshot>
+  getWatchlistItems(watchlistId: string): Promise<GetWatchlistItemsResponse>
+  getMarketHeadlines(dateET: ETDateString): Promise<GetMarketHeadlinesResponse>
   getTickerBriefs(symbol: string, dateET: ETDateString): Promise<GetTickerBriefsResponse>
   getTickerNews(symbol: string, dateET: ETDateString): Promise<GetTickerNewsResponse>
   getNewsDetail(newsId: string): Promise<GetNewsDetailResponse>
@@ -72,6 +75,7 @@ export function createDashboardService(
           selectedWatchlistId: null,
           watchlistItems: [],
           marketHeadlines: [],
+          marketHeadlinesHealth: undefined,
         }
       }
 
@@ -85,11 +89,20 @@ export function createDashboardService(
         selectedWatchlistId,
         watchlistItems: itemsRes.data.items,
         marketHeadlines: headlinesRes.data.headlines,
+        marketHeadlinesHealth: headlinesRes.data.health,
       }
+    },
+
+    async getWatchlistItems(watchlistId: string) {
+      return singleClient.getWatchlistItems(watchlistId)
     },
 
     async getTickerBriefs(symbol: string, dateET: ETDateString) {
       return singleClient.getTickerBriefs(symbol, dateET)
+    },
+
+    async getMarketHeadlines(dateET: ETDateString) {
+      return singleClient.getMarketHeadlines(dateET)
     },
 
     async getTickerNews(symbol: string, dateET: ETDateString) {

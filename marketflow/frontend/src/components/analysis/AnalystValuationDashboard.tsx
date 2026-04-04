@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import { TrendingUp, ArrowUpDown, Info } from 'lucide-react'
+import { pickLang, useUiLang } from '@/lib/useLangMode'
 
 export type AnalystRecord = {
   firm: string
@@ -31,6 +32,17 @@ const DEFAULT_ANALYSTS: AnalystRecord[] = [
   { firm: 'Citigroup', target: 490, rating: 'Hold', date: '3/15' },
 ]
 
+const ANALYST_TEXT = {
+  wallStreetConsensus: { ko: '월가 컨센서스', en: 'Wall Street Consensus' },
+  modelCalculation: { ko: '모델 계산식', en: 'Our Model Calculation' },
+  summaryLead: { ko: '기관 컨센서스 평균', en: 'Street consensus average sits near' },
+  summaryBridge: {
+    ko: '수준이며, 역사적 PER 멀티플 기준 방어적 모델은',
+    en: 'while a defensive model based on historical P/E points to',
+  },
+  summaryTail: { ko: '수준을 시사합니다.', en: 'as the conservative line.' },
+} as const
+
 export default function AnalystValuationDashboard({
   symbol = 'NVDA',
   currentPrice = 358.00,
@@ -41,6 +53,7 @@ export default function AnalystValuationDashboard({
     eps_3y: 18.2
   }
 }: AnalystValuationDashboardProps) {
+  const uiLang = useUiLang()
 
   // --- Sorting State ---
   const [sortField, setSortField] = useState<keyof AnalystRecord>('target')
@@ -153,7 +166,9 @@ export default function AnalystValuationDashboard({
         {/* Left: Analyst Table */}
         <Card className="lg:col-span-2 overflow-hidden flex flex-col p-0 border border-white/10">
           <div className="p-5 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-            <div className="font-bold text-gray-200">Wall Street Consensus</div>
+            <div className="font-bold text-gray-200">
+              {pickLang(uiLang, ANALYST_TEXT.wallStreetConsensus.ko, ANALYST_TEXT.wallStreetConsensus.en)}
+            </div>
             <div className="text-xs bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20 font-bold">
               {buyRatio.toFixed(0)}% BUY
             </div>
@@ -247,8 +262,8 @@ export default function AnalystValuationDashboard({
 
             {/* Formula Tooltip */}
             <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-green-500/30 text-xs text-green-100 p-3 rounded-lg shadow-xl z-20 pointer-events-none bottom-full mb-2 right-0 w-[200px]">
-              <span className="font-bold block text-green-300 mb-1">Our Model Calculation:</span>
-              3Y EPS ({historical.eps_3y}) × Hist. Avg PER ({historical.per_avg.toFixed(1)}x) = {formatCur(ourModelTarget)}
+              <span className="font-bold block text-green-300 mb-1">{pickLang(uiLang, ANALYST_TEXT.modelCalculation.ko, ANALYST_TEXT.modelCalculation.en)}:</span>
+              3Y EPS ({historical.eps_3y}) x Hist. Avg PER ({historical.per_avg.toFixed(1)}x) = {formatCur(ourModelTarget)}
             </div>
           </Card>
 
@@ -259,10 +274,10 @@ export default function AnalystValuationDashboard({
       <div className="bg-[#1e2129] border border-[#d4b76a]/30 rounded-xl p-5 mt-2 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-[#d4b76a]/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-[#d4b76a] font-serif font-bold italic">💡</span>
+            <span className="text-[#d4b76a] font-serif font-bold italic">i</span>
           </div>
           <div className="text-[#d4b76a] font-medium text-sm md:text-base tracking-wide leading-relaxed">
-            "기관 컨센서스 평균 <strong className="text-white mx-1">{formatCur(avgTarget)}</strong> 수준이나, 역사적 PER 멀티플 기준 방어적 모델은 <strong className="text-white mx-1">{formatCur(ourModelTarget)}</strong> 선을 시사합니다."
+            {pickLang(uiLang, ANALYST_TEXT.summaryLead.ko, ANALYST_TEXT.summaryLead.en)}{' '}<strong className="text-white mx-1">{formatCur(avgTarget)}</strong>{' '}{pickLang(uiLang, ANALYST_TEXT.summaryBridge.ko, ANALYST_TEXT.summaryBridge.en)}{' '}<strong className="text-white mx-1">{formatCur(ourModelTarget)}</strong>{' '}{pickLang(uiLang, ANALYST_TEXT.summaryTail.ko, ANALYST_TEXT.summaryTail.en)}
           </div>
         </div>
       </div>

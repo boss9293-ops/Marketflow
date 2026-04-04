@@ -7,7 +7,6 @@ import type {
   ETTimezone,
   EvidenceRow,
   NewsDetail,
-  TickerBrief,
   TickerNewsItem,
 } from '@/lib/terminal-mvp/types'
 
@@ -25,9 +24,6 @@ type CenterPanelProps = {
   } | null
   dateET: ETDateString
   timezone: ETTimezone
-  briefs: TickerBrief[]
-  briefsStatus: SectionStatus
-  briefsError: string | null
   timeline: TickerNewsItem[]
   timelineStatus: SectionStatus
   timelineError: string | null
@@ -79,42 +75,24 @@ const formatTimelineDateHeader = (dateKey: string): string => {
   }).format(parsed)
 }
 
-const parseNewsTs = (value: string): number => {
-  const ts = Date.parse(value)
-  return Number.isNaN(ts) ? 0 : ts
-}
-
 const getNewsDateKey = (item: TickerNewsItem): string => {
   const matched = item.publishedAtET.match(/^\d{4}-\d{2}-\d{2}/)
   return matched?.[0] ?? item.dateET
 }
 
-const parseNumeric = (value?: string): number | null => {
-  if (!value) return null
-  const parsed = Number(value.replace(/[^0-9.-]/g, ''))
-  return Number.isNaN(parsed) ? null : parsed
+const toBriefText = (prefix: string, item: TickerNewsItem): string => {
+  const headline = (item.headline || '').trim()
+  const summary = (item.summary || '').trim()
+  const body = [headline, summary].filter(Boolean).join(' ')
+  return body ? `${prefix} ${body}` : prefix
 }
-
-const formatPriceLabel = (value: number | null): string => (value == null ? '--' : `$${value.toFixed(2)}`)
-
-const buildNarrative = (brief: TickerBrief | null, fallback: string): string => {
-  const headline = brief?.headline?.trim() ?? ''
-  const summary = brief?.summary?.trim() ?? ''
-  const combined = `${headline} ${summary}`.trim()
-  return combined || fallback
-}
-
-const shouldShowMore = (summary: string): boolean => summary.trim().length > 220
 
 export default function CenterPanel({
   selectedSymbol,
   selectedItem,
   dateET,
   timezone,
-  briefs,
-  briefsStatus,
-  briefsError,
-  timeline,
+  timeline = [],
   timelineStatus,
   timelineError,
   selectedNewsId,
@@ -137,18 +115,6 @@ export default function CenterPanel({
   onExportEvidenceToSheet,
   onCloseDetail,
 }: CenterPanelProps) {
-  const openClosePriceLabels = useMemo(() => {
-    const closePrice = parseNumeric(selectedItem?.lastPrice)
-    const changePct = parseNumeric(selectedItem?.changePercent)
-    if (closePrice == null || changePct == null || changePct <= -100) {
-      return { open: '--', close: formatPriceLabel(closePrice) }
-    }
-    const openPrice = closePrice / (1 + changePct / 100)
-    return {
-      open: formatPriceLabel(openPrice),
-      close: formatPriceLabel(closePrice),
-    }
-  }, [selectedItem?.changePercent, selectedItem?.lastPrice])
   const dateLabel = useMemo(() => formatTerminalDateLabel(dateET), [dateET])
   const groupedTimeline = useMemo(() => {
     const grouped = new Map<string, TickerNewsItem[]>()
@@ -162,10 +128,10 @@ export default function CenterPanel({
       .map(([dateKey, items]) => ({
         dateKey,
         dateLabel: formatTimelineDateHeader(dateKey),
-        items: [...items].sort((a, b) => parseNewsTs(b.publishedAtET) - parseNewsTs(a.publishedAtET)).slice(0, 2),
+        items: [...items].sort((a, b) => b.publishedAtET.localeCompare(a.publishedAtET)),
       }))
       .sort((a, b) => b.dateKey.localeCompare(a.dateKey))
-  }, [timeline])
+  }, [dateET, timeline])
   const [exportStatus, setExportStatus] = useState<ExportUiStatus>('idle')
   const [exportFeedback, setExportFeedback] = useState<string | null>(null)
 
@@ -188,6 +154,12 @@ export default function CenterPanel({
     }
   }
 
+  const tickerPrefix = selectedItem ? `${selectedItem.symbol} ${selectedItem.lastPrice}` : selectedSymbol
+  const selectedDayItems = useMemo(() => {
+    const selected = groupedTimeline.find((group) => group.dateKey === dateET)
+    return selected?.items ?? []
+  }, [dateET, groupedTimeline])
+
   return (
     <section className={`${styles.panel} ${styles.centerPanel}`}>
       <header className={styles.panelHeader}>
@@ -201,35 +173,21 @@ export default function CenterPanel({
       <div className={styles.centerFeed}>
         <div className={styles.stack}>
           <div>
-            {briefsStatus === 'loading' && (
-              <div className={styles.panelStateBox}>Loading session brief cards...</div>
-            )}
-            {briefsStatus === 'error' && briefsError && (
-              <div className={styles.panelStateBoxError}>{briefsError}</div>
-            )}
-            {briefsStatus === 'empty' && (
-              <div className={styles.panelStateBox}>No 09:30 / 16:00 brief cards available.</div>
-            )}
-            {briefsStatus === 'ready' && (
-              <>
-                <div className={styles.dailyDateBoundary}>
-                  <p className={styles.timelineDateHeader}>{formatTimelineDateHeader(dateET)}</p>
-                </div>
-                {briefs.map((brief) => {
-                  const label = brief.checkpointET === '09:30' ? 'OPEN' : 'CLOSE'
-                  const price = brief.checkpointET === '09:30' ? openClosePriceLabels.open : openClosePriceLabels.close
-                  const text = buildNarrative(brief, 'Brief narrative is unavailable.')
-                  return (
-                    <article key={brief.id} className={styles.briefCard}>
-                      <p className={styles.briefTime}>
-                        {brief.checkpointET} EDT | {label}
-                      </p>
-                      <p className={styles.timelineSummary}>{text}</p>
-                      {shouldShowMore(text) && <p className={styles.timelineSource} style={{ cursor: 'pointer' }}>...More</p>}
-                    </article>
-                  )
-                })}
-              </>
+            <div className={styles.dailyDateBoundary}>
+              <p className={styles.timelineDateHeader}>{formatTimelineDateHeader(dateET)}</p>
+            </div>
+            {selectedDayItems.length ? (
+              selectedDayItems.map((item) => {
+                const briefText = toBriefText(tickerPrefix, item)
+                return (
+                  <article key={`daily-${item.id}`} className={styles.briefCard}>
+                    <p className={styles.briefTime}>{item.timeET}</p>
+                    <p className={styles.timelineSummary}>{briefText}</p>
+                  </article>
+                )
+              })
+            ) : (
+              <div className={styles.panelStateBox}>No 09:30 / 16:00 checkpoint item captured for this date.</div>
             )}
           </div>
 
@@ -240,34 +198,33 @@ export default function CenterPanel({
             {timelineStatus === 'error' && timelineError && (
               <div className={styles.panelStateBoxError}>{timelineError}</div>
             )}
-            {timelineStatus === 'empty' && (
-              <div className={styles.panelStateBox}>No symbol news items were returned for this ET date.</div>
-            )}
-            {timelineStatus === 'ready' && (
+            {(timelineStatus === 'ready' || timelineStatus === 'empty') && (
               <div className={styles.timelineList}>
                 {groupedTimeline.map((group) => (
                   <section key={group.dateKey} className={styles.timelineDateGroup}>
                     <p className={styles.timelineDateHeader}>{group.dateLabel}</p>
-                    {group.items.map((item) => {
-                      const isActive = selectedNewsId === item.id
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={`${styles.timelineItem} ${isActive ? styles.timelineItemActive : ''}`}
-                          onClick={() => onSelectNews(item)}
-                        >
-                          <div className={styles.timelineTop}>
-                            <span className={styles.timelineTime}>{item.timeET}</span>
-                            <span className={styles.timelineAction}>Open {'>'}</span>
-                          </div>
-                          <p className={styles.timelineHeadline}>{item.headline}</p>
-                          <p className={styles.timelineSource}>Source: {item.source}</p>
-                          <p className={styles.timelineSummary}>{item.summary}</p>
-                          {shouldShowMore(item.summary) && <p className={styles.timelineSource}>...more</p>}
-                        </button>
-                      )
-                    })}
+                    {group.items.length ? (
+                      group.items.map((item) => {
+                        const isActive = selectedNewsId === item.id
+                        const briefText = toBriefText(tickerPrefix, item)
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={`${styles.timelineItem} ${isActive ? styles.timelineItemActive : ''}`}
+                            onClick={() => onSelectNews(item)}
+                          >
+                            <div className={styles.timelineTop}>
+                              <span className={styles.timelineTime}>{item.timeET}</span>
+                              <span className={styles.timelineAction}>Open {'>'}</span>
+                            </div>
+                            <p className={styles.timelineSummary}>{briefText}</p>
+                          </button>
+                        )
+                      })
+                    ) : (
+                      <div className={styles.panelStateBox}>No 09:30 / 16:00 checkpoint item captured for this date.</div>
+                    )}
                   </section>
                 ))}
               </div>
@@ -281,7 +238,7 @@ export default function CenterPanel({
           <div className={styles.askHeader}>
             <p className={styles.askTitle}>Ask Panel</p>
             <p className={styles.askContext}>
-              Research session scope: {selectedSymbol || '---'}, {dateET} ET, same-day evidence only.
+              Research session scope: {selectedSymbol || '---'}, {dateET} ({timezone}), same-day evidence only.
             </p>
           </div>
           <div className={styles.askInputRow}>

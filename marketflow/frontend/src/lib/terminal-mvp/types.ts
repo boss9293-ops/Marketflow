@@ -28,6 +28,10 @@ export type WatchlistItem = {
   lastPrice: string
   changePercent: string
   rangeLabel: string
+  quoteSource?: string
+  quoteMode?: 'live' | 'delayed'
+  quoteAsOf?: ISODateTimeString
+  quoteStale?: boolean
 }
 
 export type TickerBriefCheckpoint = '09:30' | '16:00'
@@ -65,6 +69,21 @@ export type MarketHeadline = {
   url: string
 }
 
+
+export type MarketHeadlinesSourceHealth = {
+  name: string
+  status: 'ok' | 'degraded' | 'down'
+  items: number
+  attempts: number
+  error?: string
+}
+
+export type MarketHeadlinesHealth = {
+  status: 'ok' | 'degraded' | 'down'
+  updatedAt: ISODateTimeString
+  sources: MarketHeadlinesSourceHealth[]
+  message?: string
+}
 export type NewsDetail = {
   id: string
   symbol?: string
@@ -205,6 +224,7 @@ export type GetTickerNewsResponse = ApiEnvelope<{
 }>
 export type GetMarketHeadlinesResponse = ApiEnvelope<{
   headlines: MarketHeadline[]
+  health?: MarketHeadlinesHealth
 }>
 export type GetNewsDetailResponse = ApiEnvelope<{ news: NewsDetail }>
 export type GetEvidenceResponse = ApiEnvelope<{

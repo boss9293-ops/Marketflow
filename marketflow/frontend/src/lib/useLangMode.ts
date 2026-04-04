@@ -6,10 +6,8 @@ import { normalizeContentLang, normalizeUiLang, pickLang, type ContentLang, type
 export type LangMode = UiLang
 
 export function useUiLang(initialUiLang: UiLang = 'ko'): UiLang {
-  const [mode, setMode] = useState<UiLang>(() => {
-    if (typeof document === 'undefined') return initialUiLang
-    return normalizeUiLang(document.documentElement.getAttribute('data-lang-mode'))
-  })
+  // Keep SSR and initial client render identical to avoid hydration mismatches.
+  const [mode, setMode] = useState<UiLang>(initialUiLang)
 
   useEffect(() => {
     const sync = () => {
@@ -31,10 +29,8 @@ export function useLangMode(): UiLang {
 }
 
 export function useContentLang(initialContentLang: ContentLang = 'ko'): ContentLang {
-  const [mode, setMode] = useState<ContentLang>(() => {
-    if (typeof document === 'undefined') return initialContentLang
-    return normalizeContentLang(document.documentElement.getAttribute('data-content-lang'))
-  })
+  // Keep SSR and initial client render identical to avoid hydration mismatches.
+  const [mode, setMode] = useState<ContentLang>(initialContentLang)
 
   useEffect(() => {
     const sync = () => {

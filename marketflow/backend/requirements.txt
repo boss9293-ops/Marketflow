@@ -17,3 +17,6 @@ pytest
 anthropic
 langgraph
 tavily-python
+flask
+flask-cors
+gunicorn

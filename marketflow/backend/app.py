@@ -371,6 +371,45 @@ def _download_db_if_missing():
 
 _download_db_if_missing()
 
+def _run_builds_if_needed():
+    """Run core build scripts in background if output files are missing."""
+    import threading, subprocess as _sp
+
+    def _build():
+        _scripts_dir = os.path.join(os.path.dirname(__file__), 'scripts')
+        _out = OUTPUT_DIR
+        builds = [
+            ('build_risk_v1.py',     os.path.join(_out, 'risk_v1.json')),
+            ('build_risk_alert.py',  os.path.join(_out, 'risk_alert.json')),
+            ('build_current_90d.py', os.path.join(_out, 'current_90d.json')),
+            ('build_smart_money.py', os.path.join(_out, 'smart_money.json')),
+            ('build_market_tape.py', os.path.join(_out, 'market_tape.json')),
+            ('build_market_state.py', os.path.join(_out, 'market_state.json')),
+        ]
+        for script, output_file in builds:
+            if not os.path.exists(output_file):
+                print(f'[build] Running {script}...', flush=True)
+                try:
+                    r = _sp.run(
+                        [sys.executable, os.path.join(_scripts_dir, script)],
+                        cwd=os.path.dirname(__file__),
+                        capture_output=True, timeout=600
+                    )
+                    if r.returncode == 0:
+                        print(f'[build][OK] {script}', flush=True)
+                    else:
+                        print(f'[build][FAIL] {script}: {r.stderr.decode("utf-8",errors="replace")[-300:]}', flush=True)
+                except Exception as e:
+                    print(f'[build][ERROR] {script}: {e}', flush=True)
+            else:
+                print(f'[build][SKIP] {script} (output exists)', flush=True)
+
+    t = threading.Thread(target=_build, daemon=True)
+    t.start()
+
+_run_builds_if_needed()
+
+
 CACHE_DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache.db')
 MY_HOLDINGS_PATH = os.path.join(OUTPUT_DIR, 'my_holdings.json')
 MY_HOLDINGS_SNAPSHOT_PATH = os.path.join(OUTPUT_DIR, 'my_holdings_cache.json')

@@ -18,9 +18,10 @@ def norm_date(d):
     return d
 
 # ─── paths ───────────────────────────────────────────────────────────────────
-ROOT       = 'd:/Youtube_pro/000-Code_develop/\uc8fc\uc2dd\ubd84\uc11d/us_market_complete'
-DB         = os.path.join(ROOT, 'marketflow', 'data', 'marketflow.db')
-OUT_DIR    = os.path.join(ROOT, 'marketflow', 'backend', 'output')
+_HERE   = os.path.dirname(os.path.abspath(__file__))
+_BACK   = os.path.dirname(_HERE)
+DB      = os.path.abspath(os.path.join(_BACK, '..', 'data', 'marketflow.db'))
+OUT_DIR = os.path.join(_BACK, 'output')
 
 # ─── 1. QQQ + TQQQ price data (ALL — MA200 needs full history) ───────────────
 con = sqlite3.connect(DB)

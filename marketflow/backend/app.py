@@ -347,6 +347,7 @@ def _resolve_main_db_path() -> str:
     """Prefer the canonical marketflow/data DB, but fall back to the legacy root DB."""
     base_dir = os.path.dirname(__file__)
     candidates = [
+        os.path.abspath(os.path.join(base_dir, 'data', 'marketflow.db')),
         os.path.abspath(os.path.join(base_dir, '..', 'data', 'marketflow.db')),
         os.path.abspath(os.path.join(base_dir, '..', '..', 'data', 'marketflow.db')),
     ]

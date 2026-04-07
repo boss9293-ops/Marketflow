@@ -20,7 +20,7 @@ def norm_date(d):
 # ─── paths ───────────────────────────────────────────────────────────────────
 _HERE   = os.path.dirname(os.path.abspath(__file__))
 _BACK   = os.path.dirname(_HERE)
-DB      = os.path.abspath(os.path.join(_BACK, '..', 'data', 'marketflow.db'))
+DB      = os.path.abspath(os.path.join(_BACK, 'data', 'marketflow.db'))
 OUT_DIR = os.path.join(_BACK, 'output')
 
 # ─── 1. QQQ + TQQQ price data (ALL — MA200 needs full history) ───────────────

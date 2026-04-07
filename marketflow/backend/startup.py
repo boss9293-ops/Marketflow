@@ -26,8 +26,7 @@ else:
 # ── 2. Build scripts in background ────────────────────────────────────────
 BUILDS = [
     ("build_risk_v1.py",      "risk_v1.json"),
-    ("build_risk_alert.py",   "risk_alert.json"),
-    ("build_current_90d.py",  "current_90d.json"),
+    # build_risk_alert.py needs cache.db (VIX/HY_OAS) - skip for now
     ("build_smart_money.py",  "smart_money.json"),
     ("build_market_tape.py",  "market_tape.json"),
     ("build_market_state.py", "market_state.json"),

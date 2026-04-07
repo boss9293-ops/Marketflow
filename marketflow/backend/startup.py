@@ -34,10 +34,6 @@ BUILDS = [
 
 def run_builds():
     for script, outfile in BUILDS:
-        out_path = os.path.join(OUTPUT, outfile)
-        if os.path.exists(out_path):
-            print(f"[build][SKIP] {script}", flush=True)
-            continue
         print(f"[build] Running {script}...", flush=True)
         try:
             r = subprocess.run(

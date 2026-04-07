@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readCacheJson } from '@/lib/readCacheJson'
 
 export async function GET() {
-  try {
-    const filePath = join(process.cwd(), '..', 'backend', 'output', 'risk_v1_playback.json')
-    const raw = readFileSync(filePath, 'utf-8')
-    const data = JSON.parse(raw)
-    return NextResponse.json(data)
-  } catch {
+  const data = await readCacheJson<Record<string, unknown> | null>('risk_v1_playback.json', null)
+  if (!data) {
     return NextResponse.json(
       { error: 'risk_v1_playback.json not found — run build_risk_v1.py' },
       { status: 404 }
     )
   }
+  return NextResponse.json(data)
 }

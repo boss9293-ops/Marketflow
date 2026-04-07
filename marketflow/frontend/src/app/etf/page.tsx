@@ -35,18 +35,8 @@ interface EtfRoomData {
 }
 
 // ─── Cache loader ─────────────────────────────────────────────────────────────
-function loadCache(): EtfRoomData | null {
-  const candidates = [
-    path.join(process.cwd(), '..', 'backend', 'output', 'etf_room.json'),
-    path.join(process.cwd(), 'backend', 'output', 'etf_room.json'),
-    path.join(process.cwd(), '..', '..', 'backend', 'output', 'etf_room.json'),
-  ]
-  for (const p of candidates) {
-    try {
-      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf-8')) as EtfRoomData
-    } catch { /* continue */ }
-  }
-  return null
+async function loadCache(): Promise<EtfRoomData | null> {
+  return readCacheJson<EtfRoomData | null>('etf_room.json', null)
 }
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────
@@ -215,8 +205,8 @@ function SectionTable({ sectionKey, section }: { sectionKey: string; section: Et
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function EtfRoomPage() {
-  const data = loadCache()
+export default async function EtfRoomPage() {
+  const data = await loadCache()
   const DEFAULT_SECTION_ORDER = ['hot', 'index', 'sector', 'leverage', 'reverse', 'ark', 'dividend', 'crypto', 'theme', 'fixed_income', 'commodity'] as const
   const sectionOrder = (data?.section_order?.length ? data.section_order : Array.from(DEFAULT_SECTION_ORDER)) as string[]
 

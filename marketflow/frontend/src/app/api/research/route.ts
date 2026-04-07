@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+
+
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages'
 const MODEL         = 'claude-sonnet-4-6'
@@ -12,8 +12,9 @@ function errorResponse(code: RouteErrorCode, message: string, status = 502): Nex
   return NextResponse.json({ _route_error_code: code, _error: message }, { status })
 }
 
-function readJson<T>(filename: string): T | null {
-  try { return JSON.parse(readFileSync(join(OUTPUT_DIR, filename), 'utf-8')) as T } catch { return null }
+async function readJson<T>(filename: string): Promise<T | null> {
+  const { readCacheJson } = await import('@/lib/readCacheJson')
+  return readCacheJson<T | null>(filename, null)
 }
 
 function safeStr(v: unknown, fallback = ''): string {

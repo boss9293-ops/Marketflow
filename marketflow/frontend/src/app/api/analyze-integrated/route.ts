@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+
+
 
 const FLASK_URL = process.env.FLASK_API_URL ?? 'http://localhost:5001'
 const OUTPUT_DIR = join(process.cwd(), '..', 'backend', 'output')
 
-function readJson<T>(filename: string): T | null {
-  try {
-    return JSON.parse(readFileSync(join(OUTPUT_DIR, filename), 'utf-8')) as T
-  } catch {
-    return null
-  }
+async function readJson<T>(filename: string): Promise<T | null> {
+  const { readCacheJson } = await import('@/lib/readCacheJson')
+  return readCacheJson<T | null>(filename, null)
 }
 
 // ── Field extractors ──────────────────────────────────────────────────────────

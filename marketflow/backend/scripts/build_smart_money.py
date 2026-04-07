@@ -42,7 +42,11 @@ def repo_root() -> str:
 
 
 def db_path() -> str:
-    return os.path.join(repo_root(), "data", "marketflow.db")
+    try:
+        from db_utils import resolve_marketflow_db
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",))
+    except Exception:
+        return os.path.join(repo_root(), "data", "marketflow.db")
 
 
 def output_path() -> str:

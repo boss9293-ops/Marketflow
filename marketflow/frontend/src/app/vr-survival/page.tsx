@@ -1,6 +1,5 @@
-﻿import { readFileSync } from 'fs'
-import { join } from 'path'
-import type { CSSProperties } from 'react'
+﻿import type { CSSProperties } from 'react'
+import { readCacheJson } from '@/lib/readCacheJson'
 import VRSurvival, {
   type Tab,
   VRSurvivalData,
@@ -20,48 +19,29 @@ type RiskV1CurrentSnapshot = {
   date: string | null
 }
 
-function readRiskV1Current(): RiskV1CurrentSnapshot {
+async function readRiskV1Current(): Promise<RiskV1CurrentSnapshot> {
   try {
-    const base = join(process.cwd(), '..', 'backend', 'output')
-    const raw = readFileSync(join(base, 'risk_v1.json'), 'utf-8')
-    const data = JSON.parse(raw)
-    const current = data?.current ?? {}
-    const context = current?.context ?? {}
+    const data = await readCacheJson<Record<string, unknown> | null>('risk_v1.json', null)
+    const current = (data as Record<string, unknown>)?.current as Record<string, unknown> ?? {}
+    const context = current?.context as Record<string, unknown> ?? {}
     return {
-      score: current?.score ?? null,
-      scoreName: current?.score_name ?? null,
-      scoreZone: current?.score_zone ?? null,
-      level: current?.level ?? null,
-      levelLabel: current?.level_label ?? null,
-      eventType: current?.event_type ?? null,
-      finalRisk: context?.final_risk ?? null,
-      finalExposure: context?.final_exposure ?? null,
-      brief: context?.brief ?? null,
-      date: current?.date ?? null,
+      score: current?.score as number ?? null,
+      scoreName: current?.score_name as string ?? null,
+      scoreZone: current?.score_zone as string ?? null,
+      level: current?.level as number ?? null,
+      levelLabel: current?.level_label as string ?? null,
+      eventType: current?.event_type as string ?? null,
+      finalRisk: context?.final_risk as string ?? null,
+      finalExposure: context?.final_exposure as number ?? null,
+      brief: context?.brief as string ?? null,
+      date: current?.date as string ?? null,
     }
   } catch {
     return {
-      score: null,
-      scoreName: null,
-      scoreZone: null,
-      level: null,
-      levelLabel: null,
-      eventType: null,
-      finalRisk: null,
-      finalExposure: null,
-      brief: null,
-      date: null,
+      score: null, scoreName: null, scoreZone: null, level: null,
+      levelLabel: null, eventType: null, finalRisk: null,
+      finalExposure: null, brief: null, date: null,
     }
-  }
-}
-
-function readOutputJson<T>(filename: string): T | null {
-  try {
-    const base = join(process.cwd(), '..', 'backend', 'output')
-    const raw = readFileSync(join(base, filename), 'utf-8')
-    return JSON.parse(raw) as T
-  } catch {
-    return null
   }
 }
 
@@ -88,8 +68,10 @@ export default async function VRSurvivalPage({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined }
 }) {
-  const raw = readOutputJson<VRSurvivalData>('vr_survival.json')
-  const riskV1 = readRiskV1Current()
+  const [raw, riskV1] = await Promise.all([
+    readCacheJson<VRSurvivalData | null>('vr_survival.json', null),
+    readRiskV1Current(),
+  ])
   const requestedTab = toSingleValue(searchParams?.tab)
   const requestedEvent = toSingleValue(searchParams?.event)
   const VALID_TABS: Tab[] = ['Overview', 'Backtest', 'Playback']

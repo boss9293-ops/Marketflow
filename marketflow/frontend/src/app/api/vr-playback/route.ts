@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readCacheJson } from '@/lib/readCacheJson'
 import {
   buildVRPlaybackView,
   type RawStandardPlaybackArchive,
@@ -16,14 +15,14 @@ export async function GET(request: Request) {
     const simCapital = searchParams.get('sim_capital')
     const simStockPct = searchParams.get('sim_stock_pct')
 
-    const base = join(process.cwd(), '..', 'backend', 'output')
-    const standardArchive = JSON.parse(
-      readFileSync(join(base, 'risk_v1_playback.json'), 'utf-8')
-    ) as RawStandardPlaybackArchive
-    const survivalArchive = JSON.parse(
-      readFileSync(join(base, 'vr_survival_playback.json'), 'utf-8')
-    ) as RawVRSurvivalPlaybackArchive
-    const rootDir = join(process.cwd(), '..', '..')
+    const [standardArchive, survivalArchive] = await Promise.all([
+      readCacheJson<RawStandardPlaybackArchive | null>('risk_v1_playback.json', null),
+      readCacheJson<RawVRSurvivalPlaybackArchive | null>('vr_survival_playback.json', null),
+    ])
+
+    if (!standardArchive || !survivalArchive) {
+      return NextResponse.json({ error: 'Playback data not found — run build scripts first' }, { status: 404 })
+    }
 
     const eventOverrides: VRPlaybackEventOverrides | undefined =
       eventId && /^\d{4}-\d{2}$/.test(eventId)
@@ -38,7 +37,7 @@ export async function GET(request: Request) {
     const data = buildVRPlaybackView({
       standardArchive,
       survivalArchive,
-      rootDir,
+      rootDir: process.cwd(),
       eventOverrides,
     })
 

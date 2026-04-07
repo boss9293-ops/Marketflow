@@ -1,23 +1,12 @@
 import { cookies } from 'next/headers'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readCacheJson } from '@/lib/readCacheJson'
 import RiskV1ClientShell from '@/components/crash/standard/RiskV1ClientShell'
 import type { RiskV1Data } from '@/components/crash/standard/RiskSystemV1'
 import { UI_LANG_COOKIE, normalizeUiLang, pickLang, type UiLang } from '@/lib/uiLang'
 
-function readOutputJson<T>(filename: string): T | null {
-  try {
-    const base = join(process.cwd(), '..', 'backend', 'output')
-    const raw = readFileSync(join(base, filename), 'utf-8')
-    return JSON.parse(raw) as T
-  } catch {
-    return null
-  }
-}
-
-export default function RiskV1Page() {
+export default async function RiskV1Page() {
   const uiLang: UiLang = normalizeUiLang(cookies().get(UI_LANG_COOKIE)?.value)
-  const raw = readOutputJson<RiskV1Data>('risk_v1.json')
+  const raw = await readCacheJson<RiskV1Data | null>('risk_v1.json', null)
 
   if (!raw) {
     return (

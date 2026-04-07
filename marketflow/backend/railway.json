@@ -5,7 +5,7 @@
     "buildCommand": "pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "bash -c 'gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app'",
+    "startCommand": "bash start.sh",
     "restartPolicyType": "ON_FAILURE"
   }
 }

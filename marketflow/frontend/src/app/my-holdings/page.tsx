@@ -46,28 +46,12 @@ export interface HoldingsTS {
   rerun_hint?: string
 }
 
-function loadCache(): HoldingsTS | null {
-  // Try backend/output/ relative to the project root (two levels up from frontend/)
-  const candidates = [
-    path.join(process.cwd(), '..', 'backend', 'output', 'my_holdings_ts.json'),
-    path.join(process.cwd(), 'backend', 'output', 'my_holdings_ts.json'),
-    path.join(process.cwd(), '..', '..', 'backend', 'output', 'my_holdings_ts.json'),
-  ]
-  for (const p of candidates) {
-    try {
-      if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, 'utf-8')
-        return JSON.parse(raw) as HoldingsTS
-      }
-    } catch {
-      // continue
-    }
-  }
-  return null
+async function loadCache(): Promise<HoldingsTS | null> {
+  return readCacheJson<HoldingsTS | null>('my_holdings_ts.json', null)
 }
 
-export default function MyHoldingsPage() {
-  const data = loadCache()
+export default async function MyHoldingsPage() {
+  const data = await loadCache()
 
   if (!data) {
     return (

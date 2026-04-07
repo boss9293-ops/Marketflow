@@ -374,6 +374,9 @@ _download_db_if_missing()
 
 def _run_builds_if_needed():
     """Run core build scripts in background if output files are missing."""
+    if os.environ.get('STARTUP_MANAGES_BUILDS'):
+        print('[build] startup.py owns builds — skipping app.py build thread.', flush=True)
+        return
     import threading, subprocess as _sp
 
     def _build():

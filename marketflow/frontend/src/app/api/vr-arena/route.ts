@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import {
-  buildStrategyArena,
-} from '../../../../../../vr/arena/compute_strategy_arena'
+import { readCacheJson } from '@/lib/readCacheJson'
+import { buildStrategyArena } from '../../../../../../vr/arena/compute_strategy_arena'
 import type {
   RawStandardPlaybackArchive,
   RawVRSurvivalPlaybackArchive,
@@ -11,13 +8,14 @@ import type {
 
 export async function GET() {
   try {
-    const base = join(process.cwd(), '..', 'backend', 'output')
-    const standardArchive = JSON.parse(
-      readFileSync(join(base, 'risk_v1_playback.json'), 'utf-8')
-    ) as RawStandardPlaybackArchive
-    const survivalArchive = JSON.parse(
-      readFileSync(join(base, 'vr_survival_playback.json'), 'utf-8')
-    ) as RawVRSurvivalPlaybackArchive
+    const [standardArchive, survivalArchive] = await Promise.all([
+      readCacheJson<RawStandardPlaybackArchive | null>('risk_v1_playback.json', null),
+      readCacheJson<RawVRSurvivalPlaybackArchive | null>('vr_survival_playback.json', null),
+    ])
+
+    if (!standardArchive || !survivalArchive) {
+      return NextResponse.json({ error: 'Arena data not found — run build scripts first' }, { status: 404 })
+    }
 
     const data = buildStrategyArena({ standardArchive, survivalArchive })
 

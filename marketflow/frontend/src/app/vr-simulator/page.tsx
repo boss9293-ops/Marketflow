@@ -3,7 +3,7 @@ import { getDefaultVrSymbol, listLocalVrDataSources, loadLocalVrDataMap } from '
 
 export default async function VRSimulatorPage() {
   const sources = listLocalVrDataSources()
-  const datasets = await loadLocalVrDataMap()
+  const datasets = {} // Empty initially. VRSimulatorDashboard will fetch from /api/
   const defaultSymbol = getDefaultVrSymbol()
 
   return (

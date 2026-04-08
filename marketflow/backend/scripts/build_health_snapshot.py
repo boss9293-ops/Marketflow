@@ -15,19 +15,26 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    # __file__ = /app/scripts/build_health_snapshot.py → parent = /app
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def output_cache_dir() -> str:
-    return os.path.join(repo_root(), "backend", "output", "cache")
+    return os.path.join(repo_root(), "output", "cache")
 
 
 def db_path() -> str:
-    return os.path.join(repo_root(), "data", "marketflow.db")
+    try:
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from db_utils import resolve_marketflow_db
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",))
+    except Exception:
+        return os.path.join(repo_root(), "data", "marketflow.db")
 
 
 def output_dir() -> str:
-    return os.path.join(repo_root(), "backend", "output")
+    return os.path.join(repo_root(), "output")
 
 
 def load_live_qqq() -> tuple:

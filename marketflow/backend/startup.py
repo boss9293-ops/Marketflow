@@ -33,7 +33,10 @@ BUILDS = [
     ("build_overview.py",        "cache/overview.json"),       # must run before market_state
     ("build_snapshots_120d.py",  "cache/snapshots_120d.json"), # dashboard
     ("build_market_state.py",      "market_state.json"),
-    ("build_daily_briefing_v3.py", "cache/daily_briefing_v3.json"),  # KO-only, fast
+    ("build_health_snapshot.py",   "cache/health_snapshot.json"),  # dashboard
+    ("build_action_snapshot.py",   "cache/action_snapshot.json"),  # dashboard
+    ("build_daily_briefing.py",    "cache/daily_briefing.json"),   # dashboard (rule-based, fast)
+    ("build_daily_briefing_v3.py", "cache/daily_briefing_v3.json"), # briefing page (LLM KO)
     # build_risk_alert.py needs cache.db — skip until uploaded to releases
 ]
 
@@ -47,6 +50,9 @@ DAILY_BUILDS = {
     "build_overview.py",
     "build_snapshots_120d.py",
     "build_market_state.py",
+    "build_health_snapshot.py",
+    "build_action_snapshot.py",
+    "build_daily_briefing.py",
     "build_daily_briefing_v3.py",
 }
 

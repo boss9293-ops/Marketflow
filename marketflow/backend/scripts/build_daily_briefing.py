@@ -152,11 +152,11 @@ _POLICY_KO = TonePolicy(REWRITE_RULES_KO, BANNED_PATTERNS_KO)
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def cache_dir() -> str:
-    return os.path.join(repo_root(), "backend", "output", "cache")
+    return os.path.join(repo_root(), "output", "cache")
 
 
 def now_iso() -> str:

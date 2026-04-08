@@ -37,12 +37,15 @@ from db_utils import daily_data_root
 from ohlcv_sources import load_spooq_rows_for_symbol
 
 
-def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 def db_path() -> str:
-    return os.path.join(repo_root(), "data", "marketflow.db")
+    try:
+        import sys as _sys
+        _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from db_utils import resolve_marketflow_db
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",))
+    except Exception:
+        _scripts = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(os.path.dirname(_scripts), "data", "marketflow.db")
 
 
 def get_symbols(conn: sqlite3.Connection, limit: int | None = None) -> List[str]:

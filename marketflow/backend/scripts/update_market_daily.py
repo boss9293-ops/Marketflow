@@ -24,16 +24,20 @@ import pandas as pd
 import yfinance as yf
 
 
-def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 def db_path() -> str:
-    return os.path.join(repo_root(), "data", "marketflow.db")
+    try:
+        import sys as _sys
+        _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from db_utils import resolve_marketflow_db
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",))
+    except Exception:
+        _scripts = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(os.path.dirname(_scripts), "data", "marketflow.db")
 
 
 def log_path() -> str:
-    return os.path.join(repo_root(), "backend", "logs", "update_market_daily.log")
+    _scripts = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(os.path.dirname(_scripts), "logs", "update_market_daily.log")
 
 
 def ensure_dirs() -> None:
@@ -93,7 +97,8 @@ def fetch_from_ohlcv(db: str, symbol: str) -> pd.Series:
 
 def fetch_from_cache(symbol: str) -> pd.Series:
     """Read a cached series from data/cache.db when a local series is already available."""
-    cache_db = os.path.join(repo_root(), "data", "cache.db")
+    _scripts = os.path.dirname(os.path.abspath(__file__))
+    cache_db = os.path.join(os.path.dirname(_scripts), "data", "cache.db")
     if not os.path.exists(cache_db):
         return pd.Series(dtype="float64")
     try:

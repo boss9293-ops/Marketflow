@@ -38,7 +38,7 @@ RET_3M_BARS = 63
 
 
 def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def db_path() -> str:

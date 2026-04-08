@@ -29,6 +29,9 @@ BUILDS = [
     # Data updates first — write fresh market data into DB before builds read it
     ("update_market_daily.py",   "cache/update_market_daily_stamp.json"),
     ("update_ohlcv.py",          "cache/update_ohlcv_stamp.json"),
+    ("build_daily_snapshot.py",  "cache/daily_snapshot_stamp.json"),
+    ("update_snapshot_trends.py", "cache/update_snapshot_trends_stamp.json"),
+    ("update_snapshot_alerts.py", "cache/update_snapshot_alerts_stamp.json"),
     # cache.db macro series (PUT_CALL / HY_OAS / IG_OAS / FSI)
     ("build_cache_series.py",    "cache/cache_series.json"),
     # Build outputs
@@ -39,23 +42,30 @@ BUILDS = [
     ("build_market_tape.py",     "market_tape.json"),
     ("build_overview.py",        "cache/overview.json"),
     ("build_snapshots_120d.py",  "cache/snapshots_120d.json"),
-    ("build_market_state.py",    "market_state.json"),
+    ("build_market_state.py",    "cache/market_state.json"),
     ("build_health_snapshot.py", "cache/health_snapshot.json"),
     ("build_action_snapshot.py", "cache/action_snapshot.json"),
     ("build_daily_briefing.py",  "cache/daily_briefing.json"),
     ("build_daily_briefing_v3.py", "cache/daily_briefing_v3.json"),
+    ("build_ai_briefings.py",    "briefing.json"),
 ]
 
 # Extra CLI args for specific scripts
 EXTRA_ARGS = {
     "update_market_daily.py": ["--days", "30"],   # incremental: last 30 days only
     "update_ohlcv.py":        ["--years", "1"],   # incremental: last 1 year
+    "build_daily_snapshot.py": [],
+    "update_snapshot_trends.py": ["--days", "120"],
+    "update_snapshot_alerts.py": ["--days", "120"],
 }
 
 # Scripts that must be re-run every day (date-sensitive outputs)
 DAILY_BUILDS = {
     "update_market_daily.py",
     "update_ohlcv.py",
+    "build_daily_snapshot.py",
+    "update_snapshot_trends.py",
+    "update_snapshot_alerts.py",
     "build_cache_series.py",
     "build_risk_v1.py",
     "build_current_90d.py",
@@ -69,6 +79,7 @@ DAILY_BUILDS = {
     "build_action_snapshot.py",
     "build_daily_briefing.py",
     "build_daily_briefing_v3.py",
+    "build_ai_briefings.py",
 }
 
 
@@ -107,10 +118,35 @@ def _write_stamp(out_path: str) -> None:
         pass
 
 
+def _load_json(path: str):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _is_daily_briefing_v3_fresh(out_path: str) -> bool:
+    """Keep daily_briefing_v3 aligned with the latest market_state date."""
+    market_state_path = os.path.join(OUTPUT, "cache", "market_state.json")
+    market_state = _load_json(market_state_path)
+    target_date = str((market_state or {}).get("data_date") or "")[:10]
+    if not target_date:
+        return _is_today(out_path)
+
+    payload = _load_json(out_path)
+    if not isinstance(payload, dict):
+        return False
+    return str(payload.get("data_date") or "")[:10] == target_date
+
+
 def run_builds():
     for script, outfile in BUILDS:
         out_path = os.path.join(OUTPUT, outfile) if outfile else None
         if script in DAILY_BUILDS:
+            if script == "build_daily_briefing_v3.py" and out_path and _is_daily_briefing_v3_fresh(out_path):
+                print(f"[build][SKIP-market-date] {script}", flush=True)
+                continue
             if out_path and _is_today(out_path):
                 print(f"[build][SKIP-today] {script}", flush=True)
                 continue

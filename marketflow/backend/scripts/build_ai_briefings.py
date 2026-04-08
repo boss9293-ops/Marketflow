@@ -157,7 +157,8 @@ def _pick(data: Any, *path: str, default: Any = None) -> Any:
 
 
 def _read_json(name: str) -> Tuple[Optional[Dict[str, Any]], Optional[Path]]:
-    for candidate in [OUTPUT_DIR / name, OUTPUT_DIR / "cache" / name]:
+    # Cache-first keeps the AI briefing aligned with the runtime cache layer.
+    for candidate in [OUTPUT_DIR / "cache" / name, OUTPUT_DIR / name]:
         if not candidate.exists():
             continue
         try:

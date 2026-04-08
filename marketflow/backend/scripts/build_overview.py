@@ -21,6 +21,8 @@ import sqlite3
 import datetime
 import sys
 
+from date_utils import normalize_daily_snapshot_dates
+
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -134,6 +136,7 @@ def main():
     try:
         conn = sqlite3.connect(DB_PATH)
         cur  = conn.cursor()
+        normalize_daily_snapshot_dates(conn)
     except Exception as e:
         print(f"  [ERROR] DB connect failed: {e}")
         sys.exit(1)

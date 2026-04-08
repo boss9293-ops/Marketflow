@@ -205,7 +205,7 @@ def build_context(
 ) -> dict[str, str]:
     """Returns a dict keyed by section id -> data string."""
 
-    data_date = rv1.get("data_as_of") or ms.get("data_date") or "N/A"
+    data_date = ms.get("data_date") or rv1.get("data_as_of") or "N/A"
     front_headlines = load_frontend_headline_cache()
     headline_tape, mandatory_drivers, hook_driver = build_headline_focus(front_headlines)
 

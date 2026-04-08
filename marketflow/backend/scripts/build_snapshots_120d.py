@@ -19,10 +19,13 @@ import sqlite3
 import datetime
 import sys
 
+from date_utils import normalize_daily_snapshot_dates
+
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 _BACKEND_DIR = os.path.dirname(_SCRIPTS_DIR)
+BASE = _BACKEND_DIR
 CACHE_DIR = os.path.join(_BACKEND_DIR, 'output', 'cache')
 try:
     from db_utils import resolve_marketflow_db as _resolve_db
@@ -69,6 +72,7 @@ def main():
         from db_utils import db_connect
         conn = db_connect(DB_PATH, row_factory=True)
         cur = conn.cursor()
+        normalize_daily_snapshot_dates(conn)
         cur.execute(QUERY, (LIMIT,))
         rows = cur.fetchall()
         conn.close()

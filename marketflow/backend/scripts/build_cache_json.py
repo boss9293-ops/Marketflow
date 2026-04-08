@@ -20,6 +20,8 @@ import shutil
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from date_utils import normalize_daily_snapshot_dates
+
 
 DATA_VERSION = "cache_v2"
 SNAPSHOT_LIMIT = 120
@@ -37,7 +39,7 @@ def db_path() -> str:
 
 
 def cache_dir() -> str:
-    return os.path.join(repo_root(), "output", "cache")
+    return os.path.join(repo_root(), "backend", "output", "cache")
 
 
 def now_iso() -> str:
@@ -742,6 +744,7 @@ def main() -> int:
 
     conn = sqlite3.connect(path)
     try:
+        normalize_daily_snapshot_dates(conn)
         overview = build_overview(conn)
         snapshots = build_snapshots_120d(conn)
         alerts = build_alerts_recent(conn)

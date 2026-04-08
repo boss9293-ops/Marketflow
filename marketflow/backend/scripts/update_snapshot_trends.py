@@ -20,6 +20,8 @@ from typing import List, Tuple
 
 import pandas as pd
 
+from date_utils import normalize_daily_snapshot_dates
+
 
 def repo_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -59,6 +61,8 @@ def ensure_trend_columns(conn: sqlite3.Connection) -> List[str]:
 
 
 def fetch_target_rows(conn: sqlite3.Connection, days: int) -> pd.DataFrame:
+    normalize_daily_snapshot_dates(conn)
+
     rows = conn.execute(
         """
         SELECT date, gate_score, market_phase

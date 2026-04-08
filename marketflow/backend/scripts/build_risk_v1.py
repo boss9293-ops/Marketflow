@@ -69,7 +69,7 @@ def load_symbol(con: sqlite3.Connection, symbol: str) -> pd.DataFrame:
     df = df.drop_duplicates(subset=["date"], keep="last")
     df = df.set_index("date")
     df.columns = [symbol.lower()]
-    return df
+    return _finalize_date_frame(df)
 
 
 def rolling_percentile(series: pd.Series, window: int = 252) -> pd.Series:
@@ -196,6 +196,24 @@ def pct(val: float | None, digits: int = 2) -> float | None:
 # CONTEXT LAYER: SPY + DIA + QQQ/SPY Rotation  (Nasdaq MSS unchanged)
 # ═══════════════════════════════════════════════════════════════════════════
 
+def _finalize_date_frame(df: pd.DataFrame) -> pd.DataFrame:
+    """Force a clean, monotonic DatetimeIndex for downstream search/slice ops."""
+    if df.empty:
+        return df.copy()
+    out = df.copy()
+    idx = pd.to_datetime(out.index, errors="coerce")
+    idx = pd.DatetimeIndex(idx)
+    if isinstance(idx, pd.DatetimeIndex) and idx.tz is not None:
+        idx = idx.tz_localize(None)
+    valid = ~idx.isna()
+    out = out.loc[valid].copy()
+    if out.empty:
+        return out
+    out.index = idx[valid]
+    out = out[~out.index.duplicated(keep="last")].sort_index()
+    return out
+
+
 def load_ohlcv(symbol: str) -> pd.DataFrame:
     """Load close prices from ohlcv_daily (SPY/DIA available 2024+)."""
     paths_to_try = [DB_PATH]
@@ -216,7 +234,7 @@ def load_ohlcv(symbol: str) -> pd.DataFrame:
                 df = df.drop_duplicates(subset=["date"], keep="last")
                 df = df.set_index("date")
                 df.columns = [symbol.lower()]
-                return df
+                return _finalize_date_frame(df)
         except Exception:
             pass
     # Fallback: cache.db series_data (SPY 2020+)
@@ -235,7 +253,7 @@ def load_ohlcv(symbol: str) -> pd.DataFrame:
                 df = df.drop_duplicates(subset=["date"], keep="last")
                 df = df.set_index("date")
                 df.columns = [symbol.lower()]
-                return df
+                return _finalize_date_frame(df)
         except Exception:
             pass
     return pd.DataFrame()
@@ -261,7 +279,7 @@ def load_ohlcv_only(symbol: str) -> pd.DataFrame:
                 df = df.drop_duplicates(subset=["date"], keep="last")
                 df = df.set_index("date")
                 df.columns = [symbol.lower()]
-                return df
+                return _finalize_date_frame(df)
         except Exception:
             pass
     return pd.DataFrame()
@@ -3320,9 +3338,10 @@ def main() -> None:
     if qqq.empty:
         raise RuntimeError("QQQ data not found in ticker_history_daily")
 
-    df = qqq.copy()
+    df = _finalize_date_frame(qqq.copy())
     if not tqqq.empty:
-        df = df.join(tqqq, how="left")
+        df = df.join(_finalize_date_frame(tqqq), how="left")
+    df = _finalize_date_frame(df)
 
     df["ma50"] = df["qqq"].rolling(50, min_periods=20).mean()
     df["ma200"] = df["qqq"].rolling(200, min_periods=60).mean()
@@ -3684,77 +3703,100 @@ def main() -> None:
     # Backtest (TQQQ)
     df_bt = df.dropna(subset=["tqqq"]).copy()
     if df_bt.empty:
-        raise RuntimeError("TQQQ data not found for backtest.")
+        print("[risk_v1] TQQQ data not found for backtest; writing fallback scaffold.")
+        backtest = {
+            "start_date": current["date"],
+            "end_date": current["date"],
+            "years": 0.0,
+            "sell_rule": "Sell TQQQ when Level >= 2 (MSS < 100, Warning zone)",
+            "buy_rule": "Buy TQQQ when Level <= 0 (MSS >= 110, Normal zone)",
+            "bh": {
+                "total_return": 0.0,
+                "ann_return": 0.0,
+                "max_drawdown": 0.0,
+                "calmar": None,
+            },
+            "strategy": {
+                "total_return": 0.0,
+                "ann_return": 0.0,
+                "max_drawdown": 0.0,
+                "calmar": None,
+            },
+            "days_in_cash": 0,
+            "days_total": 0,
+            "cash_pct": 0.0,
+        }
+        backtest_curve = []
+    else:
+        sell_level = 2
+        buy_level = 0
 
-    sell_level = 2
-    buy_level = 0
+        in_mkt = []
+        pos = True
+        for lvl in df_bt["level"].values:
+            if pos and lvl >= sell_level:
+                pos = False
+            elif not pos and lvl <= buy_level:
+                pos = True
+            in_mkt.append(pos)
+        df_bt["in_mkt"] = in_mkt
+        df_bt["tqqq_ret"] = df_bt["tqqq"].pct_change().fillna(0.0)
+        df_bt["strat_ret"] = np.where(df_bt["in_mkt"], df_bt["tqqq_ret"], 0.0)
 
-    in_mkt = []
-    pos = True
-    for lvl in df_bt["level"].values:
-        if pos and lvl >= sell_level:
-            pos = False
-        elif not pos and lvl <= buy_level:
-            pos = True
-        in_mkt.append(pos)
-    df_bt["in_mkt"] = in_mkt
-    df_bt["tqqq_ret"] = df_bt["tqqq"].pct_change().fillna(0.0)
-    df_bt["strat_ret"] = np.where(df_bt["in_mkt"], df_bt["tqqq_ret"], 0.0)
+        df_bt["bh_cum"] = (1 + df_bt["tqqq_ret"]).cumprod()
+        df_bt["strat_cum"] = (1 + df_bt["strat_ret"]).cumprod()
 
-    df_bt["bh_cum"] = (1 + df_bt["tqqq_ret"]).cumprod()
-    df_bt["strat_cum"] = (1 + df_bt["strat_ret"]).cumprod()
+        bh_total = float(df_bt["bh_cum"].iloc[-1])
+        strat_total = float(df_bt["strat_cum"].iloc[-1])
 
-    bh_total = float(df_bt["bh_cum"].iloc[-1])
-    strat_total = float(df_bt["strat_cum"].iloc[-1])
+        def max_dd(series: pd.Series) -> float:
+            roll_max = series.cummax()
+            dd = (series / roll_max - 1) * 100.0
+            return float(dd.min())
 
-    def max_dd(series: pd.Series) -> float:
-        roll_max = series.cummax()
-        dd = (series / roll_max - 1) * 100.0
-        return float(dd.min())
+        bh_mdd = max_dd(df_bt["bh_cum"])
+        strat_mdd = max_dd(df_bt["strat_cum"])
 
-    bh_mdd = max_dd(df_bt["bh_cum"])
-    strat_mdd = max_dd(df_bt["strat_cum"])
+        n_years = (df_bt.index[-1] - df_bt.index[0]).days / 365.25
+        bh_ann = (bh_total ** (1 / n_years) - 1) * 100.0
+        strat_ann = (strat_total ** (1 / n_years) - 1) * 100.0
+        strat_calmar = (strat_ann / abs(strat_mdd)) if strat_mdd < 0 else None
+        bh_calmar = (bh_ann / abs(bh_mdd)) if bh_mdd < 0 else None
 
-    n_years = (df_bt.index[-1] - df_bt.index[0]).days / 365.25
-    bh_ann = (bh_total ** (1 / n_years) - 1) * 100.0
-    strat_ann = (strat_total ** (1 / n_years) - 1) * 100.0
-    strat_calmar = (strat_ann / abs(strat_mdd)) if strat_mdd < 0 else None
-    bh_calmar = (bh_ann / abs(bh_mdd)) if bh_mdd < 0 else None
+        backtest = {
+            "start_date": df_bt.index[0].strftime("%Y-%m-%d"),
+            "end_date": df_bt.index[-1].strftime("%Y-%m-%d"),
+            "years": round(n_years, 1),
+            "sell_rule": "Sell TQQQ when Level >= 2 (MSS < 100, Warning zone)",
+            "buy_rule": "Buy TQQQ when Level <= 0 (MSS >= 110, Normal zone)",
+            "bh": {
+                "total_return": round((bh_total - 1) * 100, 2),
+                "ann_return": round(bh_ann, 2),
+                "max_drawdown": round(bh_mdd, 2),
+                "calmar": round(bh_calmar, 2) if bh_calmar is not None else None,
+            },
+            "strategy": {
+                "total_return": round((strat_total - 1) * 100, 2),
+                "ann_return": round(strat_ann, 2),
+                "max_drawdown": round(strat_mdd, 2),
+                "calmar": round(strat_calmar, 2) if strat_calmar is not None else None,
+            },
+            "days_in_cash": int((~df_bt["in_mkt"]).sum()),
+            "days_total": int(len(df_bt)),
+            "cash_pct": round((~df_bt["in_mkt"]).sum() / len(df_bt) * 100, 1),
+        }
 
-    backtest = {
-        "start_date": df_bt.index[0].strftime("%Y-%m-%d"),
-        "end_date": df_bt.index[-1].strftime("%Y-%m-%d"),
-        "years": round(n_years, 1),
-        "sell_rule": "Sell TQQQ when Level >= 2 (MSS < 100, Warning zone)",
-        "buy_rule": "Buy TQQQ when Level <= 0 (MSS >= 110, Normal zone)",
-        "bh": {
-            "total_return": round((bh_total - 1) * 100, 2),
-            "ann_return": round(bh_ann, 2),
-            "max_drawdown": round(bh_mdd, 2),
-            "calmar": round(bh_calmar, 2) if bh_calmar is not None else None,
-        },
-        "strategy": {
-            "total_return": round((strat_total - 1) * 100, 2),
-            "ann_return": round(strat_ann, 2),
-            "max_drawdown": round(strat_mdd, 2),
-            "calmar": round(strat_calmar, 2) if strat_calmar is not None else None,
-        },
-        "days_in_cash": int((~df_bt["in_mkt"]).sum()),
-        "days_total": int(len(df_bt)),
-        "cash_pct": round((~df_bt["in_mkt"]).sum() / len(df_bt) * 100, 1),
-    }
-
-    backtest_curve = []
-    for dt, row in df_bt.iterrows():
-        backtest_curve.append({
-            "date": dt.strftime("%Y-%m-%d"),
-            "bh": round(float(row["bh_cum"]) * 100, 2),
-            "strat": round(float(row["strat_cum"]) * 100, 2),
-            "in_mkt": bool(row["in_mkt"]),
-        })
+        backtest_curve = []
+        for dt, row in df_bt.iterrows():
+            backtest_curve.append({
+                "date": dt.strftime("%Y-%m-%d"),
+                "bh": round(float(row["bh_cum"]) * 100, 2),
+                "strat": round(float(row["strat_cum"]) * 100, 2),
+                "in_mkt": bool(row["in_mkt"]),
+            })
 
     # ── Signal Analysis ──────────────────────────────────────────────────────
-    df_sa = df[["qqq", "score", "level"]].dropna(subset=["qqq"]).copy()
+    df_sa = _finalize_date_frame(df[["qqq", "score", "level"]].dropna(subset=["qqq"]).copy())
     level_s  = df_sa["level"]
     prev_l   = level_s.shift(1).fillna(0)
 
@@ -3763,6 +3805,7 @@ def main() -> None:
     entry_dates = df_sa.index[entry_mask]
 
     def _fwd_ret(sig_d: pd.Timestamp, cal_days: int) -> float | None:
+        sig_d = pd.Timestamp(sig_d)
         pos0 = df_sa.index.searchsorted(sig_d)
         posT = df_sa.index.searchsorted(sig_d + pd.Timedelta(days=cal_days))
         if posT >= len(df_sa):
@@ -3772,6 +3815,7 @@ def main() -> None:
         return round((qt / q0 - 1) * 100, 2)
 
     def _max_drop(sig_d: pd.Timestamp) -> float:
+        sig_d = pd.Timestamp(sig_d)
         pos0 = df_sa.index.searchsorted(sig_d)
         posE = min(df_sa.index.searchsorted(sig_d + pd.Timedelta(days=65)), len(df_sa))
         q0   = float(df_sa["qqq"].iloc[pos0])

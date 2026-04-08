@@ -7,9 +7,11 @@ SCRIPTS = os.path.join(BASE, "scripts")
 OUTPUT  = os.path.join(BASE, "output")
 DB_PATH = os.path.join(BASE, "data", "marketflow.db")
 DB_URL  = "https://github.com/boss9293-ops/Marketflow/releases/download/data-v1/marketflow.db"
+BUILD_LOG_DIR = os.path.join(OUTPUT, "cache", "build_logs")
 
 os.makedirs(os.path.join(BASE, "data"), exist_ok=True)
 os.makedirs(os.path.join(OUTPUT, "cache"), exist_ok=True)
+os.makedirs(BUILD_LOG_DIR, exist_ok=True)
 
 # ── 1. Download DB if missing ──────────────────────────────────────────────
 db_abs = os.path.abspath(DB_PATH)
@@ -141,6 +143,14 @@ def _is_daily_briefing_v3_fresh(out_path: str) -> bool:
 
 
 def run_builds():
+    def _write_build_log(script_name: str, payload: dict) -> None:
+        try:
+            path = os.path.join(BUILD_LOG_DIR, f"{script_name.replace('.py', '')}.json")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False)
+        except Exception:
+            pass
+
     for script, outfile in BUILDS:
         out_path = os.path.join(OUTPUT, outfile) if outfile else None
         if script in DAILY_BUILDS:
@@ -162,14 +172,31 @@ def run_builds():
                 cwd=BASE, timeout=600,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
-            tail = r.stdout.decode("utf-8", errors="replace")[-400:]
+            full_output = r.stdout.decode("utf-8", errors="replace")
+            tail = full_output[-4000:]
             status = "OK" if r.returncode == 0 else "FAIL"
             print(f"[build][{status}] {script}\n{tail}", flush=True)
+            _write_build_log(script, {
+                "script": script,
+                "args": extra,
+                "status": status,
+                "returncode": r.returncode,
+                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                "output_head": full_output[:2000],
+                "output_tail": full_output[-12000:],
+            })
             # For update scripts (no self-written output), write stamp on success
             if r.returncode == 0 and out_path and script in EXTRA_ARGS:
                 _write_stamp(out_path)
         except Exception as e:
             print(f"[build][ERROR] {script}: {e}", flush=True)
+            _write_build_log(script, {
+                "script": script,
+                "args": extra,
+                "status": "ERROR",
+                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                "error": str(e),
+            })
 
 build_thread = threading.Thread(target=run_builds, daemon=True)
 build_thread.start()

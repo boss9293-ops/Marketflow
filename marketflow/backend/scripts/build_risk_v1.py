@@ -36,17 +36,30 @@ OUTPUT_DIR = os.path.join(BACKEND_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 DB_PATH   = resolve_marketflow_db(
-    required_tables=("ohlcv_daily", "ticker_history_daily"),
+    required_tables=("ohlcv_daily",),
     prefer_engine=True,
 )
 CACHE_DB  = os.path.join(DATA_DIR, "cache.db")
 
 
 def load_symbol(con: sqlite3.Connection, symbol: str) -> pd.DataFrame:
-    rows = con.execute(
-        "SELECT date, close FROM ticker_history_daily WHERE symbol=? ORDER BY date",
-        (symbol,),
-    ).fetchall()
+    # Try ticker_history_daily first (long history); fall back to ohlcv_daily
+    rows = []
+    try:
+        rows = con.execute(
+            "SELECT date, close FROM ticker_history_daily WHERE symbol=? ORDER BY date",
+            (symbol,),
+        ).fetchall()
+    except Exception:
+        pass
+    if not rows:
+        try:
+            rows = con.execute(
+                "SELECT date, close FROM ohlcv_daily WHERE symbol=? ORDER BY date",
+                (symbol,),
+            ).fetchall()
+        except Exception:
+            pass
     df = pd.DataFrame(rows, columns=["date", "close"])
     if df.empty:
         return df

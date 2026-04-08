@@ -19,7 +19,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
-  const force = Boolean((body as { force?: boolean }).force)
+  const { force = false, lang = 'ko' } = body as { force?: boolean; lang?: string }
 
   const backendUrl =
     process.env.FLASK_API_URL ||
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${backendUrl}/api/briefing/v3/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ force }),
+      body: JSON.stringify({ force, lang }),
       signal: AbortSignal.timeout(320_000),
     })
     const data = await res.json()

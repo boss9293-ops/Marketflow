@@ -9175,7 +9175,9 @@ def briefing_v3_generate():
     script = os.path.join(os.path.dirname(__file__), 'scripts', 'build_daily_briefing_v3.py')
 
 
-    force  = request.json.get('force', False) if request.is_json else False
+    req_body = request.json if request.is_json else {}
+    force  = req_body.get('force', False)
+    lang   = req_body.get('lang', 'ko')  # default: Korean-only generation
 
 
     args   = [sys.executable, '-X', 'utf8', script]
@@ -9185,6 +9187,8 @@ def briefing_v3_generate():
 
 
         args.append('--force')
+
+    args.append(f'--lang={lang}')
 
 
     env = os.environ.copy()

@@ -813,6 +813,76 @@ Return ONLY valid JSON (no markdown):
 }
 """
 
+# ── Korean-only primary prompt (default generation mode) ──────────────────────
+KO_ONLY_SYSTEM_PROMPT = """\
+당신은 한국 개인 투자자를 위한 일일 마켓 브리핑을 작성하는 시니어 마켓 애널리스트입니다.
+
+분석은 인과관계 중심으로 서술하세요. 숫자 나열이 아닌 WHY(왜 움직였나)를 설명하세요.
+지수 레벨·등락률은 근거로만 활용하고, 메인 스토리는 촉매와 파급 경로입니다.
+
+필수 조건:
+1) 촉매 먼저, 숫자는 나중에.
+2) 지정학·정책 이벤트(트럼프, 이란, 호르무즈, 관세, 파월)가 있으면 전달 경로를 명확히:
+   촉매 → 유가/금리/변동성 → 섹터/스타일 반응.
+3) structural_ko: 지금 시장 구조에서 데이터가 말하는 것 (2-5문장, 내용에 맞게).
+4) implication_ko: 시장 참여자 관점의 시사점, 전망 지향적으로 (2-5문장).
+5) hook_ko: 오늘 세션 핵심 한 줄 (50자 이내, 촉매+반응 포함).
+6) one_line_ko: 촉매 + 전달경로 + 포지션 시사점을 담은 밀도 높은 한 문장.
+7) signal: "bull", "caution", "bear", "neutral" 중 정확히 하나.
+
+문장 스타일: 자연스러운 금융 한국어. 직역 금지. 틱커/고유명사는 원문 그대로 (TSLA, QQQ, VIX 등).
+Respond ONLY with valid JSON - no markdown fences, no extra text.\
+"""
+
+KO_ONLY_USER_TEMPLATE = """\
+DATA DATE: {data_date}
+
+MANDATORY NARRATIVE DRIVERS:
+{mandatory_drivers}
+
+LIVE HEADLINE TAPE (prioritized):
+{headline_tape}
+
+WATCHLIST FOCUS:
+{watchlist_focus}
+
+SECTION 1 - MARKET FLOW
+{market_flow}
+
+SECTION 2 - EVENT DRIVERS
+{event_drivers}
+
+SECTION 3 - SECTOR STRUCTURE
+{sector_structure}
+
+SECTION 4 - MACRO & COMMODITIES
+{macro_commodities}
+
+SECTION 5 - STOCK-LEVEL MOVES
+{stock_moves}
+
+SECTION 6 - ECONOMIC DATA
+{economic_data}
+
+SECTION 7 - TECHNICAL & REGIME
+{technical_regime}
+
+Generate a JSON object with ONLY Korean fields:
+{{
+  "hook_ko": "...",
+  "one_line_ko": "...",
+  "sections": {{
+    "market_flow":       {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}},
+    "event_drivers":     {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}},
+    "sector_structure":  {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}},
+    "macro_commodities": {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}},
+    "stock_moves":       {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}},
+    "economic_data":     {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}},
+    "technical_regime":  {{"structural_ko": "...", "implication_ko": "...", "signal": "..."}}
+  }}
+}}\
+"""
+
 
 def _parse_json_from_llm(raw: str) -> dict[str, Any]:
     """
@@ -939,15 +1009,20 @@ def is_stale(max_minutes: int = 1440) -> bool:
         return True
 
 
-# ?? Main ??????????????????????????????????????????????????????????????????????
-def main() -> None:
-    force = "--force" in sys.argv
+# -- Shared data loader --------------------------------------------------
+def _load_inputs():
+    ms       = load("market_state.json")
+    rv1      = load("risk_v1.json",                [OUTPUT_DIR])
+    re_data  = load("risk_engine.json")
+    sp       = load("sector_performance.json",     [OUTPUT_DIR, CACHE_DIR])
+    econ_cal = load("economic_calendar.json",      [OUTPUT_DIR])
+    earnings = load("earnings_calendar.json",      [OUTPUT_DIR])
+    movers   = load("movers_snapshot_latest.json")
+    news     = load("context_news.json")
+    return ms, rv1, re_data, sp, econ_cal, earnings, movers, news
 
-    if not force and not is_stale():
-        print("[build_daily_briefing_v3] output is fresh, skipping (use --force to override)")
-        return
 
-    # Load API key: search backend/.env then parent marketflow/.env
+def _load_api_key() -> str:
     api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip().strip(chr(34)).strip(chr(39))
     for _env_path in [BACKEND_DIR / ".env", BACKEND_DIR.parent / ".env"]:
         if api_key:
@@ -960,147 +1035,171 @@ def main() -> None:
                         if _val:
                             api_key = _val
                             break
+    return api_key
 
-    # Load data
-    ms       = load("market_state.json")
-    rv1      = load("risk_v1.json",                [OUTPUT_DIR])
-    re_data  = load("risk_engine.json")
-    sp       = load("sector_performance.json",     [OUTPUT_DIR, CACHE_DIR])
-    econ_cal = load("economic_calendar.json",      [OUTPUT_DIR])
-    earnings = load("earnings_calendar.json",      [OUTPUT_DIR])
-    movers   = load("movers_snapshot_latest.json")
-    news     = load("context_news.json")
 
-    ctx = build_context(ms, rv1, re_data, sp, econ_cal, earnings, movers, news)
+# -- Main -----------------------------------------------------------------
+def main() -> None:
+    force = "--force" in sys.argv
+    # Default: Korean only. Pass --lang=en to fill English fields.
+    lang = "ko"
+    for arg in sys.argv[1:]:
+        if arg.startswith("--lang="):
+            lang = arg.split("=", 1)[1].strip().lower()
 
-    # Rule-based fallback blocks (used only if model output is missing)
-    hook_fallback = build_hook(ctx, rv1, re_data)
-    risk_check = build_risk_check(rv1)
+    if not force and not is_stale():
+        print("[build_daily_briefing_v3] output is fresh, skipping (use --force to override)")
+        return
 
+    api_key = _load_api_key()
     if not api_key:
         print("ERROR: ANTHROPIC_API_KEY not found", file=sys.stderr)
         sys.exit(1)
 
+    ms, rv1, re_data, sp, econ_cal, earnings, movers, news = _load_inputs()
+    ctx = build_context(ms, rv1, re_data, sp, econ_cal, earnings, movers, news)
+    risk_check = build_risk_check(rv1)
+    hook_fallback = build_hook(ctx, rv1, re_data)
+
     import anthropic
-
-    user_msg = USER_TEMPLATE.format(**ctx)
-    print(f"[build_daily_briefing_v3] model={MODEL_ID}")
-    print(f"[build_daily_briefing_v3] context={len(user_msg)} chars")
-
     client = anthropic.Anthropic(api_key=api_key)
-    parsed, in_tok, out_tok, raw_msg = _call_llm_json_with_retry(
-        client,
-        system_prompt=SYSTEM_PROMPT,
-        user_content=user_msg,
-        max_tokens=8192,
-        retries=1,
-    )
-    cost    = in_tok * PRICE_IN + out_tok * PRICE_OUT
-    print(f"[build_daily_briefing_v3] tokens: in={in_tok} out={out_tok} cost=${cost:.5f}")
 
-    llm_sections = parsed.get("sections", {}) if isinstance(parsed, dict) else {}
-    hook = str((parsed.get("hook", "") if isinstance(parsed, dict) else "") or "").strip()
-    hook_ko = str((parsed.get("hook_ko", "") if isinstance(parsed, dict) else "") or "").strip()
-    one_line = str((parsed.get("one_line", "") if isinstance(parsed, dict) else "") or "").strip()
-    one_line_ko = str((parsed.get("one_line_ko", "") if isinstance(parsed, dict) else "") or "").strip()
-    # Build final sections list
-    sections: list[dict] = []
-    for sid, title in SECTION_META:
-        raw_sec = llm_sections.get(sid, {}) if isinstance(llm_sections, dict) else {}
-        fallback_sec = build_fallback_section_payload(sid, ctx.get(sid, ""), rv1)
-        if not isinstance(raw_sec, dict):
-            raw_sec = {}
+    if lang == "en":
+        # EN fill: generate English fields, preserve existing Korean
+        existing: dict = {}
+        if OUT_PATH.exists():
+            try:
+                with open(OUT_PATH, encoding="utf-8") as f:
+                    existing = json.load(f)
+            except Exception:
+                pass
 
-        structural = str(raw_sec.get("structural", "") or "").strip() or fallback_sec["structural"]
-        implication = str(raw_sec.get("implication", "") or "").strip() or fallback_sec["implication"]
-        structural_ko = str(raw_sec.get("structural_ko", "") or "").strip()
-        implication_ko = str(raw_sec.get("implication_ko", "") or "").strip()
-
-        signal = str(raw_sec.get("signal", "") or "").strip().lower()
-        if signal not in SIGNAL_COLOR:
-            signal = fallback_sec["signal"]
-
-        sections.append({
-            "id":             sid,
-            "title":          title,
-            "structural":     structural,
-            "structural_ko":  structural_ko,
-            "implication":    implication,
-            "implication_ko": implication_ko,
-            "signal":         signal,
-            "color":          SIGNAL_COLOR.get(signal, "#64748b"),
-        })
-
-    sections = enforce_required_mentions(
-        sections=sections,
-        hook=hook,
-        mandatory_drivers=ctx.get("mandatory_drivers", ""),
-        watchlist_focus=ctx.get("watchlist_focus", ""),
-    )
-
-    if not hook:
-        hook = hook_fallback
-    if not one_line:
-        one_line = build_one_line(sections, rv1)
-
-    # Korean alignment pass: make KR nuance track EN source of truth.
-    ko_in_tok = 0
-    ko_out_tok = 0
-    try:
-        ko_aligned, ko_in_tok, ko_out_tok = align_korean_from_english(
-            client=client,
-            hook_en=hook,
-            one_line_en=one_line,
-            sections=sections,
+        user_msg = USER_TEMPLATE.format(**ctx)
+        print(f"[build_daily_briefing_v3] lang=en  model={MODEL_ID}  context={len(user_msg)} chars")
+        parsed, in_tok, out_tok, _ = _call_llm_json_with_retry(
+            client, system_prompt=SYSTEM_PROMPT,
+            user_content=user_msg, max_tokens=8192, retries=1,
         )
-        if ko_aligned:
-            hook_ko = str(ko_aligned.get("hook_ko", "") or hook_ko).strip()
-            one_line_ko = str(ko_aligned.get("one_line_ko", "") or one_line_ko).strip()
-            ko_sections = ko_aligned.get("sections", {})
-            if isinstance(ko_sections, dict):
-                for sec in sections:
-                    sid = str(sec.get("id", ""))
-                    item = ko_sections.get(sid, {})
-                    if isinstance(item, dict):
-                        sec["structural_ko"] = str(item.get("structural_ko", "") or sec.get("structural_ko", "")).strip()
-                        sec["implication_ko"] = str(item.get("implication_ko", "") or sec.get("implication_ko", "")).strip()
-    except Exception as e:
-        print(f"[build_daily_briefing_v3] WARN ko-alignment failed: {e}")
+        cost = in_tok * PRICE_IN + out_tok * PRICE_OUT
+        print(f"[build_daily_briefing_v3] tokens: in={in_tok} out={out_tok} cost=${cost:.5f}")
 
-    total_in_tok = in_tok + ko_in_tok
-    total_out_tok = out_tok + ko_out_tok
-    total_cost = total_in_tok * PRICE_IN + total_out_tok * PRICE_OUT
+        llm_sections = parsed.get("sections", {}) if isinstance(parsed, dict) else {}
+        hook     = str((parsed.get("hook",     "") if isinstance(parsed, dict) else "") or "").strip()
+        one_line = str((parsed.get("one_line", "") if isinstance(parsed, dict) else "") or "").strip()
 
-    output = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "data_date":    ctx["data_date"],
-        "model":        MODEL_ID,
-        "tokens": {
-            "input":    total_in_tok,
-            "output":   total_out_tok,
-            "cost_usd": round(total_cost, 6),
-        },
-        "hook":       hook,
-        "hook_ko":    hook_ko,
-        "sections":   sections,
-        "risk_check": risk_check,
-        "one_line":   one_line,
-        "one_line_ko": one_line_ko,
-    }
+        sections: list[dict] = []
+        ex_sections: list[dict] = existing.get("sections", []) if isinstance(existing, dict) else []
+        for sid, title in SECTION_META:
+            raw_sec = llm_sections.get(sid, {}) if isinstance(llm_sections, dict) else {}
+            fallback_sec = build_fallback_section_payload(sid, ctx.get(sid, ""), rv1)
+            if not isinstance(raw_sec, dict):
+                raw_sec = {}
+            ex_sec = next((s for s in ex_sections if isinstance(s, dict) and s.get("id") == sid), {})
+
+            structural  = str(raw_sec.get("structural",  "") or "").strip() or fallback_sec["structural"]
+            implication = str(raw_sec.get("implication", "") or "").strip() or fallback_sec["implication"]
+            structural_ko  = str(ex_sec.get("structural_ko",  "") or raw_sec.get("structural_ko",  "") or "").strip()
+            implication_ko = str(ex_sec.get("implication_ko", "") or raw_sec.get("implication_ko", "") or "").strip()
+            signal = str(raw_sec.get("signal", "") or "").strip().lower()
+            if signal not in SIGNAL_COLOR:
+                signal = ex_sec.get("signal") or fallback_sec["signal"]
+
+            sections.append({
+                "id": sid, "title": title,
+                "structural": structural, "structural_ko": structural_ko,
+                "implication": implication, "implication_ko": implication_ko,
+                "signal": signal, "color": SIGNAL_COLOR.get(signal, "#64748b"),
+            })
+
+        sections = enforce_required_mentions(
+            sections=sections, hook=hook,
+            mandatory_drivers=ctx.get("mandatory_drivers", ""),
+            watchlist_focus=ctx.get("watchlist_focus", ""),
+        )
+        if not hook:
+            hook = hook_fallback
+        if not one_line:
+            one_line = build_one_line(sections, rv1)
+
+        prev_tokens = existing.get("tokens", {}) if isinstance(existing, dict) else {}
+        output = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "data_date":    ctx["data_date"],
+            "model":        MODEL_ID,
+            "lang":         "en",
+            "tokens": {
+                "input":    (prev_tokens.get("input", 0) or 0) + in_tok,
+                "output":   (prev_tokens.get("output", 0) or 0) + out_tok,
+                "cost_usd": round((prev_tokens.get("cost_usd", 0) or 0) + cost, 6),
+            },
+            "hook":       hook,
+            "hook_ko":    existing.get("hook_ko", "") if isinstance(existing, dict) else "",
+            "sections":   sections,
+            "risk_check": risk_check,
+            "one_line":   one_line,
+            "one_line_ko": existing.get("one_line_ko", "") if isinstance(existing, dict) else "",
+        }
+
+    else:
+        # KO mode (default): single-pass Korean-only, cheaper + faster
+        user_msg = KO_ONLY_USER_TEMPLATE.format(**ctx)
+        print(f"[build_daily_briefing_v3] lang=ko  model={MODEL_ID}  context={len(user_msg)} chars")
+        parsed, in_tok, out_tok, _ = _call_llm_json_with_retry(
+            client, system_prompt=KO_ONLY_SYSTEM_PROMPT,
+            user_content=user_msg, max_tokens=6144, retries=1,
+        )
+        cost = in_tok * PRICE_IN + out_tok * PRICE_OUT
+        print(f"[build_daily_briefing_v3] tokens: in={in_tok} out={out_tok} cost=${cost:.5f}")
+
+        llm_sections = parsed.get("sections", {}) if isinstance(parsed, dict) else {}
+        hook_ko     = str((parsed.get("hook_ko",     "") if isinstance(parsed, dict) else "") or "").strip()
+        one_line_ko = str((parsed.get("one_line_ko", "") if isinstance(parsed, dict) else "") or "").strip()
+
+        sections = []
+        for sid, title in SECTION_META:
+            raw_sec = llm_sections.get(sid, {}) if isinstance(llm_sections, dict) else {}
+            fallback_sec = build_fallback_section_payload(sid, ctx.get(sid, ""), rv1)
+            if not isinstance(raw_sec, dict):
+                raw_sec = {}
+            structural_ko  = str(raw_sec.get("structural_ko",  "") or "").strip()
+            implication_ko = str(raw_sec.get("implication_ko", "") or "").strip()
+            signal = str(raw_sec.get("signal", "") or "").strip().lower()
+            if signal not in SIGNAL_COLOR:
+                signal = fallback_sec["signal"]
+            sections.append({
+                "id": sid, "title": title,
+                "structural": "",  "structural_ko":  structural_ko,
+                "implication": "", "implication_ko": implication_ko,
+                "signal": signal,  "color": SIGNAL_COLOR.get(signal, "#64748b"),
+            })
+
+        if not hook_ko:
+            hook_ko = hook_fallback
+        if not one_line_ko:
+            one_line_ko = build_one_line(sections, rv1)
+
+        output = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "data_date":    ctx["data_date"],
+            "model":        MODEL_ID,
+            "lang":         "ko",
+            "tokens": {"input": in_tok, "output": out_tok, "cost_usd": round(cost, 6)},
+            "hook":       "",
+            "hook_ko":    hook_ko,
+            "sections":   sections,
+            "risk_check": risk_check,
+            "one_line":   "",
+            "one_line_ko": one_line_ko,
+        }
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"[build_daily_briefing_v3] saved -> {OUT_PATH}")
+    print(f"[build_daily_briefing_v3] saved -> {OUT_PATH}  lang={lang}")
     for sec in sections:
-        print(f"  [{sec['id']:20}] signal={sec['signal']:8}  color={sec['color']}")
-    if ko_in_tok or ko_out_tok:
-        print(f"  KO align tokens: in={ko_in_tok} out={ko_out_tok}")
-    print(f"\n  Hook:     {hook[:90]}...")
-    print(f"  One Line: {one_line[:90]}...")
-    print(f"  Risk:     triggered={risk_check['triggered']}  level={risk_check['level']}  mss={risk_check['mss']}")
-
+        print(f"  [{sec['id']:20}] signal={sec['signal']:8}")
+    print(f"  Risk: triggered={risk_check['triggered']}  level={risk_check['level']}  mss={risk_check['mss']}")
 
 if __name__ == "__main__":
     main()

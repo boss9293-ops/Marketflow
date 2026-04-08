@@ -228,18 +228,12 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
     setLang(contentLang)
   }, [contentLang])
 
-  const onContentLangChange = useCallback((next: Lang) => {
-    setLang(next)
-    persistContentLang(next)
-    applyContentLangToDocument(next)
-  }, [])
-
-  const handleGenerate = useCallback(async (force: boolean) => {
+  const handleGenerate = useCallback(async (force: boolean, genLang?: Lang) => {
     setGenerating(true); setGenStatus(null)
     try {
       const res  = await fetch('/api/daily-briefing-v3', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ force }),
+        body: JSON.stringify({ force, lang: genLang ?? 'ko' }),
       })
       const json = await res.json()
       if (json.ok) {
@@ -259,6 +253,16 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
       setGenerating(false)
     }
   }, [router, uiLang])
+
+  const onContentLangChange = useCallback((next: Lang) => {
+    setLang(next)
+    persistContentLang(next)
+    applyContentLangToDocument(next)
+    // If switching to EN and no English content exists yet, auto-generate EN
+    if (next === 'en' && data && !data.hook && !generating) {
+      handleGenerate(false, 'en')
+    }
+  }, [data, generating, handleGenerate])
 
   if (!data) {
     return (
@@ -313,7 +317,7 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <LangToggle lang={lang} onChange={onContentLangChange} />
           {genStatus && <span style={{ fontSize: rem(0.88), color: '#64748b' }}>{genStatus}</span>}
-          <button onClick={() => handleGenerate(false)} disabled={generating} style={{
+          <button onClick={() => handleGenerate(false, lang)} disabled={generating} style={{
             background: 'transparent', border: '1px solid rgba(148,163,184,0.15)',
             color: '#475569', borderRadius: 5, padding: '7px 14px', fontSize: rem(0.8),
             fontFamily: MONO_FONT,
@@ -323,7 +327,7 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
               ? pickUiLang(uiLang, BRIEF_UI_TEXT.generating.ko, BRIEF_UI_TEXT.generating.en)
               : pickUiLang(uiLang, BRIEF_UI_TEXT.refresh.ko, BRIEF_UI_TEXT.refresh.en)}
           </button>
-          <button onClick={() => handleGenerate(true)} disabled={generating} style={{
+          <button onClick={() => handleGenerate(true, lang)} disabled={generating} style={{
             background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)',
             color: '#3b82f6', borderRadius: 5, padding: '7px 14px', fontSize: rem(0.8),
             fontFamily: MONO_FONT,

@@ -32,7 +32,8 @@ BUILDS = [
     ("build_market_tape.py",     "market_tape.json"),
     ("build_overview.py",        "cache/overview.json"),       # must run before market_state
     ("build_snapshots_120d.py",  "cache/snapshots_120d.json"), # dashboard
-    ("build_market_state.py",    "market_state.json"),
+    ("build_market_state.py",      "market_state.json"),
+    ("build_daily_briefing_v3.py", "cache/daily_briefing_v3.json"),  # KO-only, fast
     # build_risk_alert.py needs cache.db — skip until uploaded to releases
 ]
 

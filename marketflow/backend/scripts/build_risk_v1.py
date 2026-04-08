@@ -532,16 +532,49 @@ def _load_cache_series(symbol: str) -> pd.Series:
         df["date"] = pd.to_datetime(df["date"], errors="coerce")
         df = df.dropna(subset=["date"]).drop_duplicates(subset=["date"], keep="last")
         df = df.sort_values("date").set_index("date")
-        return df["value"].astype(float)
+        return _normalize_series_index(df["value"].astype(float))
     except Exception:
         return pd.Series(dtype=float)
+
+
+def _normalize_cutoff_ts(value: pd.Timestamp | str | None) -> pd.Timestamp | None:
+    if value is None:
+        return None
+    try:
+        ts = pd.to_datetime(value, errors="coerce", utc=True)
+        if ts is None or pd.isna(ts):
+            return None
+        return pd.Timestamp(ts).tz_convert(None)
+    except Exception:
+        return None
+
+
+def _normalize_series_index(series: pd.Series) -> pd.Series:
+    """
+    Ensure a deterministic DatetimeIndex (UTC-normalized then tz-naive),
+    sorted and de-duplicated. This prevents Timestamp/str compare crashes
+    in downstream slicing/search logic on Railway mixed payloads.
+    """
+    if series is None or series.empty:
+        return pd.Series(dtype=float)
+    try:
+        idx = pd.to_datetime(series.index, errors="coerce", utc=True)
+        valid = ~idx.isna()
+        if not valid.any():
+            return pd.Series(dtype=series.dtype)
+        out = series.loc[valid].copy()
+        out.index = pd.DatetimeIndex(idx[valid]).tz_convert(None)
+        out = out[~out.index.duplicated(keep="last")].sort_index()
+        return out
+    except Exception:
+        return pd.Series(dtype=series.dtype)
 
 
 def _last_series_timestamp(series: pd.Series) -> pd.Timestamp | None:
     if series.empty:
         return None
     try:
-        idx = pd.to_datetime(series.index, errors="coerce")
+        idx = pd.to_datetime(_normalize_series_index(series).index, errors="coerce")
         if len(idx) == 0:
             return None
         ts = idx.max()
@@ -652,9 +685,11 @@ def compute_track_a(
       - BDC basket vs SPY relative strength (private credit proxy)
     """
     def _trim_asof(s: pd.Series, cutoff: pd.Timestamp | None) -> pd.Series:
-        if s is None or s.empty or cutoff is None or pd.isna(cutoff):
+        s = _normalize_series_index(s)
+        cutoff_ts = _normalize_cutoff_ts(cutoff)
+        if s.empty or cutoff_ts is None:
             return s
-        return s.loc[s.index <= cutoff]
+        return s.loc[s.index <= cutoff_ts]
 
     def _roc_zscore(s: pd.Series) -> tuple[pd.Series, pd.Series]:
         if s.empty:
@@ -924,9 +959,11 @@ def compute_track_a_early(
     in credit-sensitive proxies before HY/IG spreads fully confirm stress.
     """
     def _trim_asof(s: pd.Series, cutoff: pd.Timestamp | None) -> pd.Series:
-        if s is None or s.empty or cutoff is None or pd.isna(cutoff):
+        s = _normalize_series_index(s)
+        cutoff_ts = _normalize_cutoff_ts(cutoff)
+        if s.empty or cutoff_ts is None:
             return s
-        return s.loc[s.index <= cutoff]
+        return s.loc[s.index <= cutoff_ts]
 
     def _roc_zscore(s: pd.Series) -> tuple[pd.Series, pd.Series]:
         if s.empty:
@@ -1180,9 +1217,11 @@ def compute_track_c(
     - Operates independently of Track A — combined in compute_master_signal()
     """
     def _trim_asof(s: pd.Series, cutoff: pd.Timestamp | None) -> pd.Series:
-        if s is None or s.empty or cutoff is None or pd.isna(cutoff):
+        s = _normalize_series_index(s)
+        cutoff_ts = _normalize_cutoff_ts(cutoff)
+        if s.empty or cutoff_ts is None:
             return s
-        return s.loc[s.index <= cutoff]
+        return s.loc[s.index <= cutoff_ts]
 
     def _fast_z(s: pd.Series) -> tuple[pd.Series, float | None]:
         """21d rolling Z-score of 1d RoC. Returns (series, latest_value)."""
@@ -1593,7 +1632,7 @@ def _load_market_daily_series(column: str) -> pd.Series:
         df["date"] = pd.to_datetime(df["date"], errors="coerce")
         df = df.dropna(subset=["date"]).drop_duplicates(subset=["date"], keep="last")
         df = df.sort_values("date").set_index("date")
-        return df["value"].astype(float)
+        return _normalize_series_index(df["value"].astype(float))
     except Exception:
         return pd.Series(dtype=float)
 

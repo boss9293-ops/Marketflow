@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
+import { resolveBackendBaseUrl } from '@/lib/backendApi'
 
-const FLASK_URL = process.env.FLASK_API_URL ?? 'http://localhost:5001'
+const FLASK_URL = resolveBackendBaseUrl()
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { SessionProvider } from 'next-auth/react'
@@ -8,6 +8,7 @@ import { WatchlistProvider } from '@/contexts/WatchlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import UserPlanBadge from '@/components/subscription/UserPlanBadge'
 import LanguageModeToggle from '@/components/LanguageModeToggle'
+import BackendFetchBridge from '@/components/BackendFetchBridge'
 import {
   applyContentLangToDocument,
   applyUiLangToDocument,
@@ -88,6 +89,7 @@ export default function ClientLayout({
     <SessionProvider>
       <AuthProvider>
         <WatchlistProvider>
+          <BackendFetchBridge />
 
           {/* 드래그 중 전체 커서 오버레이 */}
           {isDragging && (

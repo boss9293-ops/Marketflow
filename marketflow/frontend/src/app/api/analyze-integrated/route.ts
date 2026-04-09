@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
+import { resolveBackendBaseUrl } from '@/lib/backendApi'
 
 
 
-const FLASK_URL = process.env.FLASK_API_URL ?? 'http://localhost:5001'
+const FLASK_URL = resolveBackendBaseUrl()
 
 async function readJson<T>(filename: string): Promise<T | null> {
   const { readCacheJson } = await import('@/lib/readCacheJson')

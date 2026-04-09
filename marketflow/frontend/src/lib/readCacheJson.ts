@@ -1,16 +1,21 @@
 import fs from 'fs/promises'
 import path from 'path'
+import { backendApiUrl } from '@/lib/backendApi'
 
-const BACKEND_URL = process.env.FLASK_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_API || ''
+async function readJsonFromBackend<T>(filename: string): Promise<T | null> {
+  try {
+    const res = await fetch(backendApiUrl(`/api/data/${filename}`), { cache: 'no-store' })
+    if (!res.ok) return null
+    return (await res.json()) as T
+  } catch {
+    return null
+  }
+}
 
 export async function readCacheJson<T>(filename: string, fallback: T): Promise<T> {
-  if (BACKEND_URL) {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/data/${filename}`, { cache: 'no-store' })
-      if (res.ok) return (await res.json()) as T
-    } catch {
-      // fall through to file system
-    }
+  const remote = await readJsonFromBackend<T>(filename)
+  if (remote !== null) {
+    return remote
   }
 
   const candidates = [
@@ -32,13 +37,9 @@ export async function readCacheJson<T>(filename: string, fallback: T): Promise<T
 }
 
 export async function readCacheJsonOrNull<T>(filename: string): Promise<T | null> {
-  if (BACKEND_URL) {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/data/${filename}`, { cache: 'no-store' })
-      if (res.ok) return (await res.json()) as T
-    } catch {
-      // fall through to file system
-    }
+  const remote = await readJsonFromBackend<T>(filename)
+  if (remote !== null) {
+    return remote
   }
 
   const candidates = [

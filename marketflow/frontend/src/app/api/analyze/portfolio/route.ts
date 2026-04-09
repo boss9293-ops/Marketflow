@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
+import { resolveBackendBaseUrl } from '@/lib/backendApi'
 
-const FLASK_URL = process.env.FLASK_API_URL ?? 'http://localhost:5001'
+const FLASK_URL = resolveBackendBaseUrl()
 
 export async function POST(request: Request) {
   let body: unknown = null

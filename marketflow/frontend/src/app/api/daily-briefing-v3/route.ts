@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readCacheJsonOrNull } from '@/lib/readCacheJson'
+import { resolveBackendBaseUrl } from '@/lib/backendApi'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,11 +22,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const { force = false, lang = 'ko' } = body as { force?: boolean; lang?: string }
 
-  const backendUrl =
-    process.env.FLASK_API_URL ||
-    process.env.BACKEND_URL ||
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    'http://localhost:5001'
+  const backendUrl = resolveBackendBaseUrl()
 
   try {
     const res = await fetch(`${backendUrl}/api/briefing/v3/generate`, {

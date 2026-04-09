@@ -30,6 +30,14 @@ else:
     print(f"[startup] DB exists: {os.path.getsize(db_abs)//1024//1024}MB", flush=True)
 
 
+def _env_value(*names: str) -> str:
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
 def _pull_turso_db_if_configured() -> bool:
     turso_url = _env_value("TURSO_DATABASE_URL", "LIBSQL_URL", "TURSO_URL")
     auth_token = _env_value("TURSO_AUTH_TOKEN", "LIBSQL_AUTH_TOKEN", "TURSO_TOKEN")
@@ -201,14 +209,6 @@ def _load_json(path: str):
             return json.load(f)
     except Exception:
         return None
-
-
-def _env_value(*names: str) -> str:
-    for name in names:
-        value = os.environ.get(name, "").strip()
-        if value:
-            return value
-    return ""
 
 
 def _sync_turso_if_configured() -> None:

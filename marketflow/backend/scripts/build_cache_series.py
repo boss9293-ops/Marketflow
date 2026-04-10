@@ -32,16 +32,20 @@ def _bootstrap_backend_root() -> str:
         os.path.abspath(os.path.join(SCRIPTS_DIR, "..", "..")),
         os.getcwd(),
     ]
-    target_rel = os.path.join("backend", "collectors", "collect_cboe.py")
+    target_rels = [
+        os.path.join("backend", "collectors", "collect_cboe.py"),
+        os.path.join("collectors", "collect_cboe.py"),
+    ]
     seen: set[str] = set()
     for root in search_roots:
         current = os.path.abspath(root)
         while current and current not in seen:
             seen.add(current)
-            if os.path.exists(os.path.join(current, target_rel)):
-                if current not in sys.path:
-                    sys.path.insert(0, current)
-                return current
+            for target_rel in target_rels:
+                if os.path.exists(os.path.join(current, target_rel)):
+                    if current not in sys.path:
+                        sys.path.insert(0, current)
+                    return current
             parent = os.path.dirname(current)
             if parent == current:
                 break
@@ -83,7 +87,10 @@ FRED_SERIES = {
     "VIX":    "VIXCLS",
 }
 
-from backend.collectors.collect_cboe import run as collect_cboe
+try:
+    from backend.collectors.collect_cboe import run as collect_cboe
+except ModuleNotFoundError:
+    from collectors.collect_cboe import run as collect_cboe
 
 
 # ── DB helpers ────────────────────────────────────────────────────────────────

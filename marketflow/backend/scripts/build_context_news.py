@@ -14,16 +14,20 @@ def _bootstrap_backend_root() -> None:
         os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..")),
         os.getcwd(),
     ]
-    target_rel = os.path.join("backend", "news", "context_news.py")
+    target_rels = [
+        os.path.join("backend", "news", "context_news.py"),
+        os.path.join("news", "context_news.py"),
+    ]
     seen: set[str] = set()
     for root in search_roots:
         current = os.path.abspath(root)
         while current and current not in seen:
             seen.add(current)
-            if os.path.exists(os.path.join(current, target_rel)):
-                if current not in sys.path:
-                    sys.path.insert(0, current)
-                return
+            for target_rel in target_rels:
+                if os.path.exists(os.path.join(current, target_rel)):
+                    if current not in sys.path:
+                        sys.path.insert(0, current)
+                    return
             parent = os.path.dirname(current)
             if parent == current:
                 break
@@ -41,7 +45,10 @@ def _bootstrap_backend_root() -> None:
 
 _bootstrap_backend_root()
 
-from backend.news.context_news import build_context_news_cache
+try:
+    from backend.news.context_news import build_context_news_cache
+except ModuleNotFoundError:
+    from news.context_news import build_context_news_cache
 
 
 def parse_args() -> argparse.Namespace:

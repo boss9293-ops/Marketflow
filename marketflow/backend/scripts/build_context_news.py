@@ -4,9 +4,13 @@ import argparse
 import os
 import sys
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+for candidate in (
+    os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..")),  # repo root when run locally
+    os.path.abspath(os.path.join(SCRIPT_DIR, "..")),        # Railway /app when scripts are flattened
+):
+    if os.path.isdir(os.path.join(candidate, "backend")) and candidate not in sys.path:
+        sys.path.insert(0, candidate)
 
 from backend.news.context_news import build_context_news_cache
 

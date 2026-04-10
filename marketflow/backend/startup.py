@@ -314,6 +314,7 @@ def _is_ai_briefings_fresh(out_path: str) -> bool:
 
 def run_builds():
     had_failure = False
+    failed_scripts: list[str] = []
 
     def _write_build_log(script_name: str, payload: dict) -> None:
         try:
@@ -365,12 +366,14 @@ def run_builds():
             })
             if r.returncode != 0:
                 had_failure = True
+                failed_scripts.append(script)
             # For update scripts (no self-written output), write stamp on success
             if r.returncode == 0 and out_path and script in EXTRA_ARGS:
                 _write_stamp(out_path)
         except Exception as e:
             print(f"[build][ERROR] {script}: {e}", flush=True)
             had_failure = True
+            failed_scripts.append(script)
             _write_build_log(script, {
                 "script": script,
                 "args": extra,
@@ -380,7 +383,10 @@ def run_builds():
             })
 
     if had_failure:
-        print("[startup][TURSO] Sync skipped because one or more startup builds failed.", flush=True)
+        failed_list = ", ".join(failed_scripts[:10]) if failed_scripts else "unknown"
+        if len(failed_scripts) > 10:
+            failed_list += f" (+{len(failed_scripts) - 10} more)"
+        print(f"[startup][TURSO] Sync skipped because one or more startup builds failed: {failed_list}", flush=True)
     else:
         _sync_turso_if_configured()
 

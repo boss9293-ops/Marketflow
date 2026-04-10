@@ -2,7 +2,7 @@
 Collect and update cache.db macro series (standalone — no internal package imports).
 
 Fetches:
-  - PUT_CALL  : CBOE put/call ratio via Stooq (no API key required)
+  - PUT_CALL  : CBOE put/call ratio via collector fallback (Stooq -> proxy)
   - HY_OAS    : ICE BofA HY OAS via FRED (requires FRED_API_KEY)
   - IG_OAS    : ICE BofA IG OAS via FRED (requires FRED_API_KEY)
   - FSI       : St. Louis Financial Stress Index via FRED (requires FRED_API_KEY)
@@ -13,7 +13,6 @@ Output:
 """
 from __future__ import annotations
 
-import csv
 import json
 import os
 import sqlite3
@@ -48,7 +47,12 @@ FRED_SERIES = {
     "VIX":    "VIXCLS",
 }
 
-STOOQ_PC_URL = "https://stooq.com/q/d/l/?s=cboe_pc&i=d"
+ROOT_DIR = os.path.abspath(os.path.join(BACKEND_DIR, ".."))
+for _path in (ROOT_DIR, BACKEND_DIR):
+    if _path not in sys.path:
+        sys.path.insert(0, _path)
+
+from backend.collectors.collect_cboe import run as collect_cboe
 
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
@@ -154,43 +158,6 @@ def fetch_fred(series_id: str, start_date: str) -> List[Tuple[str, float]]:
     return sorted(out, key=lambda x: x[0])
 
 
-# ── Stooq PUT_CALL fetcher ────────────────────────────────────────────────────
-
-def fetch_put_call() -> List[Tuple[str, float]]:
-    try:
-        import urllib.request
-        with urllib.request.urlopen(STOOQ_PC_URL, timeout=30) as resp:
-            text = resp.read().decode("utf-8").strip()
-    except Exception as exc:
-        raise RuntimeError(f"Stooq request failed: {exc}")
-    reader = csv.reader(text.splitlines())
-    rows_in = list(reader)
-    if len(rows_in) < 2:
-        raise RuntimeError("Too few Stooq CSV rows")
-    header = [c.strip().lower() for c in rows_in[0]]
-    if "date" not in header or "close" not in header:
-        raise RuntimeError(f"Unexpected Stooq header: {rows_in[0]}")
-    di = header.index("date")
-    ci = header.index("close")
-    out: List[Tuple[str, float]] = []
-    for parts in rows_in[1:]:
-        if len(parts) <= max(di, ci):
-            continue
-        d = parts[di].strip()
-        c = parts[ci].strip()
-        if c in ("", "null", "None"):
-            continue
-        try:
-            out.append((d, float(c)))
-        except ValueError:
-            continue
-    out.sort(key=lambda x: x[0])
-    if len(out) < 50:
-        raise RuntimeError(f"Too few PUT_CALL rows: {len(out)}")
-    # Keep last 1500 rows
-    return out[-1500:]
-
-
 # ── Existing data check ───────────────────────────────────────────────────────
 
 def last_date_in_db(conn: sqlite3.Connection, symbol: str) -> Optional[str]:
@@ -225,14 +192,28 @@ def main() -> int:
     results: dict = {}
     generated_at = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-    # ── PUT_CALL (Stooq, no API key) ──────────────────────────────────────────
+    # ── PUT_CALL (collector fallback: Stooq -> proxy) ─────────────────────────
     if needs_update(conn, "PUT_CALL"):
         try:
-            rows = fetch_put_call()
-            n = upsert_series(conn, "PUT_CALL", rows, source="STOOQ", notes="CBOE put/call ratio via Stooq")
-            last = rows[-1][0] if rows else None
-            print(f"[cache_series] PUT_CALL: {n} rows, last={last}", flush=True)
-            results["PUT_CALL"] = {"ok": True, "rows": n, "last": last}
+            collect_result = {}
+            conn.close()
+            try:
+                collect_result = collect_cboe()
+            finally:
+                conn = sqlite3.connect(CACHE_DB)
+                ensure_schema(conn)
+            last = last_date_in_db(conn, "PUT_CALL")
+            n = int(collect_result.get("written") or 0)
+            source = str(collect_result.get("source") or "STOOQ")
+            quality = str(collect_result.get("quality") or "NA")
+            print(f"[cache_series] PUT_CALL: {n} rows, last={last}, source={source}, quality={quality}", flush=True)
+            results["PUT_CALL"] = {
+                "ok": quality in ("OK", "PARTIAL"),
+                "rows": n,
+                "last": last,
+                "source": source,
+                "quality": quality,
+            }
         except Exception as exc:
             print(f"[cache_series] PUT_CALL FAILED: {exc}", flush=True)
             results["PUT_CALL"] = {"ok": False, "error": str(exc)}

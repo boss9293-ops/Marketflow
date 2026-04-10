@@ -3,15 +3,15 @@ build_daily_briefing_v3.py
 Daily Briefing Narrative Engine V3
 
 Structure:
-  Hook              rule-based: direction + pressure + regime
-  market_flow       QQQ/SPY direction, phase, gate
-  event_drivers     earnings + economic events (news fallback)
-  sector_structure  leaders/laggards, rotation signal
-  macro_commodities US10Y, DXY, Gold, Oil, VIX
-  stock_moves       filtered movers (NASDAQ/NYSE, price >$1)
+  Hook              rule-based: market tone + dominant catalyst
+  market_flow       broad market pulse, phase, participation
+  event_drivers     headlines, earnings, scheduled events
+  sector_structure  leaders/laggards, rotation, breadth
+  macro_commodities rates, DXY, VIX, gold, oil, BTC
+  stock_moves       movers and watchlist names
   economic_data     actual vs expected releases
-  technical_regime  MSS level, zone, components
-  Risk Check        rule-based: MSS Level >= 2
+  technical_regime  MSS level, zone, components, risk overlay
+  Risk Check        explicit risk overlay only
   One Line          rule-based compression from sections
 
 Output: backend/output/cache/daily_briefing_v3.json
@@ -71,13 +71,13 @@ SIGNAL_COLOR = {
 }
 
 SECTION_META = [
-    ("market_flow",       "Market Flow"),
-    ("event_drivers",     "Event Drivers"),
-    ("sector_structure",  "Sector Structure"),
-    ("macro_commodities", "Macro & Commodities"),
-    ("stock_moves",       "Key Stocks"),
-    ("economic_data",     "Economic Data"),
-    ("technical_regime",  "Technical & Regime"),
+    ("market_flow",       "Market Pulse"),
+    ("event_drivers",     "News & Catalysts"),
+    ("sector_structure",  "Sector Rotation"),
+    ("macro_commodities", "Macro & Rates"),
+    ("stock_moves",       "Movers & Watchlist"),
+    ("economic_data",     "Earnings & Calendar"),
+    ("technical_regime",  "Risk & Regime"),
 ]
 
 MAJOR_NEWS_SOURCES = {"Reuters", "Bloomberg", "Financial Times", "WSJ", "CNBC", "Yahoo Finance"}
@@ -293,7 +293,7 @@ def build_context(
         if pct is not None:
             mf_lines.append(f"QQQ vs SMA200: {fmt_pct(pct)}  (close {close_} vs SMA200 {sma200})")
     if risk:
-        mf_lines.append(f"Risk status: {risk.get('value','?')}")
+        mf_lines.append(f"Session note: {risk.get('value','?')}")
 
     # Event Drivers
     # Priority 1: news selected_themes
@@ -335,7 +335,7 @@ def build_context(
         ed_lines.append("No major scheduled events or news themes today.")
 
     if front_headlines:
-        ed_lines.append("Headline tape focus:")
+        ed_lines.append("Headline tape:")
         for h in headline_tape.splitlines()[:3]:
             ed_lines.append(f"  {h}")
 
@@ -370,14 +370,6 @@ def build_context(
         f"Crude Oil:     {oil}",
         f"Bitcoin:       {btc}",
     ]
-
-    # Shock / defensive from risk_engine
-    shock = re_data.get("shock_probability", {})
-    dtrig = re_data.get("defensive_trigger", {})
-    if shock:
-        mc_lines.append(f"Shock probability: {shock.get('value','?')}% ({shock.get('label','?')}, {shock.get('trend','?')})")
-    if dtrig:
-        mc_lines.append(f"Defensive trigger: {dtrig.get('status','?')} | {dtrig.get('reason','?')[:60]}")
 
     # Key Stocks
     # Leveraged ETFs + mega-cap watchlist from core_price_snapshot
@@ -502,6 +494,14 @@ def build_context(
     if dd_pct is not None:
         tr_lines.append(f"QQQ drawdown from peak: {dd_pct:.2f}%")
 
+    # Risk overlay stays in section 07 only.
+    shock = re_data.get("shock_probability", {})
+    dtrig = re_data.get("defensive_trigger", {})
+    if shock:
+        tr_lines.append(f"Shock probability: {shock.get('value','?')}% ({shock.get('label','?')}, {shock.get('trend','?')})")
+    if dtrig:
+        tr_lines.append(f"Defensive trigger: {dtrig.get('status','?')} | {dtrig.get('reason','?')[:60]}")
+
     # Recent regime history (last 3)
     history = rv1.get("history", [])[-3:]
     if history:
@@ -529,7 +529,7 @@ def build_context(
 def build_hook(ctx: dict[str, str], rv1: dict, re_data: dict) -> str:
     # Direction: parse SPY line from market_flow
     spy_line = next((ln for ln in ctx["market_flow"].splitlines() if ln.startswith("SPY:")), "")
-    direction = "Equity markets moved"
+    direction = "U.S. equities moved"
     try:
         # e.g. "SPY: 655.24 (+0.75%)"
         import re
@@ -537,13 +537,13 @@ def build_hook(ctx: dict[str, str], rv1: dict, re_data: dict) -> str:
         if m:
             pct = float(m.group(1))
             if pct > 1.5:
-                direction = f"Equity markets rallied strongly (+{pct:.2f}%)"
+                direction = f"U.S. equities rallied strongly (+{pct:.2f}%)"
             elif pct > 0:
-                direction = f"Equity markets edged higher (+{pct:.2f}%)"
+                direction = f"U.S. equities edged higher (+{pct:.2f}%)"
             elif pct < -1.5:
-                direction = f"Equity markets sold off sharply ({pct:.2f}%)"
+                direction = f"U.S. equities sold off sharply ({pct:.2f}%)"
             else:
-                direction = f"Equity markets slipped ({pct:.2f}%)"
+                direction = f"U.S. equities slipped ({pct:.2f}%)"
     except Exception:
         pass
 
@@ -568,17 +568,10 @@ def build_hook(ctx: dict[str, str], rv1: dict, re_data: dict) -> str:
     else:
         pressure = "amid mixed volatility signals"
 
-    # Regime: MSS level
-    curr   = rv1.get("current", {})
-    mss    = curr.get("score", 100)
-    level  = curr.get("level", 0)
-    zone   = curr.get("score_zone", "")
-    regime = f"the market structure registers {zone} (MSS {mss}, Level {level})"
-
     hook_driver = str(ctx.get("hook_driver", "") or "").strip()
     if hook_driver:
-        return f"{direction} {pressure}, and {regime}. Primary catalyst on the tape: {hook_driver}"
-    return f"{direction} {pressure}, and {regime}."
+        return f"{direction} as {hook_driver}, with volatility {pressure}."
+    return f"{direction}, with volatility {pressure}."
 
 
 # ?? Risk Check (rule-based) ???????????????????????????????????????????????????
@@ -637,20 +630,19 @@ def build_one_line(sections: list[dict], rv1: dict) -> str:
     bear    = signals.count("bear")
     caution = signals.count("caution")
 
-    if level >= 4:
-        stance = "Structural risk is elevated, and breadth is deteriorating beneath surface strength"
-    elif bear >= 4 or (level >= 3):
-        stance = "Defensive posture warranted across multiple dimensions"
-    elif bull >= 5:
-        stance = "Broad-based strength with constructive structure"
-    elif bull >= 3 and caution <= 2:
-        stance = "Cautiously constructive, momentum present but regime caution persists"
+    if bull >= 5:
+        stance = "Market tone is constructive, with leadership broadening beyond one index"
+    elif level >= 4 or bear >= 4:
+        stance = "Market tone is defensive, with catalysts and breadth leaning risk-off"
     elif caution >= 3:
-        stance = "Mixed signals dominate, and patience and selectivity are rewarded here"
+        stance = "Market tone is mixed, with selective leadership and uneven follow-through"
     else:
-        stance = "Consolidating with no clear directional conviction"
+        stance = "Market tone is balanced, with headlines driving rotation more than a full trend"
 
-    return f"{stance}. {zone} regime (MSS {mss})."
+    risk_tail = "Section 07 carries the explicit risk overlay."
+    if level >= 3:
+        risk_tail = "Section 07 carries the explicit risk overlay and should be read carefully."
+    return f"{stance}. {risk_tail}"
 
 
 def enforce_required_mentions(
@@ -706,8 +698,6 @@ def build_fallback_section_payload(section_id: str, section_text: str, rv1: dict
     level = int((rv1.get("current", {}) or {}).get("level", 0) or 0)
     if section_id == "technical_regime":
         signal = "bear" if level >= 4 else "caution" if level >= 2 else "neutral"
-    elif section_id in {"market_flow", "sector_structure", "stock_moves"}:
-        signal = "caution" if level >= 3 else "neutral"
     else:
         signal = "neutral"
 
@@ -724,36 +714,28 @@ def build_fallback_section_payload(section_id: str, section_text: str, rv1: dict
 SYSTEM_PROMPT = """\
 You are a senior market analyst writing the daily briefing for sophisticated retail investors.
 
-Your writing style is explanatory, analytical, and conversational, like a veteran trader narrating the session to an intelligent colleague.
-Explain the WHY behind the numbers, not just the numbers themselves.
-Write in complete, connected sentences with natural narrative flow.
-Avoid mechanical bullet points, isolated one-liners, and generic filler phrases.
-
-This briefing must NOT read like an index-recap.
-Index level and % change are supporting evidence, not the main story.
+Your job is to write a market front-page brief, not a risk memo.
+Sections 01-06 should read like the day's market headline package:
+market tone, news, rotation, macro backdrop, movers, and calendar.
+Section 07 is the only place where explicit MSS / gate / regime risk language should appear.
 
 Hard constraints:
-1) Lead with catalysts first, numbers second.
-2) If MANDATORY NARRATIVE DRIVERS include geopolitical/policy items (Trump, Iran, Hormuz, tariffs, speech), explicitly mention them and explain transmission chain:
-   catalyst -> oil/rates/volatility -> sector/style reaction.
-3) Key Stocks section must analyze at most 3 names with cause-and-effect language. If TSLA is in watchlist/headlines, TSLA must be included.
-4) Macro & Commodities section must interpret DXY/VIX/US10Y/Oil (why they moved, what pressure channel they imply), not just recite levels.
-5) Do not start every sentence with ticker symbols. Use varied narrative structure.
-6) Keep each "structural" and "implication" at 2-5 sentences depending on substance.
-7) "one_line" / "one_line_ko" must still carry substance (not generic). Include:
-   - dominant catalyst,
-   - transmission channel,
-   - current posture/risk takeaway.
+1) Lead with the day's mood and catalysts, not with a defensive risk narrative.
+2) Do not make QQQ/TQQQ the center of gravity; use broad market, sectors, movers, and events first.
+3) If geopolitical or policy items appear (Trump, Iran, Hormuz, tariffs, speech), explain the transmission chain, but keep the framing market-wide.
+4) Key Stocks section must analyze at most 3 names with cause-and-effect language. If TSLA is in watchlist/headlines, TSLA must be included.
+5) Macro & Rates section must interpret DXY/VIX/US10Y/Oil/BTC (why they moved and what they imply).
+6) Section 07 should carry the explicit risk overlay: MSS, zone, drawdown, shock probability, and defensive trigger.
+7) Keep each field concise but substantive. Do not pad.
+8) "hook" / "one_line" should sound like a market front page headline with a catalyst and tone, not a risk alert.
 
 For each section provide:
-- "structural": What the data reveals about market structure right now. Start with a clear observation, then explain the mechanics behind it. Write as much as the material warrants - a thin day may need two sentences, a complex day may need five or six. Do not pad; do not cut a meaningful point short.
-- "implication": What this means for market participants going forward. Be forward-looking and specific. Length should match the substance.
-
-Be precise with numbers when they matter. Match your tone to conditions - if the regime is stressed, acknowledge it honestly without being alarmist. If it is healthy, say so clearly.
+- "structural": what the data reveals about current market structure or tone.
+- "implication": what it means for participants going forward.
 
 For each section also provide Korean translations:
-- "structural_ko": Korean translation of structural (natural financial Korean, not literal)
-- "implication_ko": Korean translation of implication
+- "structural_ko"
+- "implication_ko"
 
 At the top level provide all of:
 - "hook" (English)
@@ -762,17 +744,11 @@ At the top level provide all of:
 - "one_line_ko" (Korean)
 
 Korean quality rules (strict):
-1) Korean text must be meaning-equivalent to English text in the same field. Do not introduce new facts, names, numbers, or conclusions in Korean that are absent in English.
-2) Prefer natural Korean finance phrasing over literal calques.
-3) Avoid awkward/jargon-heavy wording when a common Korean term exists.
-   - exogenous shock -> usually "외부 충격" (or "예상 밖 충격" when context fits)
-   - tape -> "장중 흐름" or "시장 흐름"
-   - event-mode -> "이벤트 장세"
-   - repricing -> "재평가"
-   - meltdown/whipsaw -> use natural Korean market expressions
-4) Keep Korean sentences concise and readable. Prioritize clarity over word-for-word fidelity.
-5) Keep proper nouns/tickers exactly as in English (TSLA, QQQ, VIX, US10Y, Hormuz, etc.).
-6) "one_line_ko" should be one dense sentence with catalyst + channel + stance, not a vague slogan.
+1) Korean text must match the English meaning.
+2) Prefer natural Korean finance phrasing over literal translation.
+3) Keep proper nouns/tickers exactly as in English.
+4) "one_line_ko" should be a dense market headline with catalyst + tone + posture.
+5) Do not put section-07 risk language into sections 01-06.
 
 "signal" must be exactly one of: "bull", "caution", "bear", "neutral"
 Respond ONLY with valid JSON - no markdown fences, no extra text.\
@@ -790,25 +766,25 @@ LIVE HEADLINE TAPE (prioritized):
 WATCHLIST FOCUS:
 {watchlist_focus}
 
-SECTION 1 - MARKET FLOW
+SECTION 1 - MARKET PULSE
 {market_flow}
 
-SECTION 2 - EVENT DRIVERS
+SECTION 2 - NEWS & CATALYSTS
 {event_drivers}
 
-SECTION 3 - SECTOR STRUCTURE
+SECTION 3 - SECTOR ROTATION
 {sector_structure}
 
-SECTION 4 - MACRO & COMMODITIES
+SECTION 4 - MACRO & RATES
 {macro_commodities}
 
-SECTION 5 - STOCK-LEVEL MOVES
+SECTION 5 - MOVERS & WATCHLIST
 {stock_moves}
 
-SECTION 6 - ECONOMIC DATA
+SECTION 6 - EARNINGS & CALENDAR
 {economic_data}
 
-SECTION 7 - TECHNICAL & REGIME
+SECTION 7 - RISK & REGIME
 {technical_regime}
 
 Generate a JSON object with exactly this structure (no extra keys):
@@ -863,18 +839,19 @@ Return ONLY valid JSON (no markdown):
 KO_ONLY_SYSTEM_PROMPT = """\
 당신은 한국 개인 투자자를 위한 일일 마켓 브리핑을 작성하는 시니어 마켓 애널리스트입니다.
 
-분석은 인과관계 중심으로 서술하세요. 숫자 나열이 아닌 WHY(왜 움직였나)를 설명하세요.
-지수 레벨·등락률은 근거로만 활용하고, 메인 스토리는 촉매와 파급 경로입니다.
+이 브리핑은 시장의 하루 분위기를 전하는 프런트 페이지여야 합니다.
+01~06 섹션은 뉴스, 촉매, 섹터 순환, 매크로, 종목 움직임, 일정으로 구성하고,
+07 섹션에서만 MSS / Gate / regime / risk overlay를 명시적으로 다루세요.
 
 필수 조건:
-1) 촉매 먼저, 숫자는 나중에.
-2) 지정학·정책 이벤트(트럼프, 이란, 호르무즈, 관세, 파월)가 있으면 전달 경로를 명확히:
-   촉매 → 유가/금리/변동성 → 섹터/스타일 반응.
-3) structural_ko: 지금 시장 구조에서 데이터가 말하는 것 (2-5문장, 내용에 맞게).
-4) implication_ko: 시장 참여자 관점의 시사점, 전망 지향적으로 (2-5문장).
-5) hook_ko: 오늘 세션 핵심 한 줄 (50자 이내, 촉매+반응 포함).
-6) one_line_ko: 촉매 + 전달경로 + 포지션 시사점을 담은 밀도 높은 한 문장.
-7) signal: "bull", "caution", "bear", "neutral" 중 정확히 하나.
+1) 촉매와 시장 분위기를 먼저 쓰고, 위험도 문구는 07 섹션으로만 제한하세요.
+2) QQQ/TQQQ만 중심에 두지 말고, 광범위한 시장, 섹터, 종목, 이벤트를 균형 있게 다루세요.
+3) 지정학·정책 이벤트(트럼프, 이란, 호르무즈, 관세, 파월)가 있으면 시장에 미치는 전달 경로를 설명하세요.
+4) structural_ko: 현재 시장 구조나 분위기를 설명하는 2-5문장.
+5) implication_ko: 시장 참여자 관점의 시사점, 전개 방향을 담은 2-5문장.
+6) hook_ko: 오늘 세션을 대표하는 시장 헤드라인 한 줄.
+7) one_line_ko: 촉매 + 분위기 + 포지션 시사점을 담은 밀도 높은 한 문장.
+8) signal: "bull", "caution", "bear", "neutral" 중 정확히 하나.
 
 문장 스타일: 자연스러운 금융 한국어. 직역 금지. 틱커/고유명사는 원문 그대로 (TSLA, QQQ, VIX 등).
 Respond ONLY with valid JSON - no markdown fences, no extra text.\
@@ -892,25 +869,25 @@ LIVE HEADLINE TAPE (prioritized):
 WATCHLIST FOCUS:
 {watchlist_focus}
 
-SECTION 1 - MARKET FLOW
+SECTION 1 - MARKET PULSE
 {market_flow}
 
-SECTION 2 - EVENT DRIVERS
+SECTION 2 - NEWS & CATALYSTS
 {event_drivers}
 
-SECTION 3 - SECTOR STRUCTURE
+SECTION 3 - SECTOR ROTATION
 {sector_structure}
 
-SECTION 4 - MACRO & COMMODITIES
+SECTION 4 - MACRO & RATES
 {macro_commodities}
 
-SECTION 5 - STOCK-LEVEL MOVES
+SECTION 5 - MOVERS & WATCHLIST
 {stock_moves}
 
-SECTION 6 - ECONOMIC DATA
+SECTION 6 - EARNINGS & CALENDAR
 {economic_data}
 
-SECTION 7 - TECHNICAL & REGIME
+SECTION 7 - RISK & REGIME
 {technical_regime}
 
 Generate a JSON object with ONLY Korean fields:

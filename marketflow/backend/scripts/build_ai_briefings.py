@@ -59,12 +59,12 @@ SOURCE_WEIGHTS = {
 RECENCY_DECAY_PER_DAY = 0.12
 RECENCY_MIN_FACTOR = 0.35
 FIXED_DAILY_SECTIONS = [
-    "주요 지수 실적",
-    "섹터별 수익률",
-    "원자재 및 채권 시장",
-    "주요 종목 및 이슈",
-    "경제지표 및 연준",
-    "시장 포지셔닝",
+    "Market Tone",
+    "News & Catalysts",
+    "Sector Rotation",
+    "Macro & Rates",
+    "Movers & Watchlist",
+    "Earnings & Calendar",
 ]
 
 
@@ -730,14 +730,14 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "title": LAYER_TITLES[layer],
             "summary": {
-                "ko": f"{phase_label} 구간에서 Gate {gate_value}, {risk_label}, {trend_label}를 함께 확인하는 방어적 구간입니다.",
-                "en": f"Transition phase with Gate {gate_value}, {risk_label}, and {trend_label} still argues for a defensive posture.",
+                "ko": f"{phase_label} ???? Gate {gate_value}, {risk_label}, {trend_label}? ?? ???? ??? ??????.",
+                "en": f"Defensive brief watching Gate {gate_value}, {risk_label}, and {trend_label} in the current phase.",
             },
             "paragraphs": {
                 "ko": [
-                    f"현재 상태는 {phase_label}이며 Gate {gate_value}, 리스크 {risk_level}, 추세 {trend_label}가 함께 보입니다.",
-                    "변동성과 브레드스는 혼조라서 단기 방향은 가격보다 압력 완화 여부에 더 민감합니다.",
-                    f"노출은 {action_band} 정도를 유지하고, {action_reason}를 확인할 때까지 선택적으로 대응하세요.",
+                    f"?? ??? {phase_label}?? Gate {gate_value}, ??? {risk_level}, ?? {trend_label}? ?? ????.",
+                    "???? breadth? ?? ???? ??, ?? ???? ??/?? ??? ?? ?? ???.",
+                    f"??? {action_band} ??? ????, {action_reason}? ???? ??? ????? ??? ???.",
                 ],
                 "en": [
                     f"The current state is {phase_label} with Gate {gate_value}, risk {risk_level}, and trend {trend_label} still in view.",
@@ -747,9 +747,9 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
             },
             "warnings": {
                 "ko": [
-                    "Gate가 50 아래로 내려가면 현재 균형이 약해집니다.",
-                    "VIX 가속이나 브레드스 악화는 추세보다 빠르게 체감될 수 있습니다.",
-                    f"200일선 이탈은 {action_label}보다 더 방어적인 전환이 필요할 수 있습니다.",
+                    "Gate? 50 ??? ???? ?? ??? ?????.",
+                    "VIX? ? ???? breadth? ???? ????? ? ?? ??? ? ????.",
+                    f"200?? ??? ??? {action_label}?? ? ???? ??? ??? ? ????.",
                 ],
                 "en": [
                     "A drop of Gate below 50 would weaken the current balance.",
@@ -768,14 +768,14 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "title": LAYER_TITLES[layer],
             "summary": {
-                "ko": f"매크로 압력은 {macro_state}로 보이며, 정책/유동성/변동성 입력은 아직 확정적이지 않습니다.",
+                "ko": f"??? ??? {macro_state} ????, ??/???/??? ??? ?? ??? ???? ?????.",
                 "en": f"Macro pressure sits in a {macro_state} state, and the policy/liquidity/volatility blend is still incomplete.",
             },
             "paragraphs": {
                 "ko": [
-                    f"매크로 압력은 {macro_state}이며 점수 {macro_score}, 신뢰도 {macro_conf}로 읽힙니다.",
-                    f"공식은 {macro_formula}이고, 현재 입력은 {', '.join(inputs[:3]) if inputs else 'partial inputs'} 상태입니다.",
-                    "정책/유동성/변동성 입력이 안정될 때까지는 매크로 신호를 보수적으로 해석하세요.",
+                    f"??? ??? {macro_state}?? ?? {macro_score}, ??? {macro_conf}? ?????.",
+                    f"??? {macro_formula}??, ?? ??? {', '.join(inputs[:3]) if inputs else 'partial inputs'} ?????.",
+                    "??/???/??? ??? ??? ??? ??? ???? ????? ?????.",
                 ],
                 "en": [
                     f"Macro pressure is reading as {macro_state} with score {macro_score} and confidence {macro_conf}.",
@@ -785,9 +785,9 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
             },
             "warnings": {
                 "ko": [
-                    "점수가 비어 있거나 부분 입력이면 해석 강도를 낮추세요.",
-                    "부분 입력이 지속되면 다음 노출 조정은 지연될 수 있습니다.",
-                    "정책과 변동성이 동시에 흔들리면 추세보다 빠르게 체감될 수 있습니다.",
+                    "??? ?? ??? ?? ???? ?? ??? ????.",
+                    "?? ??? ???? ?? ?? ??? ??? ? ????.",
+                    "??? ???? ?? ???? ???? ? ??? ???? ???? ? ????.",
                 ],
                 "en": [
                     "If the score is partial or missing, lower the confidence in the macro read.",
@@ -802,46 +802,45 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     briefing_lines = daily_paragraphs_en[:3] or report_lines_en[:3] or [
-        f"Trend intact; risk level {risk_level}.",
+        f"Trend intact; macro state {macro_state}.",
         f"Keep exposure aligned with {action_band}.",
-        f"Watch Gate {gate_value} and macro confirmation.",
+        "See the standard risk brief for the explicit risk overlay.",
     ]
     return {
         "title": LAYER_TITLES[layer],
         "summary": {
-            "ko": daily_headline or f"{phase_label} / {risk_zone or risk_level}를 다시 확인하는 통합 브리프입니다.",
-            "en": daily_headline or f"Integrated brief rechecking the {phase_label} / {risk_zone or risk_level} combination.",
+            "ko": daily_headline or f"{phase_label}? {macro_state}? ???? ?? ?? ??????.",
+            "en": daily_headline or f"Integrated brief reading today's market tone through {phase_label} and {macro_state}.",
         },
         "paragraphs": {
             "ko": [
-                daily_headline or f"오늘 브리프는 {phase_label} / {risk_zone or risk_level} 조합을 다시 확인합니다.",
+                daily_headline or f"??? ???? {phase_label}? {macro_state}? ???? ?? ???? ?????.",
                 briefing_lines[0],
-                briefing_lines[1] if len(briefing_lines) > 1 else f"노출은 {action_band} 정도를 유지하세요.",
-                f"기술/매크로/리스크가 함께 정렬될 때만 {action_label} 쪽으로 확장하세요.",
+                briefing_lines[1] if len(briefing_lines) > 1 else f"??? {action_band} ??? ?????.",
+                "Risk overlay? standard risk brief?? ??? ?????.",
             ],
             "en": [
-                daily_headline or f"Today’s brief rechecks the {phase_label} / {risk_zone or risk_level} combination.",
+                daily_headline or f"Today's brief rechecks the market tone through {phase_label} and {macro_state}.",
                 briefing_lines[0],
                 briefing_lines[1] if len(briefing_lines) > 1 else f"Keep exposure around {action_band}.",
-                f"Only widen risk when the technical, macro, and risk layers improve together.",
+                "See the standard risk brief for the explicit risk overlay.",
             ],
         },
         "warnings": {
             "ko": [
-                "트렌드가 유지돼도 매크로 입력이 흔들리면 노출 확장은 보류하세요.",
-                "브레드스 악화가 먼저 나오면 통합 브리프가 방어적으로 바뀔 수 있습니다.",
+                "?? ???? ???? ???? ??, explicit risk overlay? standard risk brief?? ?????.",
+                "Breadth? ?? ???? ?? ???? ? ????? ????.",
             ],
             "en": [
-                "Even if trend holds, pause any exposure increase when the macro layer is still unstable.",
+                "The integrated brief should stay headline-led; check the standard risk brief for the explicit risk overlay.",
                 "If breadth deteriorates first, the integrated brief should turn more defensive.",
             ],
         },
         "highlights": {
-            "ko": [phase_label, f"Gate {gate_value} / {risk_zone or risk_level}", f"Macro {macro_state}"],
-            "en": [phase_label, f"Gate {gate_value} / {risk_zone or risk_level}", f"Macro {macro_state}"],
+            "ko": [phase_label, f"Market tone {trend_label}", f"Macro {macro_state}"],
+            "en": [phase_label, f"Market tone {trend_label}", f"Macro {macro_state}"],
         },
     }
-
 
 def _provider_choice() -> Optional[AIProvider]:
     forced = os.getenv("AI_BRIEF_PROVIDER", "auto").strip().lower()
@@ -878,43 +877,45 @@ def _build_prompt(context: Dict[str, Any]) -> Tuple[str, str]:
 
     system = "\n".join(
         [
-            "너는 Terminal-X.ai의 Daily Briefing 전문 Agent다.",
-            "입력 데이터만 사용하고 추측하지 마라.",
-            "근거가 부족한 항목은 반드시 '데이터 없음'으로 표기한다.",
-            "헤징(가능성, 전망, 기대 표현) 없이 단정적이고 간결한 한국어로 작성한다.",
-            "반드시 JSON 객체 하나만 출력하고 마크다운 코드블록을 사용하지 마라.",
+            "You are the Terminal-X.ai daily briefing agent.",
+            "Write a market front page, not a risk memo.",
+            "Sections 01-06 must focus on overall market tone, news, sector rotation, macro, movers, and calendar flow.",
+            "Keep explicit MSS / gate / defensive-risk language only in the standard risk layer.",
+            "Use the evidence and search logs as support, but write a clean front-page narrative.",
+            "Return one JSON object only, and keep the output compact and readable.",
         ]
     )
     user = "\n".join(
         [
-            "아래 구조화 데이터를 바탕으로 오늘 미국 증시의 핵심 테마를 작성해라.",
+            "Build the integrated daily briefing for the U.S. market.",
             "",
-            "규칙:",
-            "1) 타이틀은 아래 6개를 고정 순서로 사용.",
-            "   - 주요 지수 실적",
-            "   - 섹터별 수익률",
-            "   - 원자재 및 채권 시장",
-            "   - 주요 종목 및 이슈",
-            "   - 경제지표 및 연준",
-            "   - 시장 포지셔닝",
-            "2) 각 타이틀별 subtitles는 2~4개.",
-            "3) 수익률 나열보다 시장을 움직인 구조/원인 중심.",
-            "4) impact_score가 높은 근거부터 반영.",
-            "5) agent_thinking에는 search_logs를 원문 그대로 포함.",
+            "Structure rules:",
+            "1) Use exactly the six fixed front-page themes below.",
+            "   - Market Tone",
+            "   - News & Catalysts",
+            "   - Sector Rotation",
+            "   - Macro & Rates",
+            "   - Movers & Watchlist",
+            "   - Earnings & Calendar",
+            "2) Summarize the market mood in one plain-language summary stack.",
+            "3) Keep the integrated brief headline-led; do not turn it into a risk note.",
+            "4) Mention the standard risk brief only as a separate risk overlay reference.",
+            "5) Use 2-4 subtitles per theme and keep them market-facing.",
+            "6) If evidence is thin, stay neutral rather than forcing a defensive tone.",
             "",
-            "출력 JSON 스키마:",
+            "Output JSON schema:",
             "{",
-            '  "summary_stack": "한 줄 초요약",',
+            '  "summary_stack": "...",',
             '  "ai_brief": [',
-            '    { "title": "주요 지수 실적", "subtitles": ["서브1", "서브2"] },',
-            '    { "title": "섹터별 수익률", "subtitles": ["서브1", "서브2"] },',
-            '    { "title": "원자재 및 채권 시장", "subtitles": ["서브1", "서브2"] },',
-            '    { "title": "주요 종목 및 이슈", "subtitles": ["서브1", "서브2"] },',
-            '    { "title": "경제지표 및 연준", "subtitles": ["서브1", "서브2"] },',
-            '    { "title": "시장 포지셔닝", "subtitles": ["서브1", "서브2"] }',
+            '    { "title": "Market Tone", "subtitles": ["...", "..."] },',
+            '    { "title": "News & Catalysts", "subtitles": ["...", "..."] },',
+            '    { "title": "Sector Rotation", "subtitles": ["...", "..."] },',
+            '    { "title": "Macro & Rates", "subtitles": ["...", "..."] },',
+            '    { "title": "Movers & Watchlist", "subtitles": ["...", "..."] },',
+            '    { "title": "Earnings & Calendar", "subtitles": ["...", "..."] }',
             "  ],",
-            '  "stance": { "stance": "Defensive", "action": "Reduce", "exposure": "20-40%" },',
-            '  "agent_thinking": ["검색 로그1", "검색 로그2"]',
+            '  "stance": { "stance": "Balanced", "action": "Hold", "exposure": "40-60%" },',
+            '  "agent_thinking": ["Search log 1", "Search log 2"]',
             "}",
             "",
             "search_logs:",
@@ -928,7 +929,6 @@ def _build_prompt(context: Dict[str, Any]) -> Tuple[str, str]:
         ]
     )
     return system, user
-
 
 def _call_openai(system: str, user: str) -> Tuple[str, str]:
     model = get_model(AIProvider.GPT)
@@ -1004,13 +1004,13 @@ def _default_daily_payload(context: Dict[str, Any]) -> Dict[str, Any]:
     top_lines = [row.get("text", "") for row in ranked if _text(row.get("text"))][:8]
     section_subtitles = _build_fixed_section_subtitles(context, top_lines)
 
-    phase = _text(_pick(context, "market_state", "phase"), "데이터 없음")
-    risk_label = _text(_pick(context, "market_state", "risk"), "데이터 없음")
-    trend = _text(_pick(context, "market_state", "trend"), "데이터 없음")
+    phase = _text(_pick(context, "market_state", "phase"), "????????")
+    risk_label = _text(_pick(context, "market_state", "risk"), "????????")
+    trend = _text(_pick(context, "market_state", "trend"), "????????")
     gate_value = _num(_pick(context, "market_state", "gate_value"), 0)
-    macro_state = _text(_pick(context, "macro", "state"), "데이터 없음")
+    macro_state = _text(_pick(context, "macro", "state"), "????????")
     action_label = _text(_pick(context, "action", "action_label"), "Hold")
-    exposure_band = _text(_pick(context, "action", "exposure_band"), "데이터 없음")
+    exposure_band = _text(_pick(context, "action", "exposure_band"), "????????")
 
     action_lower = action_label.lower()
     if any(word in action_lower for word in ("reduce", "defensive", "cut")):
@@ -1020,16 +1020,16 @@ def _default_daily_payload(context: Dict[str, Any]) -> Dict[str, Any]:
         stance_label = "Aligned"
         stance_action = "Add selectively"
     elif any(word in action_lower for word in ("hold", "wait", "neutral")):
-        stance_label = "Fragile"
+        stance_label = "Balanced"
         stance_action = "Hold"
     else:
-        stance_label = "Overexposed"
+        stance_label = "Selective"
         stance_action = "Trim risk"
 
     source_files = context.get("source_files", [])
     agent_thinking = [f"Searched cache::{path}" for path in source_files[:8]]
     if not agent_thinking:
-        agent_thinking = ["Searched cache::데이터 없음"]
+        agent_thinking = ["Searched cache::none"]
 
     ai_brief = [
         {"title": FIXED_DAILY_SECTIONS[idx], "subtitles": section_subtitles[idx]}
@@ -1047,7 +1047,7 @@ def _default_daily_payload(context: Dict[str, Any]) -> Dict[str, Any]:
     ]
 
     return {
-        "summary_stack": f"{phase} / {risk_label} / {trend} 구조에서 노출을 보수적으로 관리해야 합니다.",
+        "summary_stack": f"{phase} / {trend} / {macro_state} market tone with headlines and catalysts upfront.",
         "ai_brief": ai_brief,
         "stance": {
             "stance": stance_label,
@@ -1057,7 +1057,6 @@ def _default_daily_payload(context: Dict[str, Any]) -> Dict[str, Any]:
         "agent_thinking": agent_thinking,
         "sources": sources,
     }
-
 
 def _normalize_daily_payload(raw: Optional[Dict[str, Any]], context: Dict[str, Any]) -> Dict[str, Any]:
     fallback = _default_daily_payload(context)

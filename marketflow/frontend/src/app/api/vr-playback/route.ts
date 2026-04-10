@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { readCacheJson } from '@/lib/readCacheJson'
 import {
-  buildVRPlaybackView,
+  buildVRPlaybackTransportView,
   type RawStandardPlaybackArchive,
   type RawVRSurvivalPlaybackArchive,
   type VRPlaybackEventOverrides,
@@ -11,6 +11,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const eventId = searchParams.get('event_id')
+    const playbackEventId = searchParams.get('playback_event_id')
     const simStart = searchParams.get('sim_start') ?? undefined
     const simCapital = searchParams.get('sim_capital')
     const simStockPct = searchParams.get('sim_stock_pct')
@@ -34,11 +35,12 @@ export async function GET(request: Request) {
           }
         : undefined
 
-    const data = buildVRPlaybackView({
+    const data = buildVRPlaybackTransportView({
       standardArchive,
       survivalArchive,
       rootDir: process.cwd(),
       eventOverrides,
+      focusEventId: playbackEventId,
     })
 
     if (!data) {

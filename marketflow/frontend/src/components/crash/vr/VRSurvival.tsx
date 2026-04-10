@@ -4,7 +4,7 @@
 
 
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 
 import {
@@ -71,6 +71,8 @@ import type { VrTimelineRow } from '../../../lib/formatVrTimeline'
 import {
 
   buildVariantForCap,
+
+  buildExecutionPlayback,
 
   type ExecutionPlaybackSource,
 
@@ -7948,7 +7950,7 @@ function PlaybackTab({
   const [cyclePoolCap, setCyclePoolCap] = useState<'30' | '40' | '50' | 'unlimited'>(
 
 
-    initialEvent?.execution_playback.default_cap_option ?? '50'
+    initialEvent?.execution_playback?.default_cap_option ?? '50'
 
 
   )
@@ -8013,6 +8015,17 @@ function PlaybackTab({
 
   const selected = events.find((event) => event.id === selId) ?? events[0]
 
+  const selectedExecutionPlayback = useMemo(() => {
+    if (executionOverride?.execution_playback) return executionOverride.execution_playback
+    if (selected?.execution_playback) return selected.execution_playback
+    if (!selected) return null
+    try {
+      return buildExecutionPlayback(selected as unknown as ExecutionPlaybackSource)
+    } catch {
+      return null
+    }
+  }, [executionOverride?.execution_playback, selected?.execution_playback, selected?.id])
+
 
   const groupedEvents = PLAYBACK_SUITE_GROUP_ORDER.map((group) => ({
 
@@ -8033,7 +8046,7 @@ function PlaybackTab({
 
 
     if (!selected) return
-    setCyclePoolCap(selected.execution_playback.default_cap_option)
+    setCyclePoolCap(selectedExecutionPlayback?.default_cap_option ?? '50')
 
 
     setPlaybackLayer('cycle')
@@ -8069,7 +8082,7 @@ function PlaybackTab({
     setVariantCache({})
 
 
-  }, [selected?.id, selected?.execution_playback?.default_cap_option])
+  }, [selected?.id, selectedExecutionPlayback?.default_cap_option])
 
 
 
@@ -8120,9 +8133,9 @@ function PlaybackTab({
   useEffect(() => {
 
 
-    if (!selected?.execution_playback) return
+    if (!selectedExecutionPlayback) return
 
-    const ep = selected.execution_playback
+    const ep = selectedExecutionPlayback
 
 
     if (ep.variants[cyclePoolCap] || variantCache[cyclePoolCap]) return
@@ -8140,7 +8153,7 @@ function PlaybackTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
 
-  }, [cyclePoolCap, selected?.id])
+  }, [cyclePoolCap, selected?.id, selectedExecutionPlayback])
 
 
 
@@ -8221,7 +8234,33 @@ function PlaybackTab({
   const activeCycleNo = resolvedActiveCycle?.cycle_no ?? null
 
 
-  const _ep = executionOverride?.execution_playback ?? selected.execution_playback
+  const _ep = executionOverride?.execution_playback ?? selectedExecutionPlayback
+
+  if (!_ep) {
+
+    return (
+
+      <PlaceholderSection
+
+        eyebrow="Playback"
+
+        title="Historical Playback"
+
+        note="Playback archive is available, but the selected event could not hydrate its execution payload."
+
+        cards={[
+
+          { label: 'Event Selector', text: 'Playback event loaded without execution payload' },
+
+          { label: 'VR Readiness', text: 'Unavailable' },
+
+        ]}
+
+      />
+
+    )
+
+  }
 
 
   const executionVariant =
@@ -8242,7 +8281,7 @@ function PlaybackTab({
   const displayedExecutionVariant =
 
 
-    executionMode === 'original' ? (executionOverride?.execution_playback ?? selected.execution_playback).original_vr : executionVariant
+    executionMode === 'original' ? _ep.original_vr : executionVariant
 
 
   const comparisonView =
@@ -14237,6 +14276,8 @@ export default function VRSurvival({
     playbackFetchRef.current = true
 
     const params = new URLSearchParams()
+
+    if (initialPlaybackEventId) params.set('playback_event_id', initialPlaybackEventId)
 
     if (simParams?.event_id) params.set('event_id', simParams.event_id)
 

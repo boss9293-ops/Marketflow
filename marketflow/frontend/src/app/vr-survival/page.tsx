@@ -7,7 +7,7 @@ import VRSurvival, {
 import VRRiskTracksCard           from '@/components/vr/VRRiskTracksCard'
 import { buildStrategyArena, type StrategyArenaView } from '../../../../../vr/arena/compute_strategy_arena'
 import {
-  buildVRPlaybackView,
+  buildVRPlaybackTransportView,
   type RawStandardPlaybackArchive,
   type RawVRSurvivalPlaybackArchive,
   type VRPlaybackEventOverrides,
@@ -141,7 +141,7 @@ async function loadPlaybackArtifacts(simParams?: {
   sim_start?: string
   sim_capital?: string
   sim_stock_pct?: string
-}): Promise<PlaybackArtifacts> {
+}, focusEventId?: string): Promise<PlaybackArtifacts> {
   const [standardArchive, survivalArchive] = await Promise.all([
     readCacheJson<RawStandardPlaybackArchive | null>('risk_v1_playback.json', null),
     readCacheJson<RawVRSurvivalPlaybackArchive | null>('vr_survival_playback.json', null),
@@ -166,12 +166,13 @@ async function loadPlaybackArtifacts(simParams?: {
 
   try {
     playbackData =
-      buildVRPlaybackView({
+      buildVRPlaybackTransportView({
         standardArchive,
         survivalArchive,
         rootDir: process.cwd(),
         eventOverrides,
-      }) ?? null
+        focusEventId,
+      }) as VRPlaybackView | null
   } catch {
     playbackData = null
   }
@@ -230,7 +231,7 @@ export default async function VRSurvivalPage({
   const [raw, riskV1, playbackArtifacts] = await Promise.all([
     readCacheJson<VRSurvivalData | null>('vr_survival.json', null),
     readRiskV1Current(),
-    loadPlaybackArtifacts(simParams),
+    loadPlaybackArtifacts(simParams, initialPlaybackEventId),
   ])
   const { playbackData, strategyArena } = playbackArtifacts
   const effectiveRaw = raw ?? buildFallbackSurvivalData(riskV1)

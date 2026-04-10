@@ -123,6 +123,92 @@ export type VRPlaybackView = {
   archive_event_count: number
 }
 
+export type VRPlaybackTransportEventView = Omit<VRPlaybackEventView, 'execution_playback'> & {
+  execution_playback?: ExecutionPlaybackCollection
+}
+
+export type VRPlaybackTransportView = {
+  events: VRPlaybackTransportEventView[]
+  archive_event_count: number
+}
+
+export type VRPlaybackBuildInput = {
+  standardArchive: RawStandardPlaybackArchive | null
+  survivalArchive: RawVRSurvivalPlaybackArchive | null
+  rootDir: string
+  eventOverrides?: VRPlaybackEventOverrides
+}
+
+function matchesPlaybackFocusEvent(
+  event: Pick<VRPlaybackEventView, 'id' | 'suite_id' | 'event_id' | 'name' | 'start'>,
+  focusEventId?: string | null,
+) {
+  if (!focusEventId) return false
+  return (
+    event.id === focusEventId ||
+    event.suite_id === focusEventId ||
+    event.event_id === focusEventId ||
+    event.name.startsWith(focusEventId) ||
+    event.start.startsWith(focusEventId)
+  )
+}
+
+export function buildVRPlaybackTransportView(
+  input: VRPlaybackBuildInput & { focusEventId?: string | null },
+): VRPlaybackTransportView | null {
+  const view = buildVRPlaybackView(input)
+  if (!view) return null
+
+  const focusEvent = view.events.find((event) => matchesPlaybackFocusEvent(event, input.focusEventId)) ?? view.events[0]
+  if (!focusEvent) return view
+
+  return {
+    ...view,
+    events: view.events.map((event) =>
+      event.id === focusEvent.id
+        ? event
+        : {
+            ...event,
+            execution_playback: undefined,
+          }
+    ),
+  }
+}
+
+function resolvePlaybackFallbackStartPoint(input: {
+  start: string
+  syntheticProxy: boolean
+  chart_data: Array<{
+    date: string
+    qqq_n: number | null
+    tqqq_n: number | null
+  }>
+}) {
+  const realPoint = input.chart_data.find((point) => typeof point.tqqq_n === 'number' && point.tqqq_n > 0)
+  if (realPoint && typeof realPoint.tqqq_n === 'number') {
+    return {
+      date: realPoint.date,
+      start_price: Number(realPoint.tqqq_n.toFixed(2)),
+      price_source: input.syntheticProxy ? ('synthetic_tqqq_3x' as const) : ('real_tqqq' as const),
+    }
+  }
+
+  const syntheticPoint = input.chart_data.find((point) => typeof point.qqq_n === 'number' && point.qqq_n > 0)
+  if (syntheticPoint && typeof syntheticPoint.qqq_n === 'number') {
+    return {
+      date: syntheticPoint.date,
+      start_price: Number(syntheticPoint.qqq_n.toFixed(2)),
+      price_source: 'synthetic_tqqq_3x' as const,
+    }
+  }
+
+  return {
+    date: input.start,
+    start_price: 100,
+    price_source: 'synthetic_tqqq_3x' as const,
+  }
+}
+
 const CURATED_PLAYBACK_SUITE: Array<{
   suite_id: string
   event_id: string
@@ -354,12 +440,7 @@ export type VRPlaybackEventOverrides = {
   stock_allocation_pct?: number
 }
 
-export function buildVRPlaybackView(input: {
-  standardArchive: RawStandardPlaybackArchive | null
-  survivalArchive: RawVRSurvivalPlaybackArchive | null
-  rootDir: string
-  eventOverrides?: VRPlaybackEventOverrides
-}): VRPlaybackView | null {
+export function buildVRPlaybackView(input: VRPlaybackBuildInput): VRPlaybackView | null {
   if (!input.standardArchive?.events?.length) return null
 
   const rawEventViews = input.standardArchive.events.map((event) => {
@@ -411,6 +492,11 @@ export function buildVRPlaybackView(input: {
     })
     const eventId = event.start.slice(0, 7)
     const ov = input.eventOverrides?.event_id === eventId ? input.eventOverrides : undefined
+    const fallbackStart = resolvePlaybackFallbackStartPoint({
+      start: event.start,
+      syntheticProxy,
+      chart_data: chartData,
+    })
     const cycleStart = initializeEventState({
       rootDir: input.rootDir,
       eventId,
@@ -422,6 +508,9 @@ export function buildVRPlaybackView(input: {
         stock_allocation_pct: ov.stock_allocation_pct != null ? ov.stock_allocation_pct / 100 : undefined,
         pool_allocation_pct: ov.stock_allocation_pct != null ? 1 - ov.stock_allocation_pct / 100 : undefined,
       } : undefined,
+      fallbackStartDate: fallbackStart.date,
+      fallbackStartPrice: fallbackStart.start_price,
+      fallbackStartPriceSource: fallbackStart.price_source,
     })
 
     const placeholderMessages =

@@ -4,11 +4,55 @@ import datetime as dt
 import csv
 import os
 import sqlite3
+import sys
 from typing import List, Tuple
 
 import requests
 
-from backend.services.cache_store import CacheStore, SeriesPoint
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _bootstrap_backend_root() -> None:
+    search_roots = [
+        SCRIPT_DIR,
+        os.path.dirname(SCRIPT_DIR),
+        os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..")),
+        os.getcwd(),
+    ]
+    target_rels = [
+        os.path.join("backend", "services", "cache_store.py"),
+        os.path.join("services", "cache_store.py"),
+    ]
+    seen: set[str] = set()
+    for root in search_roots:
+        current = os.path.abspath(root)
+        while current and current not in seen:
+            seen.add(current)
+            for target_rel in target_rels:
+                if os.path.exists(os.path.join(current, target_rel)):
+                    if current not in sys.path:
+                        sys.path.insert(0, current)
+                    return
+            parent = os.path.dirname(current)
+            if parent == current:
+                break
+            current = parent
+
+    for fallback in (
+        os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..")),
+        os.path.abspath(os.path.join(SCRIPT_DIR, "..")),
+        os.getcwd(),
+    ):
+        if fallback not in sys.path:
+            sys.path.insert(0, fallback)
+
+
+_bootstrap_backend_root()
+
+try:
+    from backend.services.cache_store import CacheStore, SeriesPoint
+except ModuleNotFoundError:
+    from services.cache_store import CacheStore, SeriesPoint
 
 PC_SYMBOL = "PUT_CALL"
 VIX_SYMBOL = "VIX"

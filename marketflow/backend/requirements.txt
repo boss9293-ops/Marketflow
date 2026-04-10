@@ -18,3 +18,4 @@ anthropic
 langgraph
 tavily-python
 gunicorn
+libsql

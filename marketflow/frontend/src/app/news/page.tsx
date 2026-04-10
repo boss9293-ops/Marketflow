@@ -122,6 +122,11 @@ export default function NewsPage() {
           </section>
         )}
 
+        {!loading && !error && !briefs.length && (
+          <section className="rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-slate-300">
+            No high-quality news matched the current filters yet.
+          </section>
+        )}
         <section className="grid gap-4 lg:grid-cols-2">
           {(loading ? Array.from({ length: 4 }) : briefs).map((item, index) => {
             if (loading) {

@@ -5,28 +5,50 @@ import os
 import hashlib
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
+from zoneinfo import ZoneInfo
 
 try:
     from backend.ai.ai_router import generate_text
     from backend.ai.providers import AIProvider
+    from backend.services.data_contract import artifact_path as contract_artifact_path
 except Exception:
     from ai.ai_router import generate_text  # type: ignore
     from ai.providers import AIProvider  # type: ignore
+    contract_artifact_path = None  # type: ignore[assignment]
 
 
 def _repo_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
+def _artifact_file(relative_path: str) -> str:
+    rel = str(relative_path or "").replace("\\", "/").strip("/")
+    if contract_artifact_path is not None:
+        try:
+            return str(contract_artifact_path(rel))
+        except Exception:
+            pass
+    if not rel:
+        return os.path.join(_repo_root(), "backend", "output")
+    if rel.startswith("cache/"):
+        return os.path.join(_repo_root(), "backend", "output", "cache", rel[len("cache/"):])
+    return os.path.join(_repo_root(), "backend", "output", rel)
+
+
 def _cache_file() -> str:
-    return os.path.join(_repo_root(), "backend", "output", "cache", "context_narrative_cache.json")
+    return _artifact_file("cache/context_narrative_cache.json")
 
 
 def _context_news_file() -> str:
-    return os.path.join(_repo_root(), "backend", "output", "cache", "context_news.json")
+    return _artifact_file("cache/context_news.json")
 
 def _usage_file() -> str:
-    return os.path.join(_repo_root(), "backend", "output", "cache", "context_narrative_usage.json")
+    return _artifact_file("cache/context_narrative_usage.json")
+
+
+ET_ZONE = ZoneInfo("America/New_York")
+MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
+MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
 
 
 def _read_json(path: str) -> Dict[str, Any]:
@@ -59,6 +81,16 @@ def _flags() -> Dict[str, Any]:
         "ENABLE_PORTFOLIO_NARRATIVE": _env_bool("ENABLE_PORTFOLIO_NARRATIVE", False),
         "ENABLE_PORTFOLIO_PLACEHOLDER": _env_bool("ENABLE_PORTFOLIO_PLACEHOLDER", True),
     }
+
+
+def _current_narrative_slot(now: Optional[datetime] = None) -> str:
+    local_now = (now or datetime.now(timezone.utc)).astimezone(ET_ZONE)
+    current_minutes = local_now.hour * 60 + local_now.minute
+    if current_minutes < MARKET_OPEN_MINUTES_ET:
+        return "preopen"
+    if current_minutes < MARKET_CLOSE_MINUTES_ET:
+        return "morning"
+    return "close"
 
 
 def _tone_from_sensors(sensor: Dict[str, Any], risk_token: Optional[str] = None, shock_flag: bool = False) -> str:
@@ -409,8 +441,8 @@ def _build_llm_narrative(template_payload: Dict[str, Any], region: str) -> Dict[
     }
 
 
-def _cache_key(date_str: str, region: str, tone: str) -> str:
-    return f"{date_str}:{region}:{tone}"
+def _cache_key(date_str: str, region: str, tone: str, slot: str) -> str:
+    return f"{date_str}:{region}:{tone}:{slot}"
 
 
 def build_context_narrative(
@@ -420,14 +452,17 @@ def build_context_narrative(
     shock_flag: bool = False,
     premium: bool = False,
     force: bool = False,
+    slot: Optional[str] = None,
 ) -> Dict[str, Any]:
     fl = _flags()
     now = datetime.now(timezone.utc)
-    date_key = now.strftime("%Y-%m-%d")
+    local_now = now.astimezone(ET_ZONE)
     context_news = _read_json(_context_news_file())
+    date_key = str(context_news.get("date") or local_now.strftime("%Y-%m-%d"))
     sensors = context_news.get("sensor_snapshot") or {}
     tone = _tone_from_sensors(sensors, risk_token=risk_token, shock_flag=shock_flag)
-    cache_key = _cache_key(date_key, region, tone)
+    slot_key = str(slot or context_news.get("slot") or _current_narrative_slot(now)).strip().lower() or _current_narrative_slot(now)
+    cache_key = _cache_key(date_key, region, tone, slot_key)
     cache = _read_json(_cache_file())
     cached = (cache.get("items") or {}).get(cache_key) if isinstance(cache.get("items"), dict) else None
     if isinstance(cached, dict) and not force:
@@ -453,6 +488,7 @@ def build_context_narrative(
     payload = {
         **out,
         "date": date_key,
+        "slot": slot_key,
         "region": region,
         "news_status": context_news.get("news_status"),
         "validation_status": context_news.get("validation_status", "Watch"),

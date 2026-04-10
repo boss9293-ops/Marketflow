@@ -73,7 +73,7 @@ def list_strategy_universe(
     category: str | None = None,
     limit: int = 200,
 ) -> Dict[str, Any]:
-    db_path = resolve_marketflow_db(required_tables=("universe_symbols",), prefer_engine=False)
+    db_path = resolve_marketflow_db(required_tables=("universe_symbols",), data_plane="live")
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:

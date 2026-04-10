@@ -7,7 +7,7 @@ Builds Standard Risk System v1 outputs:
   - output/risk_v1_playback.json
   - output/risk_v1_sim.json
 
-Data source: marketflow/backend/data/marketflow.db mirror (ticker_history_daily)
+Data source: marketflow/data/marketflow.db (live ticker_history_daily)
 Symbols: QQQ, TQQQ
 """
 from __future__ import annotations
@@ -37,7 +37,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 DB_PATH   = resolve_marketflow_db(
     required_tables=("ohlcv_daily",),
-    prefer_engine=True,
+    data_plane="live",
 )
 CACHE_DB  = os.path.join(DATA_DIR, "cache.db")
 

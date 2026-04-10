@@ -2,21 +2,43 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 
-import { ET_TIMEZONE, type ETDateString, type NewsDetail, type TickerNewsItem } from '@/lib/terminal-mvp/types'
-import { resolveNewsHistoryCandidates } from '@/lib/newsHistoryPaths'
+import { NextRequest, NextResponse } from 'next/server'
 
-// ?? Alpaca Benzinga news item ?????????????????????????????????????????????????
-type AlpacaNewsItem = {
-  id: number
-  headline: string
-  summary: string
-  author: string
-  created_at: string   // ISO8601
-  updated_at: string
-  url: string
-  images: Array<{ size: string; url: string }>
-  symbols: string[]
-  source: string       // e.g. "benzinga"
+import { hasPromoSignals, isFreeNewsSource, scoreNewsSource, scoreNewsText } from '@/lib/newsQuality'
+import { resolveNewsHistoryCandidates } from '@/lib/newsHistoryPaths'
+import { ET_TIMEZONE, type ETDateString, type NewsDetail, type TickerNewsItem } from '@/lib/terminal-mvp/types'
+import { upsertNewsDetails } from '@/lib/terminal-mvp/serverNewsStore'
+
+const TICKER_NEWS_CACHE_TTL_MS = 1000 * 60 * 30
+const TICKER_NEWS_HISTORY_MAX_ITEMS = 50
+const TICKER_NEWS_HISTORY_WINDOW_HOURS = 36
+const TICKER_NEWS_FETCH_ATTEMPTS = 2
+const TICKER_NEWS_RETRY_DELAY_MS = 250
+const TICKER_NEWS_HISTORY_PATHS = resolveNewsHistoryCandidates('ticker-news-history-v2-1630.json')
+const MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
+const MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
+
+const tickerNewsCache = new Map<string, { expiresAt: number; payload: BuiltTickerNewsPayload }>()
+const tickerNewsHistory = new Map<string, { timelineById: Map<string, TickerNewsItem>; detailsById: Map<string, NewsDetail> }>()
+let tickerHistoryLoaded = false
+let tickerHistoryWriteQueue: Promise<void> = Promise.resolve()
+
+type YahooRssItem = {
+  title: string
+  link: string
+  pubDateRaw: string
+  source: string
+  description: string
+}
+
+type StoredTickerNewsPayload = {
+  updatedAt: string
+  symbols: Record<string, { timeline: TickerNewsItem[]; details: NewsDetail[] }>
+}
+
+export type BuiltTickerNewsPayload = {
+  timeline: TickerNewsItem[]
+  details: NewsDetail[]
 }
 
 const decodeHtml = (raw: string): string =>
@@ -61,8 +83,8 @@ const getNewsCheckpointKey = (now: Date = new Date()): 'preopen' | 'open' | 'clo
   return 'close'
 }
 
-const buildIdFromAlpaca = (symbol: string, item: AlpacaNewsItem): string => {
-  const raw = `${symbol}|${item.id}|${item.created_at}`
+const buildIdFromYahoo = (symbol: string, item: YahooRssItem): string => {
+  const raw = `${symbol}|${item.link}|${item.pubDateRaw}|${item.title}`
   return `${symbol.toLowerCase()}-${createHash('sha1').update(raw).digest('hex').slice(0, 16)}`
 }
 
@@ -73,6 +95,7 @@ const inferTags = (headline: string, source: string): string[] => {
   if (tokens.includes('earnings') || tokens.includes('revenue')) tags.add('earnings')
   if (tokens.includes('guidance')) tags.add('guidance')
   if (tokens.includes('sec') || tokens.includes('doj') || tokens.includes('investigation')) tags.add('regulatory')
+  if (tokens.includes('fed') || tokens.includes('powell') || tokens.includes('rate')) tags.add('macro')
   if (!tags.size) tags.add('news')
   return [...tags]
 }
@@ -80,45 +103,11 @@ const inferTags = (headline: string, source: string): string[] => {
 const inferRelevanceScore = (symbol: string, headline: string, summary: string): number => {
   const text = `${headline} ${summary}`.toUpperCase()
   const directMentionBoost = text.includes(symbol.toUpperCase()) ? 0.2 : 0
-  const base = 0.5 + directMentionBoost
+  const topicalBoost = scoreNewsText(text) * 0.03
+  const sourceBoost = scoreNewsSource(headline) > 0 ? 0.05 : 0
+  const base = 0.48 + directMentionBoost + topicalBoost + sourceBoost
   return Math.max(0.35, Math.min(0.98, Number(base.toFixed(2))))
 }
-
-export type BuiltTickerNewsPayload = {
-  timeline: TickerNewsItem[]
-  details: NewsDetail[]
-}
-
-const TICKER_NEWS_CACHE_TTL_MS = 1000 * 60 * 30
-const TICKER_NEWS_HISTORY_MAX_ITEMS = 50  // ?뱀씪移섎쭔 蹂닿?
-const TICKER_NEWS_FETCH_ATTEMPTS = 2
-const TICKER_NEWS_RETRY_DELAY_MS = 250
-const TICKER_NEWS_HISTORY_PATHS = resolveNewsHistoryCandidates('ticker-news-history-v2-1630.json')
-const MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
-const MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
-const tickerNewsCache = new Map<string, { expiresAt: number; payload: BuiltTickerNewsPayload }>()
-const tickerNewsHistory = new Map<
-  string,
-  { timelineById: Map<string, TickerNewsItem>; detailsById: Map<string, NewsDetail> }
->()
-let tickerHistoryLoaded = false
-let tickerHistoryWriteQueue: Promise<void> = Promise.resolve()
-
-type StoredTickerNewsPayload = {
-  updatedAt: string
-  symbols: Record<
-    string,
-    {
-      timeline: TickerNewsItem[]
-      details: NewsDetail[]
-    }
-  >
-}
-
-const clonePayload = (payload: BuiltTickerNewsPayload): BuiltTickerNewsPayload => ({
-  timeline: payload.timeline.map((item) => ({ ...item })),
-  details: payload.details.map((item) => ({ ...item })),
-})
 
 const sortNewsItems = <T extends { publishedAtET: string; dateET: ETDateString }>(items: T[]): T[] =>
   [...items].sort((a, b) => {
@@ -232,11 +221,7 @@ const persistTickerHistoryQueued = (): Promise<void> => {
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
-const fetchWithTimeout = async (
-  input: string,
-  init: RequestInit,
-  timeoutMs = 6000,
-): Promise<Response> => {
+const fetchWithTimeout = async (input: string, init: RequestInit, timeoutMs = 6000): Promise<Response> => {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -259,54 +244,25 @@ const fetchWithRetry = async (
     } catch {
       // noop
     }
-
     if (attempt < attempts) {
       await sleep(TICKER_NEWS_RETRY_DELAY_MS * attempt)
     }
   }
-
   return null
 }
 
-// ?? Alpaca Benzinga fetch ?????????????????????????????????????????????????????
-const fetchAlpacaNews = async (symbol: string): Promise<AlpacaNewsItem[]> => {
-  const apiKey = (process.env.ALPACA_API_KEY ?? '').replace(/^["']|["']$/g, '').trim()
-  const secretKey = (process.env.ALPACA_SECRET_KEY ?? '').replace(/^["']|["']$/g, '').trim()
-  if (!apiKey || !secretKey) return []
-
-  // Fetch last 30 days, up to 50 articles
-  const end = new Date()
-  const start = new Date(end.getTime() - 3 * 24 * 60 * 60 * 1000)  // 3?쇱튂
-  const params = new URLSearchParams({
-    symbols: symbol,
-    limit: '50',
-    sort: 'desc',
-    start: start.toISOString(),
-    end: end.toISOString(),
-  })
-
-  const url = `https://data.alpaca.markets/v1beta1/news?${params.toString()}`
-  const res = await fetchWithRetry(url, {
-    headers: {
-      'APCA-API-KEY-ID': apiKey,
-      'APCA-API-SECRET-KEY': secretKey,
-    },
-    next: { revalidate: 1800 },
-  }, 6000)
-
-  if (!res) return []
-
-  const data = await res.json() as { news?: AlpacaNewsItem[] }
-  return data.news ?? []
-}
-
-// ?? Yahoo RSS fallback ????????????????????????????????????????????????????????
-type YahooRssItem = {
-  title: string
-  link: string
-  pubDateRaw: string
-  source: string
-  description: string
+const parseYahooRss = (xml: string): YahooRssItem[] => {
+  const itemBlocks = xml.match(/<item>[\s\S]*?<\/item>/gi) ?? []
+  return itemBlocks
+    .map((itemXml) => {
+      const title = decodeHtml(itemXml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '')
+      const link = decodeHtml(itemXml.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1] || '')
+      const pubDateRaw = decodeHtml(itemXml.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i)?.[1] || '')
+      const source = decodeHtml(itemXml.match(/<source[^>]*>([\s\S]*?)<\/source>/i)?.[1] || '') || 'Yahoo Finance'
+      const description = stripHtml(decodeHtml(itemXml.match(/<description[^>]*>([\s\S]*?)<\/description>/i)?.[1] || ''))
+      return { title, link, pubDateRaw, source, description }
+    })
+    .filter((item) => item.title && item.link && item.pubDateRaw)
 }
 
 const readTag = (xmlBlock: string, tag: string): string => {
@@ -315,63 +271,33 @@ const readTag = (xmlBlock: string, tag: string): string => {
   return match[1].replace(/^<!\[CDATA\[/, '').replace(/\]\]>$/, '').trim()
 }
 
-const parseYahooRss = (xml: string): YahooRssItem[] => {
+const parsePublishedAtTs = (publishedAtET: string): number => {
+  const etMatch = publishedAtET.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}) ET$/)
+  const normalized = etMatch ? `${etMatch[1]}T${etMatch[2]}-05:00` : publishedAtET
+  const ts = Date.parse(normalized)
+  return Number.isFinite(ts) ? ts : 0
+}
+
+const parseGoogleNewsRss = (xml: string): YahooRssItem[] => {
   const itemBlocks = xml.match(/<item>[\s\S]*?<\/item>/gi) ?? []
   return itemBlocks
     .map((itemXml) => {
-      const title = decodeHtml(readTag(itemXml, 'title'))
+      const rawTitle = decodeHtml(readTag(itemXml, 'title'))
+      const source = decodeHtml(readTag(itemXml, 'source')) || 'Google News'
+      const title = source && rawTitle.endsWith(` - ${source}`) ? rawTitle.slice(0, -(source.length + 3)).trim() : rawTitle
       const link = decodeHtml(readTag(itemXml, 'link'))
       const pubDateRaw = decodeHtml(readTag(itemXml, 'pubDate'))
-      const source = decodeHtml(readTag(itemXml, 'source')) || 'Yahoo Finance'
       const description = stripHtml(decodeHtml(readTag(itemXml, 'description')))
       return { title, link, pubDateRaw, source, description }
     })
     .filter((item) => item.title && item.link && item.pubDateRaw)
 }
 
-const buildIdFromYahoo = (symbol: string, item: YahooRssItem): string => {
-  const raw = `${symbol}|${item.link}|${item.pubDateRaw}|${item.title}`
-  return `${symbol.toLowerCase()}-${createHash('sha1').update(raw).digest('hex').slice(0, 16)}`
-}
-
-// ?? Build payload from Alpaca items ??????????????????????????????????????????
-const buildPayloadFromAlpaca = (
-  symbol: string,
-  items: AlpacaNewsItem[],
-): { timeline: TickerNewsItem[]; details: NewsDetail[] } => {
-  const timeline: TickerNewsItem[] = []
-  const details: NewsDetail[] = []
-
-  for (const item of items) {
-    const published = new Date(item.created_at)
-    if (Number.isNaN(published.valueOf())) continue
-
-    const dateET = toDateET(published)
-    const timeStr = toTimeET(published)  // e.g. "09:42"
-    const timeET = `${timeStr} ET`
-    const publishedAtET = `${dateET}T${timeStr}:00 ET`
-    const id = buildIdFromAlpaca(symbol, item)
-
-    const headline = item.headline || ''
-    const summary = item.summary || item.headline || 'Summary unavailable.'
-    const source = item.source === 'benzinga' ? 'Benzinga' : (item.source || 'Alpaca News')
-    const url = item.url || ''
-    const tags = inferTags(headline, source)
-    const relevanceScore = inferRelevanceScore(symbol, headline, summary)
-
-    timeline.push({ id, symbol, dateET, publishedAtET, timeET, headline, source, summary, url })
-    details.push({ id, symbol, dateET, publishedAtET, headline, source, summary, url, tags, relevanceScore })
-  }
-
-  return { timeline, details }
-}
-
-// ?? Build payload from Yahoo RSS items (AM/PM bucket) ?????????????????????????
 const buildPayloadFromYahoo = (
   symbol: string,
   parsedItems: YahooRssItem[],
 ): { timeline: TickerNewsItem[]; details: NewsDetail[] } => {
-  type BucketSlot = { item: YahooRssItem; minuteGap: number } | null
+  type BucketSlot = { item: YahooRssItem; minuteGap: number; qualityScore: number } | null
   const buckets: Record<string, { am: BucketSlot; pm: BucketSlot }> = {}
 
   for (const item of parsedItems) {
@@ -381,8 +307,14 @@ const buildPayloadFromYahoo = (
     const publishedDateET = toDateET(published)
     if (!buckets[publishedDateET]) buckets[publishedDateET] = { am: null, pm: null }
 
+    const text = `${item.title} ${item.description}`
+    if (!isFreeNewsSource(item.source) || hasPromoSignals(text)) continue
+
     const hhmm = new Intl.DateTimeFormat('en-US', {
-      timeZone: ET_TIMEZONE, hour12: false, hour: '2-digit', minute: '2-digit',
+      timeZone: ET_TIMEZONE,
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
     }).format(published)
     const [hourRaw, minuteRaw] = hhmm.split(':')
     const hour = Number(hourRaw)
@@ -393,10 +325,11 @@ const buildPayloadFromYahoo = (
     const minutesSinceMidnight = hour * 60 + minute
     const targetMinutes = slot === 'am' ? 9 * 60 + 30 : 16 * 60 + 30
     const minuteGap = Math.abs(minutesSinceMidnight - targetMinutes)
+    const qualityScore = scoreNewsText(text) * 2 + scoreNewsSource(item.source)
 
     const current = buckets[publishedDateET][slot]
-    if (!current || minuteGap < current.minuteGap) {
-      buckets[publishedDateET][slot] = { item, minuteGap }
+    if (!current || qualityScore > current.qualityScore || (qualityScore === current.qualityScore && minuteGap < current.minuteGap)) {
+      buckets[publishedDateET][slot] = { item, minuteGap, qualityScore }
     }
   }
 
@@ -413,8 +346,8 @@ const buildPayloadFromYahoo = (
       const tags = inferTags(item.title, item.source)
       const relevanceScore = inferRelevanceScore(symbol, item.title, summary)
       const timeSlot = isAm ? '09:30' : '16:30'
-      const timeET = `${timeSlot} EDT`
-      const publishedAtET = `${d}T${timeSlot}:00 EDT`
+      const timeET = `${timeSlot} ET`
+      const publishedAtET = `${d}T${timeSlot}:00 ET`
 
       timeline.push({ id, symbol, dateET: d, publishedAtET, timeET, headline: item.title, source: item.source, summary, url: item.link })
       details.push({ id, symbol, dateET: d, publishedAtET, headline: item.title, source: item.source, summary, url: item.link, tags, relevanceScore })
@@ -426,10 +359,31 @@ const buildPayloadFromYahoo = (
   return { timeline, details }
 }
 
-// ?? Main export: Alpaca first, Yahoo fallback ?????????????????????????????????
+const fetchYahooFreeNews = async (symbol: string): Promise<{ timeline: TickerNewsItem[]; details: NewsDetail[] }> => {
+  const rssUrl = `https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(symbol)}&region=US&lang=en-US`
+  const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, 4500)
+  if (!res) throw new Error('Yahoo RSS request failed after retries')
+  const xml = await res.text()
+  return buildPayloadFromYahoo(symbol, parseYahooRss(xml))
+}
+
+const fetchGoogleFreeNews = async (symbol: string): Promise<{ timeline: TickerNewsItem[]; details: NewsDetail[] }> => {
+  const query = `${symbol} stock`
+  const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`
+  const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, 4500)
+  if (!res) throw new Error('Google News RSS request failed after retries')
+  const xml = await res.text()
+  return buildPayloadFromYahoo(symbol, parseGoogleNewsRss(xml))
+}
+
+const clonePayload = (payload: BuiltTickerNewsPayload): BuiltTickerNewsPayload => ({
+  timeline: payload.timeline.map((item) => ({ ...item })),
+  details: payload.details.map((item) => ({ ...item })),
+})
+
 export async function fetchTickerNewsFromYahoo(symbol: string, dateET: ETDateString): Promise<BuiltTickerNewsPayload> {
   await loadTickerHistoryFromDisk()
-  void dateET  // kept for API compatibility
+  void dateET
 
   const cacheKey = `v3-session:${symbol}:${dateET}:${getNewsCheckpointKey()}`
   const now = Date.now()
@@ -439,34 +393,24 @@ export async function fetchTickerNewsFromYahoo(symbol: string, dateET: ETDateStr
 
   let freshTimeline: TickerNewsItem[] = []
   let freshDetails: NewsDetail[] = []
-  let fetchSource = 'unknown'
 
-  // ?? Try Alpaca first ????????????????????????????????????????????????????????
   try {
-    const alpacaItems = await fetchAlpacaNews(symbol)
-    if (alpacaItems.length > 0) {
-      const built = buildPayloadFromAlpaca(symbol, alpacaItems)
-      freshTimeline = built.timeline
-      freshDetails = built.details
-      fetchSource = 'alpaca_benzinga'
+    const built = await fetchYahooFreeNews(symbol)
+    freshTimeline = built.timeline
+    freshDetails = built.details
+    if (!freshTimeline.length || !freshDetails.length) {
+      const fallback = await fetchGoogleFreeNews(symbol)
+      if (fallback.timeline.length || fallback.details.length) {
+        freshTimeline = fallback.timeline
+        freshDetails = fallback.details
+      }
     }
-  } catch {
-    // fall through to Yahoo
-  }
-
-  // ?? Fallback: Yahoo RSS ?????????????????????????????????????????????????????
-  if (freshTimeline.length === 0) {
+  } catch (error) {
     try {
-      const rssUrl = `https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(symbol)}&region=US&lang=en-US`
-      const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, 4500)
-      if (!res) throw new Error('Yahoo RSS request failed after retries')
-      const xml = await res.text()
-      const built = buildPayloadFromYahoo(symbol, parseYahooRss(xml))
-      freshTimeline = built.timeline
-      freshDetails = built.details
-      fetchSource = 'yahoo_rss'
-    } catch (error) {
-      // Return stale history if available
+      const fallback = await fetchGoogleFreeNews(symbol)
+      freshTimeline = fallback.timeline
+      freshDetails = fallback.details
+    } catch {
       const stale = tickerNewsHistory.get(symbol)
       if (stale?.timelineById?.size && stale?.detailsById?.size) {
         return clonePayload({
@@ -478,9 +422,6 @@ export async function fetchTickerNewsFromYahoo(symbol: string, dateET: ETDateStr
     }
   }
 
-  console.log(`[ticker-news] ${symbol}: ${freshTimeline.length} items via ${fetchSource}`)
-
-  // ?? Merge into history ??????????????????????????????????????????????????????
   const symbolHistory = tickerNewsHistory.get(symbol) ?? {
     timelineById: new Map<string, TickerNewsItem>(),
     detailsById: new Map<string, NewsDetail>(),
@@ -489,15 +430,13 @@ export async function fetchTickerNewsFromYahoo(symbol: string, dateET: ETDateStr
   freshTimeline.forEach((item) => symbolHistory.timelineById.set(item.id, item))
   freshDetails.forEach((item) => symbolHistory.detailsById.set(item.id, item))
 
-  // ?뱀씪移섎쭔 蹂닿?: ?ㅻ뒛 ET ?좎쭨 湲곗? ?꾪꽣留?
-  const todayET = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(new Date())
+  const cutoffTs = Date.now() - TICKER_NEWS_HISTORY_WINDOW_HOURS * 60 * 60 * 1000
+
   let mergedTimeline = sortNewsItems(
-    Array.from(symbolHistory.timelineById.values()).filter(item => item.dateET >= todayET)
+    Array.from(symbolHistory.timelineById.values()).filter((item) => parsePublishedAtTs(item.publishedAtET) >= cutoffTs),
   )
   let mergedDetails = sortNewsItems(
-    Array.from(symbolHistory.detailsById.values()).filter(item => item.dateET >= todayET)
+    Array.from(symbolHistory.detailsById.values()).filter((item) => parsePublishedAtTs(item.publishedAtET) >= cutoffTs),
   )
 
   if (mergedTimeline.length > TICKER_NEWS_HISTORY_MAX_ITEMS) {
@@ -513,6 +452,7 @@ export async function fetchTickerNewsFromYahoo(symbol: string, dateET: ETDateStr
 
   const payload: BuiltTickerNewsPayload = { timeline: mergedTimeline, details: mergedDetails }
   tickerNewsCache.set(cacheKey, { expiresAt: now + TICKER_NEWS_CACHE_TTL_MS, payload })
+  upsertNewsDetails(mergedDetails)
   return clonePayload(payload)
 }
 

@@ -1,7 +1,7 @@
 """
 Build ETF Room cache JSON (v1).
 
-Reads from data/marketflow.db (ohlcv_daily + indicators_daily) for a small,
+Reads from data/marketflow.db (live ohlcv_daily + indicators_daily) for a small,
 fixed ETF universe. No full-universe scan needed.
 
 Output:

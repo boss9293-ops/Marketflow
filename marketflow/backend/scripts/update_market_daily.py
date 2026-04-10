@@ -29,7 +29,7 @@ def db_path() -> str:
         import sys as _sys
         _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from db_utils import resolve_marketflow_db
-        return resolve_marketflow_db(required_tables=("ohlcv_daily",))
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane="live")
     except Exception:
         _scripts = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(os.path.dirname(_scripts), "data", "marketflow.db")

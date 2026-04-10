@@ -3,18 +3,21 @@ import { promises as fs } from 'fs'
 import path from 'path'
 
 import { NextResponse } from 'next/server'
+import { hasPromoSignals, isFreeNewsSource, scoreNewsSource, scoreNewsText } from '@/lib/newsQuality'
+import { resolveNewsHistoryCandidates } from '@/lib/newsHistoryPaths'
 
 export const dynamic = 'force-dynamic'
 
-const LIVE_TARGET_HEADLINES = 12
-const MIN_HEADLINES = 8
-const MAX_PER_SOURCE = 2
+const LIVE_TARGET_HEADLINES = 5
+const MIN_HEADLINES = 5
+const MAX_PER_SOURCE = 1
 const MAX_HISTORY_ITEMS = 720
-const MAX_RESPONSE_ITEMS = 360
+const MAX_RESPONSE_ITEMS = 5
 const SOURCE_FETCH_ATTEMPTS = 2
 const SOURCE_RETRY_DELAY_MS = 250
+const MIN_FEED_SCORE = 2.5
 const YAHOO_MARKET_SYMBOLS = ['^GSPC', '^IXIC', '^DJI']
-const HISTORY_CACHE_PATH = path.join(process.cwd(), '.cache', 'market-headlines-history.json')
+const HISTORY_CACHE_PATHS = resolveNewsHistoryCandidates('market-headlines-history.json')
 
 type FeedHeadline = {
   id: string
@@ -215,6 +218,9 @@ const getHeadlineEpoch = (item: FeedHeadline): number => {
 const sortDescByTimestamp = <T extends FeedHeadline>(items: T[]): T[] =>
   [...items].sort((a, b) => getHeadlineEpoch(b) - getHeadlineEpoch(a))
 
+const scoreFeedHeadline = (item: FeedHeadline): number =>
+  scoreNewsText(`${item.headline} ${item.summary}`) * 2 + scoreNewsSource(item.source) + getHeadlineEpoch(item) / 1e13
+
 const isLegacyFallbackHeadline = (item: FeedHeadline): boolean =>
   item.id.startsWith('mh-fallback-')
 
@@ -253,7 +259,11 @@ const dedupeHeadlines = (rows: FeedHeadline[], maxItems = Number.POSITIVE_INFINI
 }
 
 const dedupeAndDiversify = (rows: FeedHeadline[]): FeedHeadline[] => {
-  const sorted = sortDescByTimestamp(rows)
+  const sorted = [...rows].sort((a, b) => {
+    const scoreDiff = scoreFeedHeadline(b) - scoreFeedHeadline(a)
+    if (scoreDiff !== 0) return scoreDiff
+    return getHeadlineEpoch(b) - getHeadlineEpoch(a)
+  })
   const seenHeadline = new Set<string>()
   const seenUrl = new Set<string>()
   const sourceCount = new Map<string, number>()
@@ -265,6 +275,9 @@ const dedupeAndDiversify = (rows: FeedHeadline[]): FeedHeadline[] => {
     const uKey = normalizeUrl(row.url)
     if (!hKey || !uKey) continue
     if (seenHeadline.has(hKey) || seenUrl.has(uKey)) continue
+
+    const rowScore = scoreFeedHeadline(row)
+    if (rowScore < MIN_FEED_SCORE) continue
 
     const sourceKey = row.source.toLowerCase().trim()
     const count = sourceCount.get(sourceKey) ?? 0
@@ -303,6 +316,7 @@ const mapFinnhubItem = (item: FinnhubNewsItem, idx: number): FeedHeadline | null
   const url = String(item.url || '').trim()
   const timestampSec = Number(item.datetime || 0)
   if (!headline || !source || !url || !Number.isFinite(timestampSec) || timestampSec <= 0) return null
+  if (!isFreeNewsSource(source) || hasPromoSignals(headline)) return null
   const dt = new Date(timestampSec * 1000)
   return {
     id: `mh-fh-${item.id ?? `${timestampSec}-${idx}`}`,
@@ -323,6 +337,7 @@ const mapYahooRssItem = (symbol: string, item: YahooRssItem): FeedHeadline | nul
   const source = item.source.trim()
   const link = item.link.trim()
   if (!title || !source || !link) return null
+  if (!isFreeNewsSource(source) || hasPromoSignals(title) || hasPromoSignals(item.description)) return null
   const rawId = `${symbol}|${link}|${item.pubDateRaw}|${title}`
   return {
     id: `mh-yr-${createHash('sha1').update(rawId).digest('hex').slice(0, 16)}`,
@@ -337,29 +352,43 @@ const mapYahooRssItem = (symbol: string, item: YahooRssItem): FeedHeadline | nul
 }
 
 const readHistoryCache = async (): Promise<FeedHeadline[]> => {
-  try {
-    const raw = await fs.readFile(HISTORY_CACHE_PATH, 'utf8')
-    const parsed = JSON.parse(raw) as StoredHeadlineCache
-    if (!parsed || !Array.isArray(parsed.headlines)) return []
-    return dedupeHeadlines(
-      parsed.headlines.filter(isFeedHeadline).filter((row) => !isLegacyFallbackHeadline(row)),
-      MAX_HISTORY_ITEMS,
-    )
-  } catch {
-    return []
-  }
-}
-
-const writeHistoryCache = async (headlines: FeedHeadline[]): Promise<void> => {
-  try {
-    await fs.mkdir(path.dirname(HISTORY_CACHE_PATH), { recursive: true })
-    const payload: StoredHeadlineCache = {
-      updatedAt: new Date().toISOString(),
-      headlines: dedupeHeadlines(headlines, MAX_HISTORY_ITEMS),
+  for (const candidate of HISTORY_CACHE_PATHS) {
+    try {
+      const raw = await fs.readFile(candidate, 'utf8')
+      const parsed = JSON.parse(raw) as StoredHeadlineCache
+      if (!parsed || !Array.isArray(parsed.headlines)) continue
+      return dedupeHeadlines(
+        parsed.headlines
+          .filter(isFeedHeadline)
+          .filter((row) => !isLegacyFallbackHeadline(row))
+          .filter((row) => isFreeNewsSource(row.source) && !hasPromoSignals(`${row.headline} ${row.summary}`))
+          .filter((row) => scoreFeedHeadline(row) >= MIN_FEED_SCORE),
+        MAX_HISTORY_ITEMS,
+      )
+    } catch {
+      continue
     }
-    await fs.writeFile(HISTORY_CACHE_PATH, JSON.stringify(payload, null, 2), 'utf8')
-  } catch (err) {
-    console.warn('[market-headlines] cache write failed:', err)
+  }
+  return []
+}
+const writeHistoryCache = async (headlines: FeedHeadline[]): Promise<void> => {
+  const payload: StoredHeadlineCache = {
+    updatedAt: new Date().toISOString(),
+    headlines: dedupeHeadlines(headlines, MAX_HISTORY_ITEMS),
+  }
+
+  let lastError: unknown = null
+  for (const candidate of HISTORY_CACHE_PATHS) {
+    try {
+      await fs.mkdir(path.dirname(candidate), { recursive: true })
+      await fs.writeFile(candidate, JSON.stringify(payload, null, 2), 'utf8')
+      return
+    } catch (err) {
+      lastError = err
+    }
+  }
+  if (lastError) {
+    console.warn('[market-headlines] cache write failed:', lastError)
   }
 }
 

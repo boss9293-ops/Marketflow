@@ -13,7 +13,10 @@ export async function GET(
   if (!symbol) return NextResponse.json({ error: 'symbol required' }, { status: 400 })
 
   try {
-    const res = await fetch(`${FLASK_URL}/api/vr-ohlcv/${encodeURIComponent(symbol)}`, {
+    const url = new URL(_request.url)
+    const search = url.searchParams.toString()
+    const target = `${FLASK_URL}/api/vr-ohlcv/${encodeURIComponent(symbol)}${search ? `?${search}` : ''}`
+    const res = await fetch(target, {
       cache: 'no-store',
     })
     if (!res.ok) {

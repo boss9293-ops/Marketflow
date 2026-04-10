@@ -1,5 +1,5 @@
 import VRSimulatorDashboard from '@/components/vr-simulator/VRSimulatorDashboard'
-import { getDefaultVrSymbol, listLocalVrDataSources, loadLocalVrDataMap } from '@/lib/backtest/localData'
+import { getDefaultVrSymbol, listLocalVrDataSources } from '@/lib/backtest/localData'
 
 export default async function VRSimulatorPage() {
   const sources = listLocalVrDataSources()

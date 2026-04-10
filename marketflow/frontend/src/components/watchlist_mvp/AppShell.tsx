@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -28,7 +28,8 @@ const formatDateET = (date: Date): ETDateString =>
   }).format(date)
 
 const MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
-const MARKET_CLOSE_MINUTES_ET = 16 * 60
+const MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
+const NEWS_REFRESH_POLL_MS = 60_000
 
 const pad2 = (value: number): string => String(value).padStart(2, '0')
 
@@ -63,6 +64,23 @@ const getEtClockParts = (now: Date = new Date()): {
     weekday: read('weekday'),
     hour: Number(read('hour') || '0'),
     minute: Number(read('minute') || '0'),
+  }
+}
+
+type NewsRefreshCheckpointState = {
+  dateET: ETDateString
+  openTriggered: boolean
+  closeTriggered: boolean
+}
+
+const createNewsRefreshCheckpointState = (now: Date = new Date()): NewsRefreshCheckpointState => {
+  const { year, month, day, hour, minute } = getEtClockParts(now)
+  const dateET = toYmd(year, month, day)
+  const currentMinutes = hour * 60 + minute
+  return {
+    dateET,
+    openTriggered: currentMinutes >= MARKET_OPEN_MINUTES_ET,
+    closeTriggered: currentMinutes >= MARKET_CLOSE_MINUTES_ET,
   }
 }
 
@@ -190,7 +208,7 @@ const normalizeHeadlines = (
     source: string
     url: string
   }>,
-): MarketHeadlineView[] =>
+  ): MarketHeadlineView[] =>
   sortHeadlines(
     rows.map((item) => ({
       id: item.id,
@@ -218,18 +236,41 @@ const mergeHeadlines = (
   return sortHeadlines(Array.from(merged.values()))
 }
 
+// Keep one ET day on screen for now; bump this to 2 when the two-day view ships.
+const MARKET_HEADLINE_DAYS_TO_KEEP = 1
+
+const limitHeadlinesToRecentDates = (
+  items: MarketHeadlineView[],
+  daysToKeep: number,
+): MarketHeadlineView[] => {
+  if (daysToKeep <= 0) return []
+
+  const sorted = sortHeadlines(items)
+  const keptDates = new Set<string>()
+  const filtered: MarketHeadlineView[] = []
+
+  for (const item of sorted) {
+    if (keptDates.has(item.dateET)) {
+      filtered.push(item)
+      continue
+    }
+    if (keptDates.size >= daysToKeep) continue
+    keptDates.add(item.dateET)
+    filtered.push(item)
+  }
+
+  return filtered
+}
+
 type InitStatus = 'loading' | 'ready' | 'empty' | 'error'
 type SectionStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error'
 type AskStatus = 'idle' | 'submitting' | 'ready' | 'error'
 
 const WATCHLIST_QUOTE_REFRESH_MS = 20_000
-const NEWS_AUTO_REFRESH_MS = 30 * 60 * 1000  // 30분 자동갱신
 
 export default function AppShell() {
   const service = useMemo(() => createDashboardService({ mode: 'hybrid' }), [])
-  const initialDateET = useMemo(() => formatDateET(new Date()), [])
-
-  const [selectedDateET] = useState<ETDateString>(initialDateET)
+  const [selectedDateET, setSelectedDateET] = useState<ETDateString>(() => formatDateET(new Date()))
   const [watchlists, setWatchlists] = useState<Watchlist[]>([])
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<string | null>(null)
   const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([])
@@ -237,11 +278,14 @@ export default function AppShell() {
 
   const [tickerBriefs, setTickerBriefs] = useState<TickerBrief[]>([])
   const [tickerNews, setTickerNews] = useState<TickerNewsItem[]>([])
-  const [newsRefreshTick, setNewsRefreshTick] = useState(0)  // 수동 새로고침 트리거
+  const [newsRefreshTick, setNewsRefreshTick] = useState(0)  // ?섎룞 ?덈줈怨좎묠 ?몃━嫄?
   const [isNewsRefreshing, setIsNewsRefreshing] = useState(false)
   const [newsLastFetchedAt, setNewsLastFetchedAt] = useState<Date | null>(null)
   const [todayOpen, setTodayOpen] = useState<number | null>(null)
+  const [todayHigh, setTodayHigh] = useState<number | null>(null)
+  const [todayLow, setTodayLow] = useState<number | null>(null)
   const [todayClose, setTodayClose] = useState<number | null>(null)
+  const [todayVolume, setTodayVolume] = useState<number | null>(null)
 
   const [marketHeadlines, setMarketHeadlines] = useState<MarketHeadlineView[]>([])
   const [marketHeadlinesHealth, setMarketHeadlinesHealth] = useState<MarketHeadlinesHealth | null>(null)
@@ -260,6 +304,7 @@ export default function AppShell() {
   const [newsDetailError, setNewsDetailError] = useState<string | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false)
   const detailRequestSeqRef = useRef(0)
+  const briefingRefreshStateRef = useRef<NewsRefreshCheckpointState>(createNewsRefreshCheckpointState())
 
   const [askQuestionInput, setAskQuestionInput] = useState<string>('')
   const [askStatus, setAskStatus] = useState<AskStatus>('idle')
@@ -270,6 +315,18 @@ export default function AppShell() {
   const [evidenceRows, setEvidenceRows] = useState<EvidenceRow[]>([])
   const [evidenceStatus, setEvidenceStatus] = useState<SectionStatus>('idle')
   const [evidenceError, setEvidenceError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const syncSelectedDate = () => {
+      const { year, month, day } = getEtClockParts(new Date())
+      const nextDateET = toYmd(year, month, day)
+      setSelectedDateET((current) => (current === nextDateET ? current : nextDateET))
+    }
+
+    syncSelectedDate()
+    const timer = setInterval(syncSelectedDate, 60_000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -283,7 +340,12 @@ export default function AppShell() {
         setWatchlists(snapshot.watchlists)
         setSelectedWatchlistId(snapshot.selectedWatchlistId)
         setWatchlistItems(snapshot.watchlistItems)
-        setMarketHeadlines(normalizeHeadlines(snapshot.marketHeadlines))
+        setMarketHeadlines(
+          limitHeadlinesToRecentDates(
+            normalizeHeadlines(snapshot.marketHeadlines),
+            MARKET_HEADLINE_DAYS_TO_KEEP,
+          ),
+        )
         setMarketHeadlinesHealth(snapshot.marketHeadlinesHealth ?? null)
 
         if (!snapshot.watchlistItems.length) {
@@ -291,7 +353,11 @@ export default function AppShell() {
           return
         }
 
-        setSelectedSymbol(snapshot.watchlistItems[0].symbol)
+        setSelectedSymbol((current) => {
+          if (!snapshot.watchlistItems.length) return ''
+          if (current && snapshot.watchlistItems.some((item) => item.symbol === current)) return current
+          return snapshot.watchlistItems[0].symbol
+        })
         setInitStatus('ready')
       } catch (error) {
         if (cancelled) return
@@ -308,18 +374,20 @@ export default function AppShell() {
 
   useEffect(() => {
     if (initStatus !== 'ready') return
-    if (!isRegularSessionOpenET()) return
 
     let cancelled = false
-    let timer: ReturnType<typeof setInterval> | null = null
 
     const refreshHeadlines = async () => {
-      if (!isRegularSessionOpenET()) return
       try {
         const headlinesRes = await service.getMarketHeadlines(selectedDateET)
         if (cancelled) return
         const incoming = normalizeHeadlines(headlinesRes.data.headlines)
-        setMarketHeadlines((previous) => mergeHeadlines(previous, incoming))
+        setMarketHeadlines((previous) =>
+          limitHeadlinesToRecentDates(
+            mergeHeadlines(previous, incoming),
+            MARKET_HEADLINE_DAYS_TO_KEEP,
+          ),
+        )
         setMarketHeadlinesHealth(headlinesRes.data.health ?? null)
       } catch {
         // Keep existing panel data if refresh fails.
@@ -334,20 +402,10 @@ export default function AppShell() {
     }
 
     void refreshHeadlines()
-    timer = setInterval(() => {
-      if (!isRegularSessionOpenET()) {
-        if (timer) clearInterval(timer)
-        timer = null
-        return
-      }
-      void refreshHeadlines()
-    }, 90_000)
-
     return () => {
       cancelled = true
-      if (timer) clearInterval(timer)
     }
-  }, [initStatus, selectedDateET, service])
+  }, [initStatus, newsRefreshTick, selectedDateET, service])
 
   useEffect(() => {
     if (initStatus !== 'ready' || !selectedWatchlistId) return
@@ -416,6 +474,11 @@ export default function AppShell() {
       setEvidenceRows([])
       setEvidenceStatus('idle')
       setEvidenceError(null)
+      setTodayOpen(null)
+      setTodayHigh(null)
+      setTodayLow(null)
+      setTodayClose(null)
+      setTodayVolume(null)
 
       const [briefsResult, newsResult, ohlcvResult] = await Promise.allSettled([
         service.getTickerBriefs(selectedSymbol, selectedDateET),
@@ -453,12 +516,15 @@ export default function AppShell() {
             : 'Failed to load news timeline.',
         )
       }
-      // 오늘 시가/종가 추출
+      // ?ㅻ뒛 ?쒓?/醫낃? 異붿텧
       if (ohlcvResult.status === 'fulfilled' && ohlcvResult.value?.bars?.length) {
-        const bars = ohlcvResult.value.bars as Array<{ d: string; o: number; c: number }>
-        const todayBar = bars[bars.length - 1]  // 최신 바 (DESC→reversed → 마지막=오늘)
+        const bars = ohlcvResult.value.bars as Array<{ d: string; o: number; h: number; l: number; c: number; v: number }>
+        const todayBar = bars[bars.length - 1]  // 理쒖떊 諛?(DESC?뭨eversed ??留덉?留??ㅻ뒛)
         setTodayOpen(todayBar?.o ?? null)
+        setTodayHigh(todayBar?.h ?? null)
+        setTodayLow(todayBar?.l ?? null)
         setTodayClose(todayBar?.c ?? null)
+        setTodayVolume(todayBar?.v ?? null)
       }
       setIsNewsRefreshing(false)
       setNewsLastFetchedAt(new Date())
@@ -470,14 +536,35 @@ export default function AppShell() {
     }
   }, [selectedDateET, initStatus, selectedSymbol, service, newsRefreshTick])
 
-  // 30분 자동갱신 (장중 + 선택 심볼 있을 때)
   useEffect(() => {
     if (!selectedSymbol || initStatus !== 'ready') return
-    const timer = setInterval(() => {
-      if (isRegularSessionOpenET()) {
-        setNewsRefreshTick((t) => t + 1)
+
+    briefingRefreshStateRef.current = createNewsRefreshCheckpointState()
+
+    const pollForCheckpointRefresh = () => {
+      const now = new Date()
+      const { year, month, day, hour, minute } = getEtClockParts(now)
+      const currentDateET = toYmd(year, month, day)
+      const currentMinutes = hour * 60 + minute
+      const state = briefingRefreshStateRef.current
+
+      if (state.dateET !== currentDateET) {
+        briefingRefreshStateRef.current = createNewsRefreshCheckpointState(now)
+        return
       }
-    }, NEWS_AUTO_REFRESH_MS)
+
+      if (!state.openTriggered && currentMinutes >= MARKET_OPEN_MINUTES_ET) {
+        state.openTriggered = true
+        setNewsRefreshTick((tick) => tick + 1)
+      }
+
+      if (!state.closeTriggered && currentMinutes >= MARKET_CLOSE_MINUTES_ET) {
+        state.closeTriggered = true
+        setNewsRefreshTick((tick) => tick + 1)
+      }
+    }
+
+    const timer = setInterval(pollForCheckpointRefresh, NEWS_REFRESH_POLL_MS)
     return () => clearInterval(timer)
   }, [selectedSymbol, initStatus])
 
@@ -624,7 +711,10 @@ export default function AppShell() {
         isNewsRefreshing={isNewsRefreshing}
         newsLastFetchedAt={newsLastFetchedAt}
         todayOpen={todayOpen}
+        todayHigh={todayHigh}
+        todayLow={todayLow}
         todayClose={todayClose}
+        todayVolume={todayVolume}
         timeline={tickerNews}
         timelineStatus={timelineStatus}
         timelineError={timelineError}
@@ -662,3 +752,4 @@ export default function AppShell() {
     </div>
   )
 }
+

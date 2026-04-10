@@ -18,7 +18,7 @@ _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 _BACKEND_DIR = os.path.dirname(_SCRIPTS_DIR)
 try:
     from db_utils import resolve_marketflow_db
-    DB_MAIN = resolve_marketflow_db(required_tables=('ticker_history_daily',))
+    DB_MAIN = resolve_marketflow_db(required_tables=('ticker_history_daily',), data_plane='snapshot')
 except Exception:
     DB_MAIN = os.path.join(_BACKEND_DIR, 'data', 'marketflow.db')
 OUT_DIR = os.path.join(_BACKEND_DIR, 'output')

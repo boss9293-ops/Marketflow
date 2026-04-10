@@ -15,7 +15,7 @@ PORTFOLIO = ['SPY', 'QQQ', 'IWM', 'TLT', 'GLD']
 
 
 def get_ohlcv_db() -> str:
-    return resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
+    return resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane="live")
 
 
 def load_close_from_db(symbol: str, lookback_days: int = 400) -> pd.Series | None:

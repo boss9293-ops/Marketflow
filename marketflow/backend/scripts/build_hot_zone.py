@@ -1,7 +1,7 @@
 """
 Build HOT ZONE cache JSON (v2).
 
-Reads from data/marketflow.db:
+Reads from data/marketflow.db (live):
   - ohlcv_daily
   - indicators_daily
   - universe_symbols

@@ -179,7 +179,7 @@ Components: VIX level (30pt) + Trend (25pt) + Momentum (15pt) + Regime (15pt) + 
 
 ## Windows Scheduler (Daily Pipeline)
 
-Register a daily task for `backend/run_all.py`:
+Register a daily task for the daily pipeline runner:
 
 ```powershell
 cd backend\scripts
@@ -203,5 +203,38 @@ powershell -ExecutionPolicy Bypass -File .\manage_scheduler.ps1 -Action remove
 Notes:
 - Default task name: `MarketFlowPipelineDaily`
 - Log file: `backend/output/pipeline_task.log`
+- The task now runs `run_pipeline_scheduled.py`, so it also syncs to Turso when the env vars are present.
 - To use a specific Python path:
   `-PythonExe "C:\Path\To\python.exe"`
+
+---
+
+## Railway + Turso Daily Sync
+
+Production runs the same pipeline on Railway and then pushes the refreshed local SQLite DB into Turso.
+
+Flow:
+1. Railway starts `backend/startup.py` and builds the local outputs.
+2. The Flask scheduler keeps the briefing jobs running at ET market checkpoints.
+3. A daily pipeline job runs `backend/run_pipeline_scheduled.py` after the close.
+4. If `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set, the pipeline auto-syncs the live DB at `data/marketflow.db` to Turso with verification.
+
+Recommended Railway environment variables:
+- `TURSO_DATABASE_URL`
+- `TURSO_AUTH_TOKEN`
+- Optional schedule override: `MARKETFLOW_DAILY_PIPELINE_TIME_ET` (default `17:15`)
+
+Manual run:
+
+```bash
+cd marketflow/backend
+python -X utf8 run_pipeline_scheduled.py
+```
+
+If the Turso env vars are missing, the sync step is skipped safely, so local development still works.
+
+To disable the server-side scheduler in a non-production environment, set:
+
+```bash
+MARKETFLOW_DISABLE_SCHEDULER=1
+```

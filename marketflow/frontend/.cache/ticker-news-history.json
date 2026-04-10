@@ -1,283 +1,413 @@
 {
-  "updatedAt": "2026-04-07T01:28:32.715Z",
+  "updatedAt": "2026-04-08T19:36:28.805Z",
   "symbols": {
     "NFLX": {
       "timeline": [
         {
-          "id": "nflx-5417599d95bde0c7",
+          "id": "nflx-a79bc2d6d8708273",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T21:20:00 ET",
-          "timeET": "21:20 ET",
-          "headline": "Virgin Galactic, Broadcom, UnitedHealth, Micron Technology And Netflix: Why These 5 Stocks Are On Investors' Radars Today",
-          "source": "Benzinga",
-          "summary": "SPCE, AVGO, UNH, MU, NFLX were among the stocks seen trending on Monday, April 6, 2026.",
-          "url": "https://www.benzinga.com/markets/equities/26/04/51671260/virgin-galactic-broadcom-unitedhealth-micron-netflix-stocks-are-trending"
-        },
-        {
-          "id": "nflx-714b162a8650de0a",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "timeET": "16:00 EDT",
-          "headline": "Goldman Sachs Upgrades Netflix to Buy Before Earnings",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "timeET": "09:30 ET",
+          "headline": "Netflix told by court to refund customers over repeated price hikes",
           "source": "Yahoo Finance",
-          "summary": "Goldman Sachs raises Netflix price target to $120 with a Buy rating",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/goldman-sachs-upgrades-netflix-buy-185655800.html?.tsrc=rss"
+          "summary": "Netflix may have to repay Italian subscribers after a court ruled against years of price increases. Customers could see hundreds of euros in refunds, but an appeal will decide if those payouts actually happen.",
+          "url": "https://www.digitaltrends.com/movies/netflix-may-owe-you-money-after-years-of-price-hikes-in-italy/?.tsrc=rss"
         },
         {
-          "id": "nflx-36b81327874851ed",
+          "id": "nflx-ddaee5cea9b6745d",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T14:53:00 ET",
-          "timeET": "14:53 ET",
-          "headline": "The Rise In Netflix Stock Today: What's Going On?",
-          "source": "Benzinga",
-          "summary": "Netflix Inc. shares are trading higher on Monday. Goldman Sachs upgraded it to Buy from Neutral and lifted its price target to $120 from $100.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51666653/the-rise-in-netflix-stock-today-whats-going-on"
-        },
-        {
-          "id": "nflx-287ede2f1a6da808",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:05:00 ET",
-          "timeET": "13:05 ET",
-          "headline": "Netflix Expands Kids Entertainment Lineup With Playground App for Games, New Shows & Returning Favorites",
-          "source": "Benzinga",
-          "summary": "Netflix Expands Kids Entertainment Lineup With Playground App for Games, New Shows & Returning Favorites",
-          "url": "https://www.benzinga.com/news/26/04/51664120/netflix-expands-kids-entertainment-lineup-with-playground-app-for-games-new-shows-returning-favorite"
-        },
-        {
-          "id": "nflx-0d56a43868628697",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "timeET": "09:30 EDT",
-          "headline": "Netflix Rises as Price Hikes, Ad Revenue Growth, and Live Sports Signal a New Phase of Profitability",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "timeET": "09:30 ET",
+          "headline": "Netflix Lost the Battle for Warner Bros, but Goldman Sachs Says It Won the War",
           "source": "Yahoo Finance",
-          "summary": "Netflix (NASDAQ:NFLX) stock is up 2% to more than $100 Monday morning, building on a 3.25% gain on its most recent trading day. Shares closed at $98.66 on Thursday, and the stock is now up 5% year to date. Three converging catalysts are driving renewed investor interest: subscription price hikes expanding margins, ad revenue approaching ... Netflix Rises as Price Hikes, Ad Revenue Growth, and Live Sports Signal a New Phase of Profitability",
-          "url": "https://247wallst.com/investing/2026/04/06/netflix-rises-as-price-hikes-ad-revenue-growth-and-live-sports-signal-a-new-phase-of-profitability/?.tsrc=rss"
+          "summary": "As Netflix exits the Warner Bros. acquisition deal, Goldman Sachs analyst sees it as a smart move, projecting solid upside ahead and backing NFLX stock as a “Buy” now.",
+          "url": "https://www.barchart.com/story/news/1197810/netflix-lost-the-battle-for-warner-bros-but-goldman-sachs-says-it-won-the-war?.tsrc=rss"
         },
         {
-          "id": "nflx-660fe5d9737fc027",
+          "id": "nflx-0eabb99d47a217b2",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:10:00 ET",
-          "timeET": "09:10 ET",
-          "headline": "Netflix To Rally Around 22%? Here Are 10 Top Analyst Forecasts For Monday",
-          "source": "Benzinga",
-          "summary": "Top Wall Street analysts changed their outlook on top names, including Arm Holdings, Twilio, Olin Corp, Rocket Cos, Intel, Live Nation, and Lindsay Corp.",
-          "url": "https://www.benzinga.com/analyst-stock-ratings/price-target/26/04/51656592/netflix-to-rally-around-22-here-are-10-top-analyst-forecasts-for-monday"
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T16:00:00 ET",
+          "timeET": "16:00 ET",
+          "headline": "Netflix price increases expected to lift full-year guidance: Jefferies",
+          "source": "Yahoo Finance",
+          "summary": "Netflix Inc (NASDAQ:NFLX, XETRA:NFC) is heading into its first quarter 2026 earnings report amid a mix of improving financial expectations and lingering investor concerns, according to a recent note from Jefferies analysts. The firm reiterated its ‘Buy’ rating and $134 price target, implying...",
+          "url": "https://www.proactiveinvestors.com/companies/news/1090139/netflix-price-increases-expected-to-lift-full-year-guidance-1090139.html?.tsrc=rss"
         },
         {
-          "id": "nflx-f179bfa215f8f54a",
+          "id": "nflx-f7f9eadeeba47edb",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:50:00 ET",
-          "timeET": "08:50 ET",
-          "headline": "Netflix Gains Ground But Faces Key Test Near $109.50",
-          "source": "Benzinga",
-          "summary": "Netflix Inc. (NASDAQ:NFLX) is approaching a key resistance level near $109.50 as shares attempt to build momentum following recent volatility.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51655966/netflix-gains-ground-but-faces-key-test-near-109-50"
-        },
-        {
-          "id": "nflx-4f8f87064f338986",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:43:00 ET",
-          "timeET": "08:43 ET",
-          "headline": "This Tyson Foods Analyst Turns Bullish; Here Are Top 5 Upgrades For Monday",
-          "source": "Benzinga",
-          "summary": "Wall Street analysts upgraded NTRS, NFLX, TSN, FAF, and RKT stocks with higher price targets. Check out analyst ratings page for more details.",
-          "url": "https://www.benzinga.com/analyst-stock-ratings/upgrades/26/04/51655812/this-tyson-foods-analyst-turns-bullish-here-are-top-5-upgrades-for-monday"
-        },
-        {
-          "id": "nflx-d2d1ac80bdcceeff",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T07:08:00 ET",
-          "timeET": "07:08 ET",
-          "headline": "FCC Considers Overhaul Of Local Sports Blackouts As Fans Face $1,000 Subscription Maze Across Multiple Streaming Services",
-          "source": "Benzinga",
-          "summary": "FCC reviews local sports blackout rules as fans face rising subscription costs and fragmented streaming, sparking potential changes for NFL, MLB, NHL.",
-          "url": "https://www.benzinga.com/news/sports/26/04/51653966/fcc-considers-overhaul-of-local-sports-blackouts-as-fans-face-1000-subscription-maze-across-multiple-streaming-services"
-        },
-        {
-          "id": "nflx-ef2121d4be71e24d",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:53:00 ET",
-          "timeET": "05:53 ET",
-          "headline": "Paramount Eyes $24 Billion Gulf Backing For Warner Bros. Discovery Deal: Report",
-          "source": "Benzinga",
-          "summary": "Paramount Skydance is in talks to secure a massive $24 billion in equity commitments from three Gulf sovereign-wealth funds.",
-          "url": "https://www.benzinga.com/m-a/26/04/51652993/paramount-eyes-24-billion-gulf-backing-for-warner-bros-discovery-deal-report"
-        },
-        {
-          "id": "nflx-8b19c93f4a43b141",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:28:00 ET",
-          "timeET": "05:28 ET",
-          "headline": "Goldman Sachs Upgrades Netflix to Buy, Raises Price Target to $120",
-          "source": "Benzinga",
-          "summary": "Goldman Sachs Upgrades Netflix to Buy, Raises Price Target to $120",
-          "url": "https://www.benzinga.com/news/26/04/51652894/goldman-sachs-upgrades-netflix-to-buy-raises-price-target-to-120"
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T09:30:00 ET",
+          "timeET": "09:30 ET",
+          "headline": "Netflix (NFLX) Slid as Results Fell Short of Expectations",
+          "source": "Yahoo Finance",
+          "summary": "Harding Loevner, an asset management company, released its “Global Equity Strategy” fourth-quarter 2025 investor letter. A copy of the letter can be downloaded here. For most of the past 15 years, US equities not only outperformed but created a perception of inevitability around their outperformance. This phenomenon, termed “US exceptionalism,” highlighted exceptional earnings growth, valuations, and […]",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/netflix-nflx-slid-results-fell-144956375.html?.tsrc=rss"
         }
       ],
       "details": [
         {
-          "id": "nflx-5417599d95bde0c7",
+          "id": "nflx-a79bc2d6d8708273",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T21:20:00 ET",
-          "headline": "Virgin Galactic, Broadcom, UnitedHealth, Micron Technology And Netflix: Why These 5 Stocks Are On Investors' Radars Today",
-          "source": "Benzinga",
-          "summary": "SPCE, AVGO, UNH, MU, NFLX were among the stocks seen trending on Monday, April 6, 2026.",
-          "url": "https://www.benzinga.com/markets/equities/26/04/51671260/virgin-galactic-broadcom-unitedhealth-micron-netflix-stocks-are-trending",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "nflx-714b162a8650de0a",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "headline": "Goldman Sachs Upgrades Netflix to Buy Before Earnings",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "headline": "Netflix told by court to refund customers over repeated price hikes",
           "source": "Yahoo Finance",
-          "summary": "Goldman Sachs raises Netflix price target to $120 with a Buy rating",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/goldman-sachs-upgrades-netflix-buy-185655800.html?.tsrc=rss",
-          "tags": [
-            "analyst",
-            "earnings"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "nflx-36b81327874851ed",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T14:53:00 ET",
-          "headline": "The Rise In Netflix Stock Today: What's Going On?",
-          "source": "Benzinga",
-          "summary": "Netflix Inc. shares are trading higher on Monday. Goldman Sachs upgraded it to Buy from Neutral and lifted its price target to $120 from $100.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51666653/the-rise-in-netflix-stock-today-whats-going-on",
+          "summary": "Netflix may have to repay Italian subscribers after a court ruled against years of price increases. Customers could see hundreds of euros in refunds, but an appeal will decide if those payouts actually happen.",
+          "url": "https://www.digitaltrends.com/movies/netflix-may-owe-you-money-after-years-of-price-hikes-in-italy/?.tsrc=rss",
           "tags": [
             "news"
           ],
-          "relevanceScore": 0.5
+          "relevanceScore": 0.48
         },
         {
-          "id": "nflx-287ede2f1a6da808",
+          "id": "nflx-ddaee5cea9b6745d",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:05:00 ET",
-          "headline": "Netflix Expands Kids Entertainment Lineup With Playground App for Games, New Shows & Returning Favorites",
-          "source": "Benzinga",
-          "summary": "Netflix Expands Kids Entertainment Lineup With Playground App for Games, New Shows & Returning Favorites",
-          "url": "https://www.benzinga.com/news/26/04/51664120/netflix-expands-kids-entertainment-lineup-with-playground-app-for-games-new-shows-returning-favorite",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "nflx-0d56a43868628697",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "headline": "Netflix Rises as Price Hikes, Ad Revenue Growth, and Live Sports Signal a New Phase of Profitability",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "headline": "Netflix Lost the Battle for Warner Bros, but Goldman Sachs Says It Won the War",
           "source": "Yahoo Finance",
-          "summary": "Netflix (NASDAQ:NFLX) stock is up 2% to more than $100 Monday morning, building on a 3.25% gain on its most recent trading day. Shares closed at $98.66 on Thursday, and the stock is now up 5% year to date. Three converging catalysts are driving renewed investor interest: subscription price hikes expanding margins, ad revenue approaching ... Netflix Rises as Price Hikes, Ad Revenue Growth, and Live Sports Signal a New Phase of Profitability",
-          "url": "https://247wallst.com/investing/2026/04/06/netflix-rises-as-price-hikes-ad-revenue-growth-and-live-sports-signal-a-new-phase-of-profitability/?.tsrc=rss",
+          "summary": "As Netflix exits the Warner Bros. acquisition deal, Goldman Sachs analyst sees it as a smart move, projecting solid upside ahead and backing NFLX stock as a “Buy” now.",
+          "url": "https://www.barchart.com/story/news/1197810/netflix-lost-the-battle-for-warner-bros-but-goldman-sachs-says-it-won-the-war?.tsrc=rss",
           "tags": [
-            "earnings"
+            "news"
           ],
-          "relevanceScore": 0.7
+          "relevanceScore": 0.71
         },
         {
-          "id": "nflx-660fe5d9737fc027",
+          "id": "nflx-0eabb99d47a217b2",
           "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:10:00 ET",
-          "headline": "Netflix To Rally Around 22%? Here Are 10 Top Analyst Forecasts For Monday",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T16:00:00 ET",
+          "headline": "Netflix price increases expected to lift full-year guidance: Jefferies",
+          "source": "Yahoo Finance",
+          "summary": "Netflix Inc (NASDAQ:NFLX, XETRA:NFC) is heading into its first quarter 2026 earnings report amid a mix of improving financial expectations and lingering investor concerns, according to a recent note from Jefferies analysts. The firm reiterated its ‘Buy’ rating and $134 price target, implying...",
+          "url": "https://www.proactiveinvestors.com/companies/news/1090139/netflix-price-increases-expected-to-lift-full-year-guidance-1090139.html?.tsrc=rss",
+          "tags": [
+            "guidance"
+          ],
+          "relevanceScore": 0.8
+        },
+        {
+          "id": "nflx-f7f9eadeeba47edb",
+          "symbol": "NFLX",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T09:30:00 ET",
+          "headline": "Netflix (NFLX) Slid as Results Fell Short of Expectations",
+          "source": "Yahoo Finance",
+          "summary": "Harding Loevner, an asset management company, released its “Global Equity Strategy” fourth-quarter 2025 investor letter. A copy of the letter can be downloaded here. For most of the past 15 years, US equities not only outperformed but created a perception of inevitability around their outperformance. This phenomenon, termed “US exceptionalism,” highlighted exceptional earnings growth, valuations, and […]",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/netflix-nflx-slid-results-fell-144956375.html?.tsrc=rss",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.74
+        }
+      ]
+    },
+    "NVDA": {
+      "timeline": [
+        {
+          "id": "nvda-4c7107106f04069f",
+          "symbol": "NVDA",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T16:00:00 ET",
+          "timeET": "16:00 ET",
+          "headline": "Where Nvidia Stock Needs to Trade to Get Out of Its Sideways Trap",
+          "source": "Yahoo Finance",
+          "summary": "Nvidia stock is having a good day, but it’s still stuck in the purgatory of a nine-month trading range. Nvidia stock was up 2% on Wednesday, after gaining 0.3% on Tuesday; the has risen 2.5%, and the has advanced 2.7%. The stock was down throughout the day on Tuesday after reports that the U.S. had attacked military targets on Kharg Island, from which much of Iran’s oil is exported.",
+          "url": "https://finance.yahoo.com/m/859dcd8d-0813-3eeb-a2be-6e6aa5461a27/where-nvidia-stock-needs-to.html?.tsrc=rss"
+        },
+        {
+          "id": "nvda-04399dea2d192bed",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T14:27:00 ET",
+          "timeET": "14:27 ET",
+          "headline": "Magnificent Seven Are Cracking – Goldman Sees A Tech Value Opportunity That Hasn't Existed Since the 1970s",
           "source": "Benzinga",
-          "summary": "Top Wall Street analysts changed their outlook on top names, including Arm Holdings, Twilio, Olin Corp, Rocket Cos, Intel, Live Nation, and Lindsay Corp.",
-          "url": "https://www.benzinga.com/analyst-stock-ratings/price-target/26/04/51656592/netflix-to-rally-around-22-here-are-10-top-analyst-forecasts-for-monday",
+          "summary": "Goldman Sachs says tech valuations hit 50-year lows vs. the market. Info Tech is set to drive 87% of S&amp;P 500 EPS growth in Q1 2026.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51689305/goldman-sachs-tech-value-opportunity-magnificent-seven-2026"
+        },
+        {
+          "id": "nvda-62fb1be40e4fd27c",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:18:00 ET",
+          "timeET": "13:18 ET",
+          "headline": "Oil Surges To $115, Stocks Slide As Trump Deadline Looms: What's Moving Markets Tuesday?",
+          "source": "Benzinga",
+          "summary": "Oil prices keep investors on the defensive. U.S. equities fell as WTI crude topped $115 on Trump&#39;s latest threat against Iran.",
+          "url": "https://www.benzinga.com/markets/equities/26/04/51687123/oil-surges-115-stocks-slide-trump-iran-ultimatum-markets-midday-tuesday"
+        },
+        {
+          "id": "nvda-585220188a5d4d91",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:12:00 ET",
+          "timeET": "13:12 ET",
+          "headline": "What's Going On With Advanced Micro Devices Stock Tuesday?",
+          "source": "Benzinga",
+          "summary": "Advanced Micro Devices slides with broader tech weakness; Citi flags tactical upside as AI CPU demand strengthens.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51687007/whats-going-on-with-advanced-micro-devices-stock-tuesday-3"
+        },
+        {
+          "id": "nvda-0fc978221162241e",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:33:00 ET",
+          "timeET": "12:33 ET",
+          "headline": "Broadcom TPU Deals Extend 'Multi-Year AI Supply Visibility': Analyst",
+          "source": "Benzinga",
+          "summary": "Broadcom signs multi-year TPU agreements with Google and Anthropic, increasing long-term visibility and potential at other customers.",
+          "url": "https://www.benzinga.com/analyst-stock-ratings/analyst-color/26/04/51685943/broadcom-tpu-deals-extend-multi-year-ai-visibility-analyst"
+        },
+        {
+          "id": "nvda-0ef0e4951917118d",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:27:00 ET",
+          "timeET": "12:27 ET",
+          "headline": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
+          "source": "Benzinga",
+          "summary": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
+          "url": "https://www.benzinga.com/Opinion/26/04/51685756/bullish-stock-market-positioning-confronts-a-whole-civilization-will-probably-die-tonight"
+        },
+        {
+          "id": "nvda-aae45af59f9d7ce2",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:17:00 ET",
+          "timeET": "12:17 ET",
+          "headline": "Microsoft Is Now The Biggest Deadweight On S&P 500 — And Exxon Is What Nvidia Used To Be",
+          "source": "Benzinga",
+          "summary": "Microsoft is the single biggest drag on the S&amp;P 500 this year and all of the Magnificent 7 stocks are deadweight on headline returns. ",
+          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51685501/microsoft-is-now-the-biggest-deadweight-on-sp-500-and-exxon-is-what-nvidia-used-to-be"
+        },
+        {
+          "id": "nvda-adf352e466676996",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T10:11:00 ET",
+          "timeET": "10:11 ET",
+          "headline": "ASML Caught In Crossfire As US-China Chip War Escalates",
+          "source": "Benzinga",
+          "summary": "ASML shares drop 1.2% following U.S. proposals to limit China&#39;s access to DUV lithography tools. Read the latest analyst insights here.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51680936/asml-caught-in-crossfire-as-us-china-chip-war-escalates"
+        },
+        {
+          "id": "nvda-207416a63a9d492a",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T08:57:00 ET",
+          "timeET": "08:57 ET",
+          "headline": "AI Is Still Driving Markets, Says Doug Clinton — And These Stocks Win",
+          "source": "Benzinga",
+          "summary": "Doug Clinton labels Nvidia &#34;the king&#34; of AI and highlights Google&#39;s lead in model building. Plus: The future of trillion-dollar tech IPOs.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51677814/ai-is-still-driving-markets-says-doug-clinton-and-these-stocks-win"
+        },
+        {
+          "id": "nvda-01ba0252c5a58323",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T06:52:00 ET",
+          "timeET": "06:52 ET",
+          "headline": "Samsung Cashes In Big As AI Memory Shortage Fuels Profit Explosion",
+          "source": "Benzinga",
+          "summary": "Samsung projects record profits amid the AI chip boom, though supply chain risks from Middle East conflicts loom for semiconductor makers.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51674604/samsung-cashes-in-big-as-ai-memory-shortage-fuels-profit-explosion"
+        },
+        {
+          "id": "nvda-72e20fe6cbd9ea68",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T05:58:00 ET",
+          "timeET": "05:58 ET",
+          "headline": "Exploring The Competitive Space: NVIDIA Versus Industry Peers In Semiconductors &amp; Semiconductor Equipment",
+          "source": "Benzinga",
+          "summary": " ",
+          "url": "https://www.benzinga.com/insights/news/26/04/51673568/exploring-the-competitive-space-nvidia-versus-industry-peers-in-semiconductors-amp-semiconductor-eq"
+        },
+        {
+          "id": "nvda-46bf8167fdc0404f",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T02:29:00 ET",
+          "timeET": "02:29 ET",
+          "headline": "Nvidia-Backed Firmus Raises $505 Million As AI Data Center Boom Accelerates",
+          "source": "Benzinga",
+          "summary": "Backed by Nvidia, Firmus raised $505 million at a $5.5 billion valuation as it accelerates expansion of AI-focused data centers.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51672265/nvidia-backed-firmus-raises-505-million-ai-data-center-boom"
+        }
+      ],
+      "details": [
+        {
+          "id": "nvda-4c7107106f04069f",
+          "symbol": "NVDA",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T16:00:00 ET",
+          "headline": "Where Nvidia Stock Needs to Trade to Get Out of Its Sideways Trap",
+          "source": "Yahoo Finance",
+          "summary": "Nvidia stock is having a good day, but it’s still stuck in the purgatory of a nine-month trading range. Nvidia stock was up 2% on Wednesday, after gaining 0.3% on Tuesday; the has risen 2.5%, and the has advanced 2.7%. The stock was down throughout the day on Tuesday after reports that the U.S. had attacked military targets on Kharg Island, from which much of Iran’s oil is exported.",
+          "url": "https://finance.yahoo.com/m/859dcd8d-0813-3eeb-a2be-6e6aa5461a27/where-nvidia-stock-needs-to.html?.tsrc=rss",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.54
+        },
+        {
+          "id": "nvda-04399dea2d192bed",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T14:27:00 ET",
+          "headline": "Magnificent Seven Are Cracking – Goldman Sees A Tech Value Opportunity That Hasn't Existed Since the 1970s",
+          "source": "Benzinga",
+          "summary": "Goldman Sachs says tech valuations hit 50-year lows vs. the market. Info Tech is set to drive 87% of S&amp;P 500 EPS growth in Q1 2026.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51689305/goldman-sachs-tech-value-opportunity-magnificent-seven-2026",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-62fb1be40e4fd27c",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:18:00 ET",
+          "headline": "Oil Surges To $115, Stocks Slide As Trump Deadline Looms: What's Moving Markets Tuesday?",
+          "source": "Benzinga",
+          "summary": "Oil prices keep investors on the defensive. U.S. equities fell as WTI crude topped $115 on Trump&#39;s latest threat against Iran.",
+          "url": "https://www.benzinga.com/markets/equities/26/04/51687123/oil-surges-115-stocks-slide-trump-iran-ultimatum-markets-midday-tuesday",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-585220188a5d4d91",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:12:00 ET",
+          "headline": "What's Going On With Advanced Micro Devices Stock Tuesday?",
+          "source": "Benzinga",
+          "summary": "Advanced Micro Devices slides with broader tech weakness; Citi flags tactical upside as AI CPU demand strengthens.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51687007/whats-going-on-with-advanced-micro-devices-stock-tuesday-3",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-0fc978221162241e",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:33:00 ET",
+          "headline": "Broadcom TPU Deals Extend 'Multi-Year AI Supply Visibility': Analyst",
+          "source": "Benzinga",
+          "summary": "Broadcom signs multi-year TPU agreements with Google and Anthropic, increasing long-term visibility and potential at other customers.",
+          "url": "https://www.benzinga.com/analyst-stock-ratings/analyst-color/26/04/51685943/broadcom-tpu-deals-extend-multi-year-ai-visibility-analyst",
           "tags": [
             "analyst"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "nflx-f179bfa215f8f54a",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:50:00 ET",
-          "headline": "Netflix Gains Ground But Faces Key Test Near $109.50",
+          "id": "nvda-0ef0e4951917118d",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:27:00 ET",
+          "headline": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
           "source": "Benzinga",
-          "summary": "Netflix Inc. (NASDAQ:NFLX) is approaching a key resistance level near $109.50 as shares attempt to build momentum following recent volatility.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51655966/netflix-gains-ground-but-faces-key-test-near-109-50",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "nflx-4f8f87064f338986",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:43:00 ET",
-          "headline": "This Tyson Foods Analyst Turns Bullish; Here Are Top 5 Upgrades For Monday",
-          "source": "Benzinga",
-          "summary": "Wall Street analysts upgraded NTRS, NFLX, TSN, FAF, and RKT stocks with higher price targets. Check out analyst ratings page for more details.",
-          "url": "https://www.benzinga.com/analyst-stock-ratings/upgrades/26/04/51655812/this-tyson-foods-analyst-turns-bullish-here-are-top-5-upgrades-for-monday",
-          "tags": [
-            "analyst"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "nflx-d2d1ac80bdcceeff",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T07:08:00 ET",
-          "headline": "FCC Considers Overhaul Of Local Sports Blackouts As Fans Face $1,000 Subscription Maze Across Multiple Streaming Services",
-          "source": "Benzinga",
-          "summary": "FCC reviews local sports blackout rules as fans face rising subscription costs and fragmented streaming, sparking potential changes for NFL, MLB, NHL.",
-          "url": "https://www.benzinga.com/news/sports/26/04/51653966/fcc-considers-overhaul-of-local-sports-blackouts-as-fans-face-1000-subscription-maze-across-multiple-streaming-services",
+          "summary": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
+          "url": "https://www.benzinga.com/Opinion/26/04/51685756/bullish-stock-market-positioning-confronts-a-whole-civilization-will-probably-die-tonight",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "nflx-ef2121d4be71e24d",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:53:00 ET",
-          "headline": "Paramount Eyes $24 Billion Gulf Backing For Warner Bros. Discovery Deal: Report",
+          "id": "nvda-aae45af59f9d7ce2",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:17:00 ET",
+          "headline": "Microsoft Is Now The Biggest Deadweight On S&P 500 — And Exxon Is What Nvidia Used To Be",
           "source": "Benzinga",
-          "summary": "Paramount Skydance is in talks to secure a massive $24 billion in equity commitments from three Gulf sovereign-wealth funds.",
-          "url": "https://www.benzinga.com/m-a/26/04/51652993/paramount-eyes-24-billion-gulf-backing-for-warner-bros-discovery-deal-report",
+          "summary": "Microsoft is the single biggest drag on the S&amp;P 500 this year and all of the Magnificent 7 stocks are deadweight on headline returns. ",
+          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51685501/microsoft-is-now-the-biggest-deadweight-on-sp-500-and-exxon-is-what-nvidia-used-to-be",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "nflx-8b19c93f4a43b141",
-          "symbol": "NFLX",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:28:00 ET",
-          "headline": "Goldman Sachs Upgrades Netflix to Buy, Raises Price Target to $120",
+          "id": "nvda-adf352e466676996",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T10:11:00 ET",
+          "headline": "ASML Caught In Crossfire As US-China Chip War Escalates",
           "source": "Benzinga",
-          "summary": "Goldman Sachs Upgrades Netflix to Buy, Raises Price Target to $120",
-          "url": "https://www.benzinga.com/news/26/04/51652894/goldman-sachs-upgrades-netflix-to-buy-raises-price-target-to-120",
+          "summary": "ASML shares drop 1.2% following U.S. proposals to limit China&#39;s access to DUV lithography tools. Read the latest analyst insights here.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51680936/asml-caught-in-crossfire-as-us-china-chip-war-escalates",
           "tags": [
-            "analyst"
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-207416a63a9d492a",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T08:57:00 ET",
+          "headline": "AI Is Still Driving Markets, Says Doug Clinton — And These Stocks Win",
+          "source": "Benzinga",
+          "summary": "Doug Clinton labels Nvidia &#34;the king&#34; of AI and highlights Google&#39;s lead in model building. Plus: The future of trillion-dollar tech IPOs.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51677814/ai-is-still-driving-markets-says-doug-clinton-and-these-stocks-win",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-01ba0252c5a58323",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T06:52:00 ET",
+          "headline": "Samsung Cashes In Big As AI Memory Shortage Fuels Profit Explosion",
+          "source": "Benzinga",
+          "summary": "Samsung projects record profits amid the AI chip boom, though supply chain risks from Middle East conflicts loom for semiconductor makers.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51674604/samsung-cashes-in-big-as-ai-memory-shortage-fuels-profit-explosion",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-72e20fe6cbd9ea68",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T05:58:00 ET",
+          "headline": "Exploring The Competitive Space: NVIDIA Versus Industry Peers In Semiconductors &amp; Semiconductor Equipment",
+          "source": "Benzinga",
+          "summary": " ",
+          "url": "https://www.benzinga.com/insights/news/26/04/51673568/exploring-the-competitive-space-nvidia-versus-industry-peers-in-semiconductors-amp-semiconductor-eq",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "nvda-46bf8167fdc0404f",
+          "symbol": "NVDA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T02:29:00 ET",
+          "headline": "Nvidia-Backed Firmus Raises $505 Million As AI Data Center Boom Accelerates",
+          "source": "Benzinga",
+          "summary": "Backed by Nvidia, Firmus raised $505 million at a $5.5 billion valuation as it accelerates expansion of AI-focused data centers.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51672265/nvidia-backed-firmus-raises-505-million-ai-data-center-boom",
+          "tags": [
+            "news"
           ],
           "relevanceScore": 0.5
         }
@@ -517,842 +647,379 @@
     "TSLA": {
       "timeline": [
         {
-          "id": "tsla-3ac45f549e786140",
+          "id": "tsla-7d4d0cdb3e077cdd",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "timeET": "16:00 EDT",
-          "headline": "Analysts Cut Tesla Price Targets As Regulators Shutter Investigation",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T16:00:00 ET",
+          "timeET": "16:00 ET",
+          "headline": "Nasdaq tech leads strong Wall Street rebound after Iran ceasefire deal",
           "source": "Yahoo Finance",
-          "summary": "A bull and a bear both offered pessimistic views of Tesla stock after the automaker reported its Q1 deliveries, which provided the first look at its business this year. JPMorgan analyst Ryan Brinkman, the bear, cut his forecast for Tesla's earnings to 30 cents a share down from a previous estimate of 43 cents and below Wall Street consensus of 39 cents, according to FactSet. Brinkman added that he sees 60% downside to his price target of $145 a share and maintained his sell rating.",
-          "url": "https://finance.yahoo.com/m/b1830d81-e6d2-3d5c-89a3-f3893ee747c2/analysts-cut-tesla-price.html?.tsrc=rss"
+          "summary": "Trump announced that a two-week ceasefire deal had been agreed between the US and Iran",
+          "url": "https://www.proactiveinvestors.com/companies/news/1090197/nasdaq-to-lead-strong-wall-street-rebound-after-iran-ceasefire-deal-1090197.html?.tsrc=rss"
         },
         {
-          "id": "tsla-959f865a67001015",
+          "id": "tsla-ee72acf5a9ba7f59",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T15:31:00 ET",
-          "timeET": "15:31 ET",
-          "headline": "Tesla's Dip Triggers TSLL Selloff—Why Are ETF Traders So Nervous?",
-          "source": "Benzinga",
-          "summary": "TSLL ETF falls nearly 7% as Tesla stock declines on weak Q1 deliveries and analyst price target cuts, driving heightened trading activity.",
-          "url": "https://www.benzinga.com/etfs/specialty-etfs/26/04/51667430/tesla-dip-triggers-tsll-selloff-why-are-etf-traders-so-nervous"
-        },
-        {
-          "id": "tsla-db6e2bce0945f996",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T14:53:00 ET",
-          "timeET": "14:53 ET",
-          "headline": "Tesla's Biggest Threat Isn't BYD — It's A Company That Doesn't Even Make Cars",
-          "source": "Benzinga",
-          "summary": "Tesla&#39;s biggest risk may not be BYD but CATL, which controls 37% of EV batteries and is driving down costs across the industry.",
-          "url": "https://www.benzinga.com/trading-ideas/long-ideas/26/04/51666652/teslas-biggest-threat-isnt-byd-its-a-company-that-doesnt-even-make-cars"
-        },
-        {
-          "id": "tsla-45f539cfdad56363",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:40:00 ET",
-          "timeET": "13:40 ET",
-          "headline": "Chamath Palihapitiya Warns Companies With IPOs After SpaceX: 'Get The Heck Out'",
-          "source": "Benzinga",
-          "summary": "OpenAI secondary shares stall at $850B as Chamath warns the 2026 IPO window could close after SpaceX. See why Polymarket traders favor Anthropic.",
-          "url": "https://www.benzinga.com/markets/prediction-markets/26/04/51665215/chamath-palihapitiya-warns-companies-with-ipos-after-spacex-get-the-heck-out"
-        },
-        {
-          "id": "tsla-2b3531daa6c7adf4",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:38:00 ET",
-          "timeET": "13:38 ET",
-          "headline": "Stock Of The Day: Is Tesla About To Break Down?",
-          "source": "Benzinga",
-          "summary": "Tesla (TSLA) shares may be breaking a support level. This can be a bearish dynamic and could mean a new downtrend is forming.",
-          "url": "https://www.benzinga.com/trading-ideas/technicals/26/04/51665154/stock-of-the-day-is-tesla-about-to-break-down"
-        },
-        {
-          "id": "tsla-42fb680b19451ffc",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:36:00 ET",
-          "timeET": "13:36 ET",
-          "headline": "9 Consumer Discretionary Stocks Whale Activity In Today's Session",
-          "source": "Benzinga",
-          "summary": " ",
-          "url": "https://www.benzinga.com/insights/options/26/04/51665097/9-consumer-discretionary-stocks-whale-activity-in-todays-session"
-        },
-        {
-          "id": "tsla-5e0bb014098587e6",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T12:55:00 ET",
-          "timeET": "12:55 ET",
-          "headline": "What's Going On With Tesla Stock Today?",
-          "source": "Benzinga",
-          "summary": "Tesla Inc (NASDAQ:TSLA) stock is trading lower on Monday. Baird analyst Ben Kallo trimmed his price target on the stock to $538 from $548 while keeping an Outperform rating.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51663680/whats-going-on-with-tesla-stock-today-14"
-        },
-        {
-          "id": "tsla-306e23591b50591c",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T12:17:00 ET",
-          "timeET": "12:17 ET",
-          "headline": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
-          "source": "Benzinga",
-          "summary": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
-          "url": "https://www.benzinga.com/Opinion/26/04/51662761/ceasefire-hopium-keeps-stock-market-above-support-zone-important-inflation-data-ahead"
-        },
-        {
-          "id": "tsla-26bc69b9e1de8496",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 ET",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
           "timeET": "09:30 ET",
-          "headline": "Cramer Flags New Trade: Sell Some Tesla, Wait for SpaceX IPO?",
-          "source": "Benzinga",
-          "summary": "Jim Cramer is floating a provocative idea: Tesla investors could trim TSLA exposure now to save dry powder for the SpaceX IPO. ",
-          "url": "https://www.benzinga.com/analyst-stock-ratings/downgrades/26/04/51657033/cramer-flags-new-trade-sell-some-tesla-wait-for-spacex-ipo"
-        },
-        {
-          "id": "tsla-1dc3236cd92921c7",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "timeET": "09:30 EDT",
-          "headline": "Musk’s Net Worth Rises $16 Billion As SpaceX Heads Toward IPO",
+          "headline": "Tesla Stock Jumps Despite Slumping Oil Prices. Why It’s Getting an Iran Bump.",
           "source": "Yahoo Finance",
-          "summary": "Elon Musk’s net worth declined in the early part of 2026 due to Tesla’s (NASDAQ: TSLA) problems. Tesla’s stock dropped from $480 in mid-December to $355 recently. Its market cap today is $1.35 trillion. Musk owns about 15% of the company. His net worth received a significant boost as SpaceX announced an IPO that could ... Musk’s Net Worth Rises $16 Billion As SpaceX Heads Toward IPO",
-          "url": "https://247wallst.com/investing/2026/04/06/musks-net-worth-rises-16-billion-as-spacex-heads-toward-ipo/?.tsrc=rss"
+          "summary": "Tesla has benefited from higher oil prices in the past, so it might seem odd that crude is down sharply and the electric-vehicle maker’s stock is up. Shares of the Elon Musk-led company were up more than 4% in premarket trading and gained 2.6% in early trading to $355.57, while the and were up 2.6% and 2.9%, respectively. Benchmark oil prices were down more 16% in early trading, below $92 a barrel.",
+          "url": "https://finance.yahoo.com/m/9aec374c-2ca2-3044-9d56-2d9f235444ef/tesla-stock-jumps-despite.html?.tsrc=rss"
         },
         {
-          "id": "tsla-813e00b29626d367",
+          "id": "tsla-8bd8b635f0ff9548",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:28:00 ET",
-          "timeET": "09:28 ET",
-          "headline": "Baird Maintains Outperform on Tesla, Lowers Price Target to $538",
-          "source": "Benzinga",
-          "summary": "Baird Maintains Outperform on Tesla, Lowers Price Target to $538",
-          "url": "https://www.benzinga.com/news/26/04/51656971/baird-maintains-outperform-on-tesla-lowers-price-target-to-538"
-        },
-        {
-          "id": "tsla-649d2f5b7c98658f",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:42:00 ET",
-          "timeET": "08:42 ET",
-          "headline": "Tesla's Robot Got Outsold 33 Times By Chinese Rival — EV Story All Over Again?",
-          "source": "Benzinga",
-          "summary": "China&#39;s Unitree has shipped 5,000+ robots vs Tesla&#39;s ~150. With prices as low as $5.9K, the humanoid race may mirror the EV disruption story.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51655802/teslas-robot-got-outsold-33-times-by-chinese-rival-ev-story-all-over-again"
-        },
-        {
-          "id": "tsla-0344629ed08e8a73",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:03:00 ET",
-          "timeET": "08:03 ET",
-          "headline": "Top Analyst Bearish On Elon Musk's Tesla Over 'Collapsed' Financial Expectations—Jim Cramer Says Could Trigger TSLA Stock Sell-Off Amid SpaceX IPO",
-          "source": "Benzinga",
-          "summary": "Jim Cramer thinks that JP Morgan&#39;s &#39;sell&#39; rating could trigger a sell-off for Elon Musk-led TSLA amid SpaceX IPO.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51654967/top-analyst-bearish-on-elon-musks-tesla-over-collapsed-financial-expectations-jim-cramer-says-could-trigger-tsla-stock-sell-off-amid-spacex-ipo"
-        },
-        {
-          "id": "tsla-fa70af55df458204",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T06:45:00 ET",
-          "timeET": "06:45 ET",
-          "headline": "NHTSA Closes Probe Into 2.5 Million Tesla Vehicles Over Self-Driving Concerns",
-          "source": "Benzinga",
-          "summary": "NHTSA closes investigation into Tesla&#39;s &#39;actually smart summon&#39; feature affecting 2.59M vehicles, citing OTA updates.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51653656/nhtsa-closes-probe-into-2-5-million-tesla-vehicles-over-self-driving-concerns"
-        },
-        {
-          "id": "tsla-170f0c1628693e54",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:58:00 ET",
-          "timeET": "05:58 ET",
-          "headline": "Market Analysis: Tesla And Competitors In Automobiles Industry",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:35:00 ET",
+          "timeET": "13:35 ET",
+          "headline": "10 Consumer Discretionary Stocks Whale Activity In Today's Session",
           "source": "Benzinga",
           "summary": " ",
-          "url": "https://www.benzinga.com/insights/news/26/04/51653045/market-analysis-tesla-and-competitors-in-automobiles-industry"
+          "url": "https://www.benzinga.com/insights/options/26/04/51687678/10-consumer-discretionary-stocks-whale-activity-in-todays-session"
         },
         {
-          "id": "tsla-48c00c220753d96a",
+          "id": "tsla-0266c1219351e363",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:37:00 ET",
-          "timeET": "05:37 ET",
-          "headline": "Taiwan Semiconductor's Big Day Approaches With Markets Watching AI, War And Rivals",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:18:00 ET",
+          "timeET": "13:18 ET",
+          "headline": "Elon Musk's Biographer Explains How Sam Altman Triggered Elon's 'Demon Mode'",
           "source": "Benzinga",
-          "summary": "Taiwan Semiconductor (TSM) earnings ahead: AI growth, Middle East tensions, and chip industry rivalry take center stage.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652932/taiwan-semiconductors-big-day-approaches-with-markets-watching-ai-war-and-rivals"
+          "summary": "Elon Musk&#39;s biographer Walter Isaacson says the Tesla billionaire goes &#34;demon mode&#34; over Sam Altman. Polymarket gives Musk just a 39% chance of winning his lawsuit against Altman.",
+          "url": "https://www.benzinga.com/markets/prediction-markets/26/04/51687138/elon-musks-biographer-explains-how-sam-altman-triggered-elons-demon-mode"
         },
         {
-          "id": "tsla-0801fc63608dc4bc",
+          "id": "tsla-6ac7f2f0ba19a86f",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T04:09:00 ET",
-          "timeET": "04:09 ET",
-          "headline": "Gary Black Wants Tesla To Follow Apple's Footsteps To Boost Its FSD Subscriptions",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:18:00 ET",
+          "timeET": "13:18 ET",
+          "headline": "Oil Surges To $115, Stocks Slide As Trump Deadline Looms: What's Moving Markets Tuesday?",
           "source": "Benzinga",
-          "summary": "Investor Gary Black of The Future Fund LLC hopes Tesla would follow Apple&#39;s marketing strategy for its Full Self-Driving (FSD) system.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652534/gary-black-wants-tesla-to-follow-apples-footsteps-to-boost-its-fsd-subscriptions"
+          "summary": "Oil prices keep investors on the defensive. U.S. equities fell as WTI crude topped $115 on Trump&#39;s latest threat against Iran.",
+          "url": "https://www.benzinga.com/markets/equities/26/04/51687123/oil-surges-115-stocks-slide-trump-iran-ultimatum-markets-midday-tuesday"
         },
         {
-          "id": "tsla-83580ad5f7c34430",
+          "id": "tsla-f13a419844d6d293",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T03:15:00 ET",
-          "timeET": "03:15 ET",
-          "headline": "Elon Musk Says 'It's All Going To Fraud' As Gavin Newsom-Led California Signals Requiring Additional Funds For High Speed Rail Project",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:27:00 ET",
+          "timeET": "12:27 ET",
+          "headline": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
           "source": "Benzinga",
-          "summary": "Tesla CEO Elon Musk alleges fraud in California High Speed Rail Project undertaken by Governor Gavin Newsom.",
-          "url": "https://www.benzinga.com/news/politics/26/04/51652259/elon-musk-says-its-all-going-to-fraud-as-gavin-newsom-led-california-signals-requiring-additional-funds-for-high-speed-rail-project"
+          "summary": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
+          "url": "https://www.benzinga.com/Opinion/26/04/51685756/bullish-stock-market-positioning-confronts-a-whole-civilization-will-probably-die-tonight"
         },
         {
-          "id": "tsla-cabd67167c7cc97d",
+          "id": "tsla-a33058ad830f2288",
           "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T02:16:00 ET",
-          "timeET": "02:16 ET",
-          "headline": "US Stocks Mixed Following Trump's Iran War Address: Investor Fear Eases, But Greed Index Remains In 'Extreme Fear' Zone",
-          "source": "Benzinga",
-          "summary": "Stocks mixed on Thurs. DJ falls 0.1%, Iran monitors Strait of Hormuz. Tesla drops 5%, Acuity down 8%. Jobless claims decline.",
-          "url": "https://www.benzinga.com/markets/market-summary/26/04/51652026/us-stocks-mixed-following-trumps-iran-war-address-investor-fear-eases-but-greed-index-remains-in-extreme-fear-zone"
-        },
-        {
-          "id": "tsla-43055795b7ef1979",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T00:27:00 ET",
-          "timeET": "00:27 ET",
-          "headline": "Analyst Says Tesla Will Deliver 1.6 Million Vehicles This Year, Says Robotaxi Scale Would Be Key Driver For TSLA",
-          "source": "Benzinga",
-          "summary": "The analyst shared that Elon Musk-led Tesla&#39;s energy storage deployments would increase amid possible datacenter applications.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51651877/analyst-says-tesla-will-deliver-1-6-million-vehicles-this-year"
-        }
-      ],
-      "details": [
-        {
-          "id": "tsla-3ac45f549e786140",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "headline": "Analysts Cut Tesla Price Targets As Regulators Shutter Investigation",
-          "source": "Yahoo Finance",
-          "summary": "A bull and a bear both offered pessimistic views of Tesla stock after the automaker reported its Q1 deliveries, which provided the first look at its business this year. JPMorgan analyst Ryan Brinkman, the bear, cut his forecast for Tesla's earnings to 30 cents a share down from a previous estimate of 43 cents and below Wall Street consensus of 39 cents, according to FactSet. Brinkman added that he sees 60% downside to his price target of $145 a share and maintained his sell rating.",
-          "url": "https://finance.yahoo.com/m/b1830d81-e6d2-3d5c-89a3-f3893ee747c2/analysts-cut-tesla-price.html?.tsrc=rss",
-          "tags": [
-            "analyst",
-            "regulatory"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-959f865a67001015",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T15:31:00 ET",
-          "headline": "Tesla's Dip Triggers TSLL Selloff—Why Are ETF Traders So Nervous?",
-          "source": "Benzinga",
-          "summary": "TSLL ETF falls nearly 7% as Tesla stock declines on weak Q1 deliveries and analyst price target cuts, driving heightened trading activity.",
-          "url": "https://www.benzinga.com/etfs/specialty-etfs/26/04/51667430/tesla-dip-triggers-tsll-selloff-why-are-etf-traders-so-nervous",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-db6e2bce0945f996",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T14:53:00 ET",
-          "headline": "Tesla's Biggest Threat Isn't BYD — It's A Company That Doesn't Even Make Cars",
-          "source": "Benzinga",
-          "summary": "Tesla&#39;s biggest risk may not be BYD but CATL, which controls 37% of EV batteries and is driving down costs across the industry.",
-          "url": "https://www.benzinga.com/trading-ideas/long-ideas/26/04/51666652/teslas-biggest-threat-isnt-byd-its-a-company-that-doesnt-even-make-cars",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-45f539cfdad56363",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:40:00 ET",
-          "headline": "Chamath Palihapitiya Warns Companies With IPOs After SpaceX: 'Get The Heck Out'",
-          "source": "Benzinga",
-          "summary": "OpenAI secondary shares stall at $850B as Chamath warns the 2026 IPO window could close after SpaceX. See why Polymarket traders favor Anthropic.",
-          "url": "https://www.benzinga.com/markets/prediction-markets/26/04/51665215/chamath-palihapitiya-warns-companies-with-ipos-after-spacex-get-the-heck-out",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-2b3531daa6c7adf4",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:38:00 ET",
-          "headline": "Stock Of The Day: Is Tesla About To Break Down?",
-          "source": "Benzinga",
-          "summary": "Tesla (TSLA) shares may be breaking a support level. This can be a bearish dynamic and could mean a new downtrend is forming.",
-          "url": "https://www.benzinga.com/trading-ideas/technicals/26/04/51665154/stock-of-the-day-is-tesla-about-to-break-down",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "tsla-42fb680b19451ffc",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:36:00 ET",
-          "headline": "9 Consumer Discretionary Stocks Whale Activity In Today's Session",
-          "source": "Benzinga",
-          "summary": " ",
-          "url": "https://www.benzinga.com/insights/options/26/04/51665097/9-consumer-discretionary-stocks-whale-activity-in-todays-session",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-5e0bb014098587e6",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T12:55:00 ET",
-          "headline": "What's Going On With Tesla Stock Today?",
-          "source": "Benzinga",
-          "summary": "Tesla Inc (NASDAQ:TSLA) stock is trading lower on Monday. Baird analyst Ben Kallo trimmed his price target on the stock to $538 from $548 while keeping an Outperform rating.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51663680/whats-going-on-with-tesla-stock-today-14",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "tsla-306e23591b50591c",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T12:17:00 ET",
-          "headline": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
-          "source": "Benzinga",
-          "summary": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
-          "url": "https://www.benzinga.com/Opinion/26/04/51662761/ceasefire-hopium-keeps-stock-market-above-support-zone-important-inflation-data-ahead",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-26bc69b9e1de8496",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 ET",
-          "headline": "Cramer Flags New Trade: Sell Some Tesla, Wait for SpaceX IPO?",
-          "source": "Benzinga",
-          "summary": "Jim Cramer is floating a provocative idea: Tesla investors could trim TSLA exposure now to save dry powder for the SpaceX IPO. ",
-          "url": "https://www.benzinga.com/analyst-stock-ratings/downgrades/26/04/51657033/cramer-flags-new-trade-sell-some-tesla-wait-for-spacex-ipo",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "tsla-1dc3236cd92921c7",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "headline": "Musk’s Net Worth Rises $16 Billion As SpaceX Heads Toward IPO",
-          "source": "Yahoo Finance",
-          "summary": "Elon Musk’s net worth declined in the early part of 2026 due to Tesla’s (NASDAQ: TSLA) problems. Tesla’s stock dropped from $480 in mid-December to $355 recently. Its market cap today is $1.35 trillion. Musk owns about 15% of the company. His net worth received a significant boost as SpaceX announced an IPO that could ... Musk’s Net Worth Rises $16 Billion As SpaceX Heads Toward IPO",
-          "url": "https://247wallst.com/investing/2026/04/06/musks-net-worth-rises-16-billion-as-spacex-heads-toward-ipo/?.tsrc=rss",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "tsla-813e00b29626d367",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:28:00 ET",
-          "headline": "Baird Maintains Outperform on Tesla, Lowers Price Target to $538",
-          "source": "Benzinga",
-          "summary": "Baird Maintains Outperform on Tesla, Lowers Price Target to $538",
-          "url": "https://www.benzinga.com/news/26/04/51656971/baird-maintains-outperform-on-tesla-lowers-price-target-to-538",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-649d2f5b7c98658f",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:42:00 ET",
-          "headline": "Tesla's Robot Got Outsold 33 Times By Chinese Rival — EV Story All Over Again?",
-          "source": "Benzinga",
-          "summary": "China&#39;s Unitree has shipped 5,000+ robots vs Tesla&#39;s ~150. With prices as low as $5.9K, the humanoid race may mirror the EV disruption story.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51655802/teslas-robot-got-outsold-33-times-by-chinese-rival-ev-story-all-over-again",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-0344629ed08e8a73",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T08:03:00 ET",
-          "headline": "Top Analyst Bearish On Elon Musk's Tesla Over 'Collapsed' Financial Expectations—Jim Cramer Says Could Trigger TSLA Stock Sell-Off Amid SpaceX IPO",
-          "source": "Benzinga",
-          "summary": "Jim Cramer thinks that JP Morgan&#39;s &#39;sell&#39; rating could trigger a sell-off for Elon Musk-led TSLA amid SpaceX IPO.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51654967/top-analyst-bearish-on-elon-musks-tesla-over-collapsed-financial-expectations-jim-cramer-says-could-trigger-tsla-stock-sell-off-amid-spacex-ipo",
-          "tags": [
-            "analyst"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "tsla-fa70af55df458204",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T06:45:00 ET",
-          "headline": "NHTSA Closes Probe Into 2.5 Million Tesla Vehicles Over Self-Driving Concerns",
-          "source": "Benzinga",
-          "summary": "NHTSA closes investigation into Tesla&#39;s &#39;actually smart summon&#39; feature affecting 2.59M vehicles, citing OTA updates.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51653656/nhtsa-closes-probe-into-2-5-million-tesla-vehicles-over-self-driving-concerns",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-170f0c1628693e54",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:58:00 ET",
-          "headline": "Market Analysis: Tesla And Competitors In Automobiles Industry",
-          "source": "Benzinga",
-          "summary": " ",
-          "url": "https://www.benzinga.com/insights/news/26/04/51653045/market-analysis-tesla-and-competitors-in-automobiles-industry",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-48c00c220753d96a",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:37:00 ET",
-          "headline": "Taiwan Semiconductor's Big Day Approaches With Markets Watching AI, War And Rivals",
-          "source": "Benzinga",
-          "summary": "Taiwan Semiconductor (TSM) earnings ahead: AI growth, Middle East tensions, and chip industry rivalry take center stage.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652932/taiwan-semiconductors-big-day-approaches-with-markets-watching-ai-war-and-rivals",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-0801fc63608dc4bc",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T04:09:00 ET",
-          "headline": "Gary Black Wants Tesla To Follow Apple's Footsteps To Boost Its FSD Subscriptions",
-          "source": "Benzinga",
-          "summary": "Investor Gary Black of The Future Fund LLC hopes Tesla would follow Apple&#39;s marketing strategy for its Full Self-Driving (FSD) system.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652534/gary-black-wants-tesla-to-follow-apples-footsteps-to-boost-its-fsd-subscriptions",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-83580ad5f7c34430",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T03:15:00 ET",
-          "headline": "Elon Musk Says 'It's All Going To Fraud' As Gavin Newsom-Led California Signals Requiring Additional Funds For High Speed Rail Project",
-          "source": "Benzinga",
-          "summary": "Tesla CEO Elon Musk alleges fraud in California High Speed Rail Project undertaken by Governor Gavin Newsom.",
-          "url": "https://www.benzinga.com/news/politics/26/04/51652259/elon-musk-says-its-all-going-to-fraud-as-gavin-newsom-led-california-signals-requiring-additional-funds-for-high-speed-rail-project",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-cabd67167c7cc97d",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T02:16:00 ET",
-          "headline": "US Stocks Mixed Following Trump's Iran War Address: Investor Fear Eases, But Greed Index Remains In 'Extreme Fear' Zone",
-          "source": "Benzinga",
-          "summary": "Stocks mixed on Thurs. DJ falls 0.1%, Iran monitors Strait of Hormuz. Tesla drops 5%, Acuity down 8%. Jobless claims decline.",
-          "url": "https://www.benzinga.com/markets/market-summary/26/04/51652026/us-stocks-mixed-following-trumps-iran-war-address-investor-fear-eases-but-greed-index-remains-in-extreme-fear-zone",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "tsla-43055795b7ef1979",
-          "symbol": "TSLA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T00:27:00 ET",
-          "headline": "Analyst Says Tesla Will Deliver 1.6 Million Vehicles This Year, Says Robotaxi Scale Would Be Key Driver For TSLA",
-          "source": "Benzinga",
-          "summary": "The analyst shared that Elon Musk-led Tesla&#39;s energy storage deployments would increase amid possible datacenter applications.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51651877/analyst-says-tesla-will-deliver-1-6-million-vehicles-this-year",
-          "tags": [
-            "analyst"
-          ],
-          "relevanceScore": 0.7
-        }
-      ]
-    },
-    "AAPL": {
-      "timeline": [
-        {
-          "id": "aapl-d2eaaf4c90b47357",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "timeET": "16:00 EDT",
-          "headline": "Apple Faces Questions in Amazon-Globalstar Talks",
-          "source": "Yahoo Finance",
-          "summary": "Potential deal could reshape satellite strategy and impact Apple's existing partnership.",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/apple-faces-questions-amazon-globalstar-185955763.html?.tsrc=rss"
-        },
-        {
-          "id": "aapl-f8671728e4839713",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T14:30:00 ET",
-          "timeET": "14:30 ET",
-          "headline": "From $10K To $20K: Nvidia-Fueled Tech ETFs That Crushed The Market Over The Decade",
-          "source": "Benzinga",
-          "summary": "Tech and semiconductor ETFs rode Nvidia&#39;s rally from 2015 to 2025, with many funds easily doubling a $10,000 investment.",
-          "url": "https://www.benzinga.com/etfs/sector-etfs/26/04/51666269/from-10k-to-20k-nvidia-fueled-tech-etfs-that-crushed-the-market-over-the-decade"
-        },
-        {
-          "id": "aapl-6fb9ebd627e8c9e8",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:36:00 ET",
-          "timeET": "13:36 ET",
-          "headline": "10 Information Technology Stocks Whale Activity In Today's Session",
-          "source": "Benzinga",
-          "summary": " ",
-          "url": "https://www.benzinga.com/insights/options/26/04/51665093/10-information-technology-stocks-whale-activity-in-todays-session"
-        },
-        {
-          "id": "aapl-cff071f42b2246ca",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T12:17:00 ET",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:17:00 ET",
           "timeET": "12:17 ET",
-          "headline": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
+          "headline": "Microsoft Is Now The Biggest Deadweight On S&P 500 — And Exxon Is What Nvidia Used To Be",
           "source": "Benzinga",
-          "summary": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
-          "url": "https://www.benzinga.com/Opinion/26/04/51662761/ceasefire-hopium-keeps-stock-market-above-support-zone-important-inflation-data-ahead"
+          "summary": "Microsoft is the single biggest drag on the S&amp;P 500 this year and all of the Magnificent 7 stocks are deadweight on headline returns. ",
+          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51685501/microsoft-is-now-the-biggest-deadweight-on-sp-500-and-exxon-is-what-nvidia-used-to-be"
         },
         {
-          "id": "aapl-ac2bc74dd42fc503",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:50:00 ET",
-          "timeET": "09:50 ET",
-          "headline": "This $599 MacBook Could Be Apple's Smartest Move Yet",
+          "id": "tsla-9ec0dc947da65c2e",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T11:32:00 ET",
+          "timeET": "11:32 ET",
+          "headline": "Tesla Scores Regulatory Win, But Analysts Turn More Bearish",
           "source": "Benzinga",
-          "summary": "Apple&#39;s MacBook Neo targets the sub-$700 market. Analysts predict a &#34;7x surge&#34; in the entry-premium category with the new A18 Pro chip.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51657842/this-599-macbook-could-be-apples-smartest-move-yet"
+          "summary": "Tesla catches a regulatory break as NHTSA closes its Smart Summon probe — but JPMorgan sees 60% downside, Goldman and Truist cut targets, and Polymarket traders aren&#39;t buying the bull case.",
+          "url": "https://www.benzinga.com/markets/prediction-markets/26/04/51683988/tesla-scores-regulatory-win"
         },
         {
-          "id": "aapl-6e416599a56fc2ee",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:47:00 ET",
-          "timeET": "09:47 ET",
-          "headline": "Apple Stock Holds Up Monday As Traders Weigh iPhone 17 Demand Signals",
+          "id": "tsla-9d98da5b7c4bd978",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T11:08:00 ET",
+          "timeET": "11:08 ET",
+          "headline": "Intel Stock Surges 2% As Elon Musk Partnership Targets 1 Terawatt Of AI Power",
           "source": "Benzinga",
-          "summary": "Apple Inc (NASDAQ: AAPL) shares are trading flat Monday as investors bet Big Tech is weathering geopolitical tensions better than expected.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51657669/apple-stock-holds-up-monday-as-traders-weigh-iphone-17-demand-signals"
+          "summary": "Intel (INTC) shares climbed Tuesday after joining the &#34;Terafab&#34; project with Tesla and SpaceX. Discover how this 1-terawatt AI partnership is driving Intel stock toward a $70 target.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51683112/intel-stock-surges-2-as-elon-musk-partnership-targets-1-terawatt-of-ai-power"
         },
         {
-          "id": "aapl-3c65d710ab8b882b",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "timeET": "09:30 EDT",
-          "headline": "Zacks Investment Ideas feature highlights: Apple, Nvidia and Microsoft",
-          "source": "Yahoo Finance",
-          "summary": "Apple, Nvidia and Microsoft face valuation reset in 2026, but steady earnings growth and AI tailwinds may offer a compelling dip-buying opportunity.",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-investment-ideas-feature-highlights-133800523.html?.tsrc=rss"
+          "id": "tsla-6b466533ff05d064",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T09:08:00 ET",
+          "timeET": "09:08 ET",
+          "headline": "Intel Posts On X \"Intel is proud to join the Terafab project with @SpaceX, @xAI, and @Tesla to help refactor silicon fab technology. Our ability to design, fabricate, and package ultra-high-performance chips at scale will help accelerate Terafab's aim to produce 1 TW/year of compute to power future advances in AI and robotics. It was fun hosting @elonmusk at Intel this past weekend!\"",
+          "source": "Benzinga",
+          "summary": "Intel Posts On X \"Intel is proud to join the Terafab project with @SpaceX, @xAI, and @Tesla to help refactor silicon fab technology. Our ability to design, fabricate, and package ultra-high-performance chips at scale will help accelerate Terafab's aim to produce 1 TW/year of compute to power future advances in AI and robotics. It was fun hosting @elonmusk at Intel this past weekend!\"",
+          "url": "https://www.benzinga.com/news/26/04/51678544/intel-posts-on-x-intel-is-proud-to-join-the-terafab-project-with-spacex-xai-and-tesla-to-help-refact"
         },
         {
-          "id": "aapl-74577549ad4d2977",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:59:00 ET",
-          "timeET": "05:59 ET",
-          "headline": "Competitor Analysis: Evaluating Apple And Competitors In Technology Hardware, Storage &amp; Peripherals Industry",
+          "id": "tsla-7421655f709ea29c",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T06:17:00 ET",
+          "timeET": "06:17 ET",
+          "headline": "The Silicon Battle: China Goes After Taiwan's Most Valuable Asset",
+          "source": "Benzinga",
+          "summary": "Taiwan warns of rising China threats to steal chip tech and talent. Get the latest on TSM earnings and the global semiconductor rivalry.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51674105/the-silicon-battle-china-goes-after-taiwans-most-valuable-asset"
+        },
+        {
+          "id": "tsla-661153d20479cf30",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T06:09:00 ET",
+          "timeET": "06:09 ET",
+          "headline": "Reuters Reported Germany's KBA Data Show Tesla March Registrations +315.1% YoY To 9,252 Units; Q1 Registrations +160% To 12,829 Vehicles",
+          "source": "Benzinga",
+          "summary": "Reuters Reported Germany's KBA Data Show Tesla March Registrations +315.1% YoY To 9,252 Units; Q1 Registrations +160% To 12,829 Vehicles",
+          "url": "https://www.benzinga.com/news/26/04/51673879/reuters-reported-germanys-kba-data-show-tesla-march-registrations-315-1-yoy-to-9-252-units-q1-regist"
+        },
+        {
+          "id": "tsla-20ade4cba285655f",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T05:58:00 ET",
+          "timeET": "05:58 ET",
+          "headline": "Understanding Tesla's Position In Automobiles Industry Compared To Competitors",
           "source": "Benzinga",
           "summary": " ",
-          "url": "https://www.benzinga.com/insights/news/26/04/51653064/competitor-analysis-evaluating-apple-and-competitors-in-technology-hardware-storage-amp-peripherals"
+          "url": "https://www.benzinga.com/insights/news/26/04/51673569/understanding-teslas-position-in-automobiles-industry-compared-to-competitors"
         },
         {
-          "id": "aapl-b3b9134c7ba8c4b1",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:37:00 ET",
-          "timeET": "05:37 ET",
-          "headline": "Taiwan Semiconductor's Big Day Approaches With Markets Watching AI, War And Rivals",
+          "id": "tsla-1a4ff5d49e10368b",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T04:13:00 ET",
+          "timeET": "04:13 ET",
+          "headline": "Analysts Caution Against Elon Musk-Led SpaceX's Mega IPO Amid Valuation Concerns: 'The Juice Has Been Squeezed'",
           "source": "Benzinga",
-          "summary": "Taiwan Semiconductor (TSM) earnings ahead: AI growth, Middle East tensions, and chip industry rivalry take center stage.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652932/taiwan-semiconductors-big-day-approaches-with-markets-watching-ai-war-and-rivals"
+          "summary": "Analysts have warned investors to exercise caution when investing in the upcoming SpaceX IPO, citing overvaluation concerns.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51672803/analysts-caution-against-elon-musk-led-spacexs-mega-ipo-amid-valuation-concerns-the-juice-has-been-squeezed"
         },
         {
-          "id": "aapl-a6d8e803020d9506",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T04:09:00 ET",
-          "timeET": "04:09 ET",
-          "headline": "Gary Black Wants Tesla To Follow Apple's Footsteps To Boost Its FSD Subscriptions",
+          "id": "tsla-21ccbf6d65f7e652",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T03:31:00 ET",
+          "timeET": "03:31 ET",
+          "headline": "Gary Black Isn't Happy With Tesla Bulls' Criticism Of Bearish JP Morgan Analyst: 'Been Wrong On TSLA For 10 Years, But...'",
           "source": "Benzinga",
-          "summary": "Investor Gary Black of The Future Fund LLC hopes Tesla would follow Apple&#39;s marketing strategy for its Full Self-Driving (FSD) system.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652534/gary-black-wants-tesla-to-follow-apples-footsteps-to-boost-its-fsd-subscriptions"
-        },
-        {
-          "id": "aapl-4fe830c9dc55f0d1",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T00:39:00 ET",
-          "timeET": "00:39 ET",
-          "headline": "Nvidia And Apple Supplier Foxconn Reports Revenue Surge Of Nearly 30% Thanks To AI Boom, Warns Of Global Political Risks",
-          "source": "Benzinga",
-          "summary": "Foxconn reported nearly 30% revenue growth driven by strong AI demand, but warned that geopolitical tensions could pose risks.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51651901/foxconn-revenue-surges-30-percent-ai-boom-warns-political-risks"
+          "summary": "Gary Black has slammed Tesla supporters and bulls for attacking a J.P. Morgan analyst over bearish sentiments on the stock.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51672559/gary-black-isnt-happy-with-tesla-bulls-criticism-of-bearish-jp-morgan-analyst-been-wrong-on-tsla-for-10-years-but"
         }
       ],
       "details": [
         {
-          "id": "aapl-d2eaaf4c90b47357",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "headline": "Apple Faces Questions in Amazon-Globalstar Talks",
+          "id": "tsla-7d4d0cdb3e077cdd",
+          "symbol": "TSLA",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T16:00:00 ET",
+          "headline": "Nasdaq tech leads strong Wall Street rebound after Iran ceasefire deal",
           "source": "Yahoo Finance",
-          "summary": "Potential deal could reshape satellite strategy and impact Apple's existing partnership.",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/apple-faces-questions-amazon-globalstar-185955763.html?.tsrc=rss",
+          "summary": "Trump announced that a two-week ceasefire deal had been agreed between the US and Iran",
+          "url": "https://www.proactiveinvestors.com/companies/news/1090197/nasdaq-to-lead-strong-wall-street-rebound-after-iran-ceasefire-deal-1090197.html?.tsrc=rss",
           "tags": [
             "news"
           ],
-          "relevanceScore": 0.5
+          "relevanceScore": 0.53
         },
         {
-          "id": "aapl-f8671728e4839713",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T14:30:00 ET",
-          "headline": "From $10K To $20K: Nvidia-Fueled Tech ETFs That Crushed The Market Over The Decade",
-          "source": "Benzinga",
-          "summary": "Tech and semiconductor ETFs rode Nvidia&#39;s rally from 2015 to 2025, with many funds easily doubling a $10,000 investment.",
-          "url": "https://www.benzinga.com/etfs/sector-etfs/26/04/51666269/from-10k-to-20k-nvidia-fueled-tech-etfs-that-crushed-the-market-over-the-decade",
+          "id": "tsla-ee72acf5a9ba7f59",
+          "symbol": "TSLA",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "headline": "Tesla Stock Jumps Despite Slumping Oil Prices. Why It’s Getting an Iran Bump.",
+          "source": "Yahoo Finance",
+          "summary": "Tesla has benefited from higher oil prices in the past, so it might seem odd that crude is down sharply and the electric-vehicle maker’s stock is up. Shares of the Elon Musk-led company were up more than 4% in premarket trading and gained 2.6% in early trading to $355.57, while the and were up 2.6% and 2.9%, respectively. Benchmark oil prices were down more 16% in early trading, below $92 a barrel.",
+          "url": "https://finance.yahoo.com/m/9aec374c-2ca2-3044-9d56-2d9f235444ef/tesla-stock-jumps-despite.html?.tsrc=rss",
           "tags": [
             "news"
           ],
-          "relevanceScore": 0.5
+          "relevanceScore": 0.51
         },
         {
-          "id": "aapl-6fb9ebd627e8c9e8",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T13:36:00 ET",
-          "headline": "10 Information Technology Stocks Whale Activity In Today's Session",
+          "id": "tsla-8bd8b635f0ff9548",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:35:00 ET",
+          "headline": "10 Consumer Discretionary Stocks Whale Activity In Today's Session",
           "source": "Benzinga",
           "summary": " ",
-          "url": "https://www.benzinga.com/insights/options/26/04/51665093/10-information-technology-stocks-whale-activity-in-todays-session",
+          "url": "https://www.benzinga.com/insights/options/26/04/51687678/10-consumer-discretionary-stocks-whale-activity-in-todays-session",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "aapl-cff071f42b2246ca",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T12:17:00 ET",
-          "headline": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
+          "id": "tsla-0266c1219351e363",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:18:00 ET",
+          "headline": "Elon Musk's Biographer Explains How Sam Altman Triggered Elon's 'Demon Mode'",
           "source": "Benzinga",
-          "summary": "Ceasefire Hopium Keeps Stock Market Above Support Zone, Important Inflation Data Ahead",
-          "url": "https://www.benzinga.com/Opinion/26/04/51662761/ceasefire-hopium-keeps-stock-market-above-support-zone-important-inflation-data-ahead",
+          "summary": "Elon Musk&#39;s biographer Walter Isaacson says the Tesla billionaire goes &#34;demon mode&#34; over Sam Altman. Polymarket gives Musk just a 39% chance of winning his lawsuit against Altman.",
+          "url": "https://www.benzinga.com/markets/prediction-markets/26/04/51687138/elon-musks-biographer-explains-how-sam-altman-triggered-elons-demon-mode",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "aapl-ac2bc74dd42fc503",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:50:00 ET",
-          "headline": "This $599 MacBook Could Be Apple's Smartest Move Yet",
+          "id": "tsla-6ac7f2f0ba19a86f",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T13:18:00 ET",
+          "headline": "Oil Surges To $115, Stocks Slide As Trump Deadline Looms: What's Moving Markets Tuesday?",
           "source": "Benzinga",
-          "summary": "Apple&#39;s MacBook Neo targets the sub-$700 market. Analysts predict a &#34;7x surge&#34; in the entry-premium category with the new A18 Pro chip.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51657842/this-599-macbook-could-be-apples-smartest-move-yet",
+          "summary": "Oil prices keep investors on the defensive. U.S. equities fell as WTI crude topped $115 on Trump&#39;s latest threat against Iran.",
+          "url": "https://www.benzinga.com/markets/equities/26/04/51687123/oil-surges-115-stocks-slide-trump-iran-ultimatum-markets-midday-tuesday",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "aapl-6e416599a56fc2ee",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:47:00 ET",
-          "headline": "Apple Stock Holds Up Monday As Traders Weigh iPhone 17 Demand Signals",
+          "id": "tsla-f13a419844d6d293",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:27:00 ET",
+          "headline": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
           "source": "Benzinga",
-          "summary": "Apple Inc (NASDAQ: AAPL) shares are trading flat Monday as investors bet Big Tech is weathering geopolitical tensions better than expected.",
-          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51657669/apple-stock-holds-up-monday-as-traders-weigh-iphone-17-demand-signals",
-          "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.7
-        },
-        {
-          "id": "aapl-3c65d710ab8b882b",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "headline": "Zacks Investment Ideas feature highlights: Apple, Nvidia and Microsoft",
-          "source": "Yahoo Finance",
-          "summary": "Apple, Nvidia and Microsoft face valuation reset in 2026, but steady earnings growth and AI tailwinds may offer a compelling dip-buying opportunity.",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-investment-ideas-feature-highlights-133800523.html?.tsrc=rss",
+          "summary": "Bullish Stock Market Positioning Confronts 'A Whole Civilization Will Probably Die Tonight'",
+          "url": "https://www.benzinga.com/Opinion/26/04/51685756/bullish-stock-market-positioning-confronts-a-whole-civilization-will-probably-die-tonight",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "aapl-74577549ad4d2977",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:59:00 ET",
-          "headline": "Competitor Analysis: Evaluating Apple And Competitors In Technology Hardware, Storage &amp; Peripherals Industry",
+          "id": "tsla-a33058ad830f2288",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T12:17:00 ET",
+          "headline": "Microsoft Is Now The Biggest Deadweight On S&P 500 — And Exxon Is What Nvidia Used To Be",
+          "source": "Benzinga",
+          "summary": "Microsoft is the single biggest drag on the S&amp;P 500 this year and all of the Magnificent 7 stocks are deadweight on headline returns. ",
+          "url": "https://www.benzinga.com/trading-ideas/movers/26/04/51685501/microsoft-is-now-the-biggest-deadweight-on-sp-500-and-exxon-is-what-nvidia-used-to-be",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "tsla-9ec0dc947da65c2e",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T11:32:00 ET",
+          "headline": "Tesla Scores Regulatory Win, But Analysts Turn More Bearish",
+          "source": "Benzinga",
+          "summary": "Tesla catches a regulatory break as NHTSA closes its Smart Summon probe — but JPMorgan sees 60% downside, Goldman and Truist cut targets, and Polymarket traders aren&#39;t buying the bull case.",
+          "url": "https://www.benzinga.com/markets/prediction-markets/26/04/51683988/tesla-scores-regulatory-win",
+          "tags": [
+            "analyst"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "tsla-9d98da5b7c4bd978",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T11:08:00 ET",
+          "headline": "Intel Stock Surges 2% As Elon Musk Partnership Targets 1 Terawatt Of AI Power",
+          "source": "Benzinga",
+          "summary": "Intel (INTC) shares climbed Tuesday after joining the &#34;Terafab&#34; project with Tesla and SpaceX. Discover how this 1-terawatt AI partnership is driving Intel stock toward a $70 target.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51683112/intel-stock-surges-2-as-elon-musk-partnership-targets-1-terawatt-of-ai-power",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "tsla-6b466533ff05d064",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T09:08:00 ET",
+          "headline": "Intel Posts On X \"Intel is proud to join the Terafab project with @SpaceX, @xAI, and @Tesla to help refactor silicon fab technology. Our ability to design, fabricate, and package ultra-high-performance chips at scale will help accelerate Terafab's aim to produce 1 TW/year of compute to power future advances in AI and robotics. It was fun hosting @elonmusk at Intel this past weekend!\"",
+          "source": "Benzinga",
+          "summary": "Intel Posts On X \"Intel is proud to join the Terafab project with @SpaceX, @xAI, and @Tesla to help refactor silicon fab technology. Our ability to design, fabricate, and package ultra-high-performance chips at scale will help accelerate Terafab's aim to produce 1 TW/year of compute to power future advances in AI and robotics. It was fun hosting @elonmusk at Intel this past weekend!\"",
+          "url": "https://www.benzinga.com/news/26/04/51678544/intel-posts-on-x-intel-is-proud-to-join-the-terafab-project-with-spacex-xai-and-tesla-to-help-refact",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "tsla-7421655f709ea29c",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T06:17:00 ET",
+          "headline": "The Silicon Battle: China Goes After Taiwan's Most Valuable Asset",
+          "source": "Benzinga",
+          "summary": "Taiwan warns of rising China threats to steal chip tech and talent. Get the latest on TSM earnings and the global semiconductor rivalry.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51674105/the-silicon-battle-china-goes-after-taiwans-most-valuable-asset",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "tsla-661153d20479cf30",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T06:09:00 ET",
+          "headline": "Reuters Reported Germany's KBA Data Show Tesla March Registrations +315.1% YoY To 9,252 Units; Q1 Registrations +160% To 12,829 Vehicles",
+          "source": "Benzinga",
+          "summary": "Reuters Reported Germany's KBA Data Show Tesla March Registrations +315.1% YoY To 9,252 Units; Q1 Registrations +160% To 12,829 Vehicles",
+          "url": "https://www.benzinga.com/news/26/04/51673879/reuters-reported-germanys-kba-data-show-tesla-march-registrations-315-1-yoy-to-9-252-units-q1-regist",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.5
+        },
+        {
+          "id": "tsla-20ade4cba285655f",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T05:58:00 ET",
+          "headline": "Understanding Tesla's Position In Automobiles Industry Compared To Competitors",
           "source": "Benzinga",
           "summary": " ",
-          "url": "https://www.benzinga.com/insights/news/26/04/51653064/competitor-analysis-evaluating-apple-and-competitors-in-technology-hardware-storage-amp-peripherals",
+          "url": "https://www.benzinga.com/insights/news/26/04/51673569/understanding-teslas-position-in-automobiles-industry-compared-to-competitors",
           "tags": [
             "news"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "aapl-b3b9134c7ba8c4b1",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T05:37:00 ET",
-          "headline": "Taiwan Semiconductor's Big Day Approaches With Markets Watching AI, War And Rivals",
+          "id": "tsla-1a4ff5d49e10368b",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T04:13:00 ET",
+          "headline": "Analysts Caution Against Elon Musk-Led SpaceX's Mega IPO Amid Valuation Concerns: 'The Juice Has Been Squeezed'",
           "source": "Benzinga",
-          "summary": "Taiwan Semiconductor (TSM) earnings ahead: AI growth, Middle East tensions, and chip industry rivalry take center stage.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652932/taiwan-semiconductors-big-day-approaches-with-markets-watching-ai-war-and-rivals",
+          "summary": "Analysts have warned investors to exercise caution when investing in the upcoming SpaceX IPO, citing overvaluation concerns.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51672803/analysts-caution-against-elon-musk-led-spacexs-mega-ipo-amid-valuation-concerns-the-juice-has-been-squeezed",
           "tags": [
-            "news"
+            "analyst"
           ],
           "relevanceScore": 0.5
         },
         {
-          "id": "aapl-a6d8e803020d9506",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T04:09:00 ET",
-          "headline": "Gary Black Wants Tesla To Follow Apple's Footsteps To Boost Its FSD Subscriptions",
+          "id": "tsla-21ccbf6d65f7e652",
+          "symbol": "TSLA",
+          "dateET": "2026-04-07",
+          "publishedAtET": "2026-04-07T03:31:00 ET",
+          "headline": "Gary Black Isn't Happy With Tesla Bulls' Criticism Of Bearish JP Morgan Analyst: 'Been Wrong On TSLA For 10 Years, But...'",
           "source": "Benzinga",
-          "summary": "Investor Gary Black of The Future Fund LLC hopes Tesla would follow Apple&#39;s marketing strategy for its Full Self-Driving (FSD) system.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51652534/gary-black-wants-tesla-to-follow-apples-footsteps-to-boost-its-fsd-subscriptions",
+          "summary": "Gary Black has slammed Tesla supporters and bulls for attacking a J.P. Morgan analyst over bearish sentiments on the stock.",
+          "url": "https://www.benzinga.com/markets/tech/26/04/51672559/gary-black-isnt-happy-with-tesla-bulls-criticism-of-bearish-jp-morgan-analyst-been-wrong-on-tsla-for-10-years-but",
           "tags": [
-            "news"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "aapl-4fe830c9dc55f0d1",
-          "symbol": "AAPL",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T00:39:00 ET",
-          "headline": "Nvidia And Apple Supplier Foxconn Reports Revenue Surge Of Nearly 30% Thanks To AI Boom, Warns Of Global Political Risks",
-          "source": "Benzinga",
-          "summary": "Foxconn reported nearly 30% revenue growth driven by strong AI demand, but warned that geopolitical tensions could pose risks.",
-          "url": "https://www.benzinga.com/markets/tech/26/04/51651901/foxconn-revenue-surges-30-percent-ai-boom-warns-political-risks",
-          "tags": [
-            "earnings"
-          ],
-          "relevanceScore": 0.5
-        }
-      ]
-    },
-    "NVDA": {
-      "timeline": [
-        {
-          "id": "nvda-ef740d42c707aab9",
-          "symbol": "NVDA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "timeET": "16:00 EDT",
-          "headline": "Mag 7 needs Q2 revenue growth in order to 'justify' massive capex",
-          "source": "Yahoo Finance",
-          "summary": "As the first full trading week of 2026's second quarter kicks off, what will Wall Street investors be most focused on in Big Tech and Magnificent Seven stocks?Argent Capital Management portfolio manager Jed Ellerbroek sits down with Yahoo Finance Markets and Data Editor Jared Blikre and Senior Reporter Brooke DiPalma to talk about the expectations from tech giants to justify their AI capex and monetization strategies.",
-          "url": "https://finance.yahoo.com/video/mag-7-needs-q2-revenue-growth-in-order-to-justify-massive-capex-195612917.html?.tsrc=rss"
-        },
-        {
-          "id": "nvda-614d634ab7b73ff5",
-          "symbol": "NVDA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "timeET": "09:30 EDT",
-          "headline": "How The Nvidia (NVDA) Narrative Is Shifting With US$1t AI Orders And Valuation Debates",
-          "source": "Yahoo Finance",
-          "summary": "Nvidia’s fair value estimate has been adjusted slightly from US$269.23 to US$268.22, signaling only a very small change in the underlying model. That fine tuning sits alongside research focused on AI demand, the US$1t order visibility through 2027, and differing views on how much of that story is already reflected in the share price. As you read on, you will see how this updated narrative is taking shape and what to watch to keep up with it. Analyst Price Targets don't always capture the full...",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-nvda-narrative-shifting-us-060508868.html?.tsrc=rss"
-        }
-      ],
-      "details": [
-        {
-          "id": "nvda-ef740d42c707aab9",
-          "symbol": "NVDA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T16:00:00 EDT",
-          "headline": "Mag 7 needs Q2 revenue growth in order to 'justify' massive capex",
-          "source": "Yahoo Finance",
-          "summary": "As the first full trading week of 2026's second quarter kicks off, what will Wall Street investors be most focused on in Big Tech and Magnificent Seven stocks?Argent Capital Management portfolio manager Jed Ellerbroek sits down with Yahoo Finance Markets and Data Editor Jared Blikre and Senior Reporter Brooke DiPalma to talk about the expectations from tech giants to justify their AI capex and monetization strategies.",
-          "url": "https://finance.yahoo.com/video/mag-7-needs-q2-revenue-growth-in-order-to-justify-massive-capex-195612917.html?.tsrc=rss",
-          "tags": [
-            "earnings"
-          ],
-          "relevanceScore": 0.5
-        },
-        {
-          "id": "nvda-614d634ab7b73ff5",
-          "symbol": "NVDA",
-          "dateET": "2026-04-06",
-          "publishedAtET": "2026-04-06T09:30:00 EDT",
-          "headline": "How The Nvidia (NVDA) Narrative Is Shifting With US$1t AI Orders And Valuation Debates",
-          "source": "Yahoo Finance",
-          "summary": "Nvidia’s fair value estimate has been adjusted slightly from US$269.23 to US$268.22, signaling only a very small change in the underlying model. That fine tuning sits alongside research focused on AI demand, the US$1t order visibility through 2027, and differing views on how much of that story is already reflected in the share price. As you read on, you will see how this updated narrative is taking shape and what to watch to keep up with it. Analyst Price Targets don't always capture the full...",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-nvda-narrative-shifting-us-060508868.html?.tsrc=rss",
-          "tags": [
-            "news"
+            "analyst"
           ],
           "relevanceScore": 0.7
         }
@@ -1573,6 +1240,62 @@
             "news"
           ],
           "relevanceScore": 0.7
+        }
+      ]
+    },
+    "AAPL": {
+      "timeline": [
+        {
+          "id": "aapl-83cea29a08327896",
+          "symbol": "AAPL",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T16:00:00 ET",
+          "timeET": "16:00 ET",
+          "headline": "Apple unveils shocking Nvidia move",
+          "source": "Yahoo Finance",
+          "summary": "Apple (AAPL) just made a shocking move. It approved a third-party driver for Apple Silicon Macs, Tom's Hardware reported. Although some may view the change as minor, it could potentially create a significant opportunity for Nvidia (NVDA) in the AI space. Apple’s (AAPL) closed ecosystem is a ...",
+          "url": "https://www.thestreet.com/investing/apple-unveils-shocking-nvidia-move?.tsrc=rss"
+        },
+        {
+          "id": "aapl-ed9ca699547c7877",
+          "symbol": "AAPL",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "timeET": "09:30 ET",
+          "headline": "Goldman Sachs Cautious on QUALCOMM (QCOM) Amid Key Customer Losses",
+          "source": "Yahoo Finance",
+          "summary": "QUALCOMM Incorporated (NASDAQ:QCOM) is one of the 7 most oversold data center stocks to invest in. Analysts’ views on Qualcomm Incorporated (NASDAQ:QCOM) remain divided as of April 1, 2026, with roughly 60% of covering analysts holding mixed ratings. Yet the $150 consensus price target implies roughly 20% upside. Recently, analysts at Goldman Sachs discussed QUALCOMM […]",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/goldman-sachs-cautious-qualcomm-qcom-142337587.html?.tsrc=rss"
+        }
+      ],
+      "details": [
+        {
+          "id": "aapl-83cea29a08327896",
+          "symbol": "AAPL",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T16:00:00 ET",
+          "headline": "Apple unveils shocking Nvidia move",
+          "source": "Yahoo Finance",
+          "summary": "Apple (AAPL) just made a shocking move. It approved a third-party driver for Apple Silicon Macs, Tom's Hardware reported. Although some may view the change as minor, it could potentially create a significant opportunity for Nvidia (NVDA) in the AI space. Apple’s (AAPL) closed ecosystem is a ...",
+          "url": "https://www.thestreet.com/investing/apple-unveils-shocking-nvidia-move?.tsrc=rss",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.71
+        },
+        {
+          "id": "aapl-ed9ca699547c7877",
+          "symbol": "AAPL",
+          "dateET": "2026-04-08",
+          "publishedAtET": "2026-04-08T09:30:00 ET",
+          "headline": "Goldman Sachs Cautious on QUALCOMM (QCOM) Amid Key Customer Losses",
+          "source": "Yahoo Finance",
+          "summary": "QUALCOMM Incorporated (NASDAQ:QCOM) is one of the 7 most oversold data center stocks to invest in. Analysts’ views on Qualcomm Incorporated (NASDAQ:QCOM) remain divided as of April 1, 2026, with roughly 60% of covering analysts holding mixed ratings. Yet the $150 consensus price target implies roughly 20% upside. Recently, analysts at Goldman Sachs discussed QUALCOMM […]",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/goldman-sachs-cautious-qualcomm-qcom-142337587.html?.tsrc=rss",
+          "tags": [
+            "news"
+          ],
+          "relevanceScore": 0.54
         }
       ]
     }

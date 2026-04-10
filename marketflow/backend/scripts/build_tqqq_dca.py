@@ -15,7 +15,8 @@ from db_utils import daily_data_root, resolve_marketflow_db
 from ohlcv_sources import load_spooq_rows_for_symbol
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
+DB_DATA_PLANE = (os.environ.get("MARKETFLOW_BACKTEST_DATA_PLANE", "snapshot") or "snapshot").strip().lower()
+DB_PATH = resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane=DB_DATA_PLANE)
 CSV_PATH = os.path.join(os.path.dirname(ROOT), 'data', 'tqqq_history.csv')
 BT_DIR = os.path.join(os.path.dirname(ROOT), 'data', 'backtests')
 os.makedirs(BT_DIR, exist_ok=True)

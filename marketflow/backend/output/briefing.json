@@ -1,16 +1,20 @@
 {
-  "timestamp": "2026-04-06T12:46:52.603401+00:00",
-  "summary": "TRANS / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.",
-  "content": "# Integrated Briefing\n\n## Summary\nTRANS / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.\n\n## Key Points\n- TRANS / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.\n- 주요 지수 실적\n- • The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: TRANS.\n- • 추가 확인 포인트: 데이터 없음\n- 섹터별 수익률\n- • 경기 확장 국면 — 기술/산업재/임의소비재 강세 예상\n- • 상승 섹터와 하락 섹터의 로테이션 강도를 비교해야 합니다.\n- 원자재 및 채권 시장\n- • 금리·달러·원자재의 동시 변화를 확인해야 합니다.\n- • 채권 금리 방향은 성장주 변동성과 연동될 수 있습니다.\n- 주요 종목 및 이슈\n- • 대형주와 이벤트 종목의 수급 차이가 커지는 구간입니다.\n- • 개별 종목 뉴스가 지수 대비 초과 변동을 만들 수 있습니다.\n- 경제지표 및 연준\n- • Mixed trend/risk signals\n- • 연준/물가 지표 발표 일정과 시장 민감도 재확인이 필요합니다.\n- 시장 포지셔닝\n- • Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 40–70%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. Maintaining current exposure discipline without material adjustment is consistent with the risk/reward implied by the current regime. Supporting context: Mixed trend/risk signals\n- • Action Hold | Exposure 40–70%\n- 브리핑 스탠스: Fragile | Action: Hold | Exposure: 40–70%\n\n## Warnings\n- Stance Fragile | Action Hold | Exposure 40–70%\n- Searched cache::cache\\market_state.json\n- Searched cache::cache\\health_snapshot.json\n",
+  "timestamp": "2026-04-09T22:43:13.314390+00:00",
+  "generated_at": "2026-04-09T22:43:13.314390+00:00",
+  "asof_day": "2026-04-06",
+  "slot": "close",
+  "summary": "BULL / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.",
+  "content": "# Integrated Briefing\n\n## Summary\nBULL / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.\n\n## Key Points\n- BULL / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.\n- 주요 지수 실적\n- • Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%\n- • The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: BULL.\n- • QQQ > SMA200 by 2.33%\n- 섹터별 수익률\n- • 경기 확장 국면 — 기술/산업재/임의소비재 강세 예상\n- • 상승 섹터와 하락 섹터의 로테이션 강도를 비교해야 합니다.\n- 원자재 및 채권 시장\n- • 금리·달러·원자재의 동시 변화를 확인해야 합니다.\n- • 채권 금리 방향은 성장주 변동성과 연동될 수 있습니다.\n- 주요 종목 및 이슈\n- • 대형주와 이벤트 종목의 수급 차이가 커지는 구간입니다.\n- • 개별 종목 뉴스가 지수 대비 초과 변동을 만들 수 있습니다.\n- 경제지표 및 연준\n- • QQQ > SMA200 by 2.33%\n- • 연준/물가 지표 발표 일정과 시장 민감도 재확인이 필요합니다.\n- 시장 포지셔닝\n- • Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%\n- • Action Increase | Exposure 60–90%\n- 브리핑 스탠스: Aligned | Action: Add selectively | Exposure: 60–90%\n\n## Warnings\n- Stance Aligned | Action Add selectively | Exposure 60–90%\n- Searched cache::cache\\market_state.json\n- Searched cache::cache\\health_snapshot.json\n",
   "model": "rules",
   "api_used": "fallback",
   "title": "AI Integrated Briefing",
   "paragraphs": {
     "ko": [
-      "TRANS / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.",
+      "BULL / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.",
       "주요 지수 실적",
-      "• The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: TRANS.",
-      "• 추가 확인 포인트: 데이터 없음",
+      "• Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%",
+      "• The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: BULL.",
+      "• QQQ > SMA200 by 2.33%",
       "섹터별 수익률",
       "• 경기 확장 국면 — 기술/산업재/임의소비재 강세 예상",
       "• 상승 섹터와 하락 섹터의 로테이션 강도를 비교해야 합니다.",
@@ -21,18 +25,19 @@
       "• 대형주와 이벤트 종목의 수급 차이가 커지는 구간입니다.",
       "• 개별 종목 뉴스가 지수 대비 초과 변동을 만들 수 있습니다.",
       "경제지표 및 연준",
-      "• Mixed trend/risk signals",
+      "• QQQ > SMA200 by 2.33%",
       "• 연준/물가 지표 발표 일정과 시장 민감도 재확인이 필요합니다.",
       "시장 포지셔닝",
-      "• Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 40–70%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. Maintaining current exposure discipline without material adjustment is consistent with the risk/reward implied by the current regime. Supporting context: Mixed trend/risk signals",
-      "• Action Hold | Exposure 40–70%",
-      "브리핑 스탠스: Fragile | Action: Hold | Exposure: 40–70%"
+      "• Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%",
+      "• Action Increase | Exposure 60–90%",
+      "브리핑 스탠스: Aligned | Action: Add selectively | Exposure: 60–90%"
     ],
     "en": [
-      "TRANS / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.",
+      "BULL / MED / SMA200+ 구조에서 노출을 보수적으로 관리해야 합니다.",
       "주요 지수 실적",
-      "• The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: TRANS.",
-      "• 추가 확인 포인트: 데이터 없음",
+      "• Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%",
+      "• The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: BULL.",
+      "• QQQ > SMA200 by 2.33%",
       "섹터별 수익률",
       "• 경기 확장 국면 — 기술/산업재/임의소비재 강세 예상",
       "• 상승 섹터와 하락 섹터의 로테이션 강도를 비교해야 합니다.",
@@ -43,22 +48,22 @@
       "• 대형주와 이벤트 종목의 수급 차이가 커지는 구간입니다.",
       "• 개별 종목 뉴스가 지수 대비 초과 변동을 만들 수 있습니다.",
       "경제지표 및 연준",
-      "• Mixed trend/risk signals",
+      "• QQQ > SMA200 by 2.33%",
       "• 연준/물가 지표 발표 일정과 시장 민감도 재확인이 필요합니다.",
       "시장 포지셔닝",
-      "• Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 40–70%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. Maintaining current exposure discipline without material adjustment is consistent with the risk/reward implied by the current regime. Supporting context: Mixed trend/risk signals",
-      "• Action Hold | Exposure 40–70%",
-      "브리핑 스탠스: Fragile | Action: Hold | Exposure: 40–70%"
+      "• Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%",
+      "• Action Increase | Exposure 60–90%",
+      "브리핑 스탠스: Aligned | Action: Add selectively | Exposure: 60–90%"
     ]
   },
   "warnings": {
     "ko": [
-      "Stance Fragile | Action Hold | Exposure 40–70%",
+      "Stance Aligned | Action Add selectively | Exposure 60–90%",
       "Searched cache::cache\\market_state.json",
       "Searched cache::cache\\health_snapshot.json"
     ],
     "en": [
-      "Stance Fragile | Action Hold | Exposure 40–70%",
+      "Stance Aligned | Action Add selectively | Exposure 60–90%",
       "Searched cache::cache\\market_state.json",
       "Searched cache::cache\\health_snapshot.json"
     ]

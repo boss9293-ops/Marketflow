@@ -14,11 +14,15 @@ from backend.news.context_news import build_context_news_cache
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Build context news cache (Yahoo default / Premium pluggable)")
     p.add_argument("--region", default="us")
-    p.add_argument("--limit", type=int, default=6)
+    p.add_argument("--limit", type=int, default=5)
+    p.add_argument("--slot", default="", help="Optional slot label: preopen, morning, or close.")
     return p.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    data = build_context_news_cache(region=args.region, limit=args.limit)
-    print(f"[OK] context news cache built: status={data.get('news_status')} provider={data.get('provider')} selected={data.get('selected_count')}")
+    data = build_context_news_cache(region=args.region, limit=args.limit, slot=args.slot)
+    print(
+        f"[OK] context news cache built: status={data.get('news_status')} "
+        f"provider={data.get('provider')} selected={data.get('selected_count')} slot={data.get('slot')}"
+    )

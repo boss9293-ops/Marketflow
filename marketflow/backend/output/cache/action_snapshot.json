@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-06T09:09:42",
-  "data_date": "9/9/2025",
+  "generated_at": "2026-04-09T17:35:56",
+  "data_date": "2026-04-06",
   "exposure_guidance": {
-    "action_label": "Hold",
-    "exposure_band": "40–70%",
-    "reason": "Mixed trend/risk signals"
+    "action_label": "Increase",
+    "exposure_band": "60–90%",
+    "reason": "QQQ > SMA200 by 2.33%"
   },
   "portfolio": {
     "has_holdings": true,
@@ -31,25 +31,25 @@
   },
   "watchlist_moves": [
     {
-      "symbol": "TSLA",
-      "name": "Tesla, Inc.",
-      "chg_pct": -5.42,
-      "badge": "OK",
-      "badge_reason": "Within normal range"
+      "symbol": "TQQQ",
+      "name": "ProShares UltraPro QQQ",
+      "chg_pct": 2.0,
+      "badge": "Volatile",
+      "badge_reason": "RV20 73.1 > p80 64.7"
     },
     {
       "symbol": "NVDA",
       "name": "Nvidia",
-      "chg_pct": 0.93,
+      "chg_pct": 1.01,
       "badge": "OK",
       "badge_reason": "Within normal range"
     },
     {
-      "symbol": "TQQQ",
-      "name": "ProShares UltraPro QQQ",
-      "chg_pct": 0.23,
-      "badge": "Volatile",
-      "badge_reason": "RV20 68.0 > p80 64.2"
+      "symbol": "TSLA",
+      "name": "Tesla, Inc.",
+      "chg_pct": 0.69,
+      "badge": "OK",
+      "badge_reason": "Within normal range"
     }
   ]
 }

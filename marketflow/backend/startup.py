@@ -1,12 +1,15 @@
-ï»¿"""Railway startup script ??downloads DB, runs builds, starts gunicorn."""
+"""Railway startup script ??downloads DB, runs builds, starts gunicorn."""
 import os, sys, subprocess, threading, urllib.request, datetime, json
 from zoneinfo import ZoneInfo
+
+from services.data_contract import live_db_path
 
 PORT = os.environ.get("PORT", "8080")
 BASE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.join(BASE, "scripts")
 OUTPUT  = os.path.join(BASE, "output")
-DB_PATH = os.path.join(BASE, "data", "marketflow.db")
+LIVE_DB_PATH = str(live_db_path())
+DB_PATH = LIVE_DB_PATH
 DB_URL  = "https://github.com/boss9293-ops/Marketflow/releases/download/data-v1/marketflow.db"
 BUILD_LOG_DIR = os.path.join(OUTPUT, "cache", "build_logs")
 ET_ZONE = ZoneInfo("America/New_York")
@@ -14,10 +17,11 @@ MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
 MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
 
 os.makedirs(os.path.join(BASE, "data"), exist_ok=True)
+os.makedirs(os.path.dirname(LIVE_DB_PATH), exist_ok=True)
 os.makedirs(os.path.join(OUTPUT, "cache"), exist_ok=True)
 os.makedirs(BUILD_LOG_DIR, exist_ok=True)
 
-# ?Â€?Â€ 1. Download DB if missing ?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€
+# ?€?€ 1. Download DB if missing ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 db_abs = os.path.abspath(DB_PATH)
 if not os.path.exists(db_abs) or os.path.getsize(db_abs) < 100_000_000:
     print(f"[startup] Downloading marketflow.db ...", flush=True)
@@ -60,7 +64,7 @@ def _pull_turso_db_if_configured() -> bool:
             pass
 
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    print("[startup][TURSO] Pulling latest DB snapshot from Turso...", flush=True)
+    print("[startup][TURSO] Pulling latest DB snapshot into live DB...", flush=True)
     start_time = datetime.datetime.now().timestamp()
     try:
         conn = libsql.connect(DB_PATH, sync_url=turso_url, auth_token=auth_token)
@@ -77,7 +81,7 @@ def _pull_turso_db_if_configured() -> bool:
 
         duration = datetime.datetime.now().timestamp() - start_time
         db_size_mb = os.path.getsize(DB_PATH) // 1024 // 1024 if os.path.exists(DB_PATH) else 0
-        print(f"[startup][TURSO] Local DB refreshed from Turso in {duration:.1f}s ({db_size_mb}MB).", flush=True)
+        print(f"[startup][TURSO] Live DB refreshed from Turso in {duration:.1f}s ({db_size_mb}MB).", flush=True)
         return True
     except Exception as exc:
         duration = datetime.datetime.now().timestamp() - start_time
@@ -106,12 +110,13 @@ def _clear_risk_outputs() -> None:
 if _pull_turso_db_if_configured():
     _clear_risk_outputs()
 
-# ?Â€?Â€ 2. Build scripts ?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€
+
+# ?€?€ 2. Build scripts ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 # (script, output_json_or_None)  ??None means startup.py writes a stamp file
 BUILDS = [
-    # Data updates first ??write fresh market data into DB before builds read it
-    ("update_market_daily.py",   "cache/update_market_daily_stamp.json"),
+    # Data updates first -- refresh ohlcv before market_daily reads from it
     ("update_ohlcv.py",          "cache/update_ohlcv_stamp.json"),
+    ("update_market_daily.py",   "cache/update_market_daily_stamp.json"),
     ("build_daily_snapshot.py",  "cache/daily_snapshot_stamp.json"),
     ("update_snapshot_trends.py", "cache/update_snapshot_trends_stamp.json"),
     ("update_snapshot_alerts.py", "cache/update_snapshot_alerts_stamp.json"),
@@ -131,7 +136,9 @@ BUILDS = [
     ("build_context_news.py",    "cache/context_news.json"),
     ("build_daily_briefing.py",  "cache/daily_briefing.json"),
     ("build_daily_briefing_v3.py", "cache/daily_briefing_v3.json"),
+    ("build_vr_pattern_dashboard.py", "vr_pattern_dashboard.json"),
     ("build_ai_briefings.py",    "briefing.json"),
+    ("build_data_manifest.py",   "cache/data_manifest.json"),
 ]
 
 # Extra CLI args for specific scripts
@@ -164,7 +171,9 @@ DAILY_BUILDS = {
     "build_context_news.py",
     "build_daily_briefing.py",
     "build_daily_briefing_v3.py",
+    "build_vr_pattern_dashboard.py",
     "build_ai_briefings.py",
+    "build_data_manifest.py",
 }
 
 
@@ -380,7 +389,7 @@ build_thread.start()
 
 os.environ["STARTUP_MANAGES_BUILDS"] = "1"
 
-# ?Â€?Â€ 3. Start gunicorn ?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€?Â€
+# ?€?€ 3. Start gunicorn ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 print(f"[startup] Starting gunicorn on port {PORT}", flush=True)
 proc = subprocess.Popen([
     "gunicorn",

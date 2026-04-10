@@ -103,6 +103,7 @@
 
   /* Component sizing */
   --font-base: 16px;
+  --font-terminal: 'Satoshi';
   --font-ui-latin: var(--font-terminal);
   --font-terminal-ui: var(--font-terminal);
   --font-terminal-mono: var(--font-terminal);

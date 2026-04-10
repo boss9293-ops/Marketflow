@@ -1,9 +1,60 @@
 import { NextResponse } from 'next/server'
 
-// Format timestamp to YYYY-MM-DD for Finnhub API
-const formatDate = (date: Date) => date.toISOString().split('T')[0]
+import { hasPromoSignals, isFreeNewsSource, scoreNewsSource, scoreNewsText } from '@/lib/newsQuality'
+
 const FETCH_ATTEMPTS = 2
 const RETRY_DELAY_MS = 250
+const MIN_BRIEF_SCORE = 3
+
+type BriefItem = {
+  id: string
+  ticker?: string
+  symbol: string
+  checkpointET?: string
+  headline: string
+  source?: string
+  summary?: string
+  url?: string
+  dateET?: string
+  publishedAtET?: string
+  score?: number
+}
+
+type FinnhubNewsItem = {
+  id?: number
+  datetime?: number
+  headline?: string
+  source?: string
+  url?: string
+  summary?: string
+}
+
+type YahooSearchNewsItem = {
+  uuid?: string
+  title?: string
+  link?: string
+  providerPublishTime?: number
+  publisher?: string
+  summary?: string
+}
+
+const formatDate = (date: Date) => date.toISOString().split('T')[0]
+
+const toETDate = (value: Date): string =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(value)
+
+const toETTime = (value: Date): string =>
+  `${new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(value)} ET`
 
 const fetchWithTimeout = async (
   input: string,
@@ -42,6 +93,146 @@ const fetchWithRetry = async (
   return null
 }
 
+const normalizeHeadline = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const normalizeUrl = (value: string): string => {
+  try {
+    const u = new URL(value)
+    return `${u.origin}${u.pathname}`.toLowerCase().replace(/\/+$/, '')
+  } catch {
+    return value.toLowerCase().trim()
+  }
+}
+
+const recencyScore = (publishedAt?: string): number => {
+  if (!publishedAt) return 0
+  const ts = Date.parse(publishedAt)
+  if (!Number.isFinite(ts)) return 0
+  const ageHours = (Date.now() - ts) / 36e5
+  if (ageHours <= 6) return 3
+  if (ageHours <= 24) return 2
+  if (ageHours <= 48) return 1
+  return 0
+}
+
+const scoreBriefItem = (item: BriefItem): number => {
+  const text = `${item.headline || ''} ${item.summary || ''}`
+  return scoreNewsText(text) * 2 + recencyScore(item.publishedAtET || item.dateET) + scoreNewsSource(item.source)
+}
+
+const mapFinnhubItem = (symbol: string, item: FinnhubNewsItem, idx: number): BriefItem | null => {
+  if (!item || typeof item !== 'object') return null
+  const headline = String(item.headline || '').trim()
+  const source = String(item.source || '').trim()
+  const url = String(item.url || '').trim()
+  const timestampSec = Number(item.datetime || 0)
+  if (!headline || !source || !url || !Number.isFinite(timestampSec) || timestampSec <= 0) return null
+  if (!isFreeNewsSource(source) || hasPromoSignals(headline)) return null
+
+  const dt = new Date(timestampSec * 1000)
+  const dateET = toETDate(dt)
+  return {
+    id: `news-fh-${symbol}-${item.id ?? `${timestampSec}-${idx}`}`,
+    ticker: symbol,
+    symbol,
+    checkpointET: toETTime(dt),
+    headline,
+    source,
+    summary: String(item.summary || '').trim() || `${headline}.`,
+    url,
+    dateET,
+    publishedAtET: dt.toISOString(),
+  }
+}
+
+const mapYahooSearchItem = (symbol: string, item: YahooSearchNewsItem, idx: number): BriefItem | null => {
+  const headline = String(item.title || '').trim()
+  const source = String(item.publisher || 'Yahoo Finance').trim()
+  const url = String(item.link || '').trim()
+  if (!headline || !source || !url) return null
+  if (!isFreeNewsSource(source) || hasPromoSignals(headline)) return null
+
+  const pubTime = item.providerPublishTime ? new Date(item.providerPublishTime * 1000) : new Date()
+  const dateET = toETDate(pubTime)
+  return {
+    id: `news-yh-${symbol}-${item.uuid || `${idx}`}`,
+    ticker: symbol,
+    symbol,
+    checkpointET: toETTime(pubTime),
+    headline,
+    source,
+    summary: String(item.summary || '').trim() || `${headline}.`,
+    url,
+    dateET,
+    publishedAtET: pubTime.toISOString(),
+  }
+}
+
+const dedupeAndRank = (rows: BriefItem[], maxItems = 5): BriefItem[] => {
+  const sorted = [...rows].sort((a, b) => scoreBriefItem(b) - scoreBriefItem(a))
+  const seenHeadline = new Set<string>()
+  const seenUrl = new Set<string>()
+  const output: BriefItem[] = []
+
+  for (const row of sorted) {
+    const score = scoreBriefItem(row)
+    if (score < MIN_BRIEF_SCORE) continue
+    const headlineKey = normalizeHeadline(row.headline)
+    const urlKey = normalizeUrl(row.url || '')
+    if (!headlineKey || !urlKey) continue
+    if (seenHeadline.has(headlineKey) || seenUrl.has(urlKey)) continue
+    seenHeadline.add(headlineKey)
+    seenUrl.add(urlKey)
+    output.push(row)
+    if (output.length >= maxItems) break
+  }
+
+  return output
+}
+
+async function fetchFinnhubNews(symbol: string, fromDate: Date, toDate: Date): Promise<BriefItem[]> {
+  const finnhubKey = process.env.FINNHUB_API_KEY || process.env.NEXT_PUBLIC_FINNHUB_API_KEY || ''
+  if (!finnhubKey) return []
+
+  try {
+    const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${formatDate(fromDate)}&to=${formatDate(toDate)}&token=${finnhubKey}`
+    const res = await fetchWithRetry(url, { cache: 'no-store' }, 4500)
+    if (!res) return []
+    const data = await res.json()
+    if (!Array.isArray(data) || !data.length) return []
+    return data
+      .slice(0, 12)
+      .map((item, idx) => mapFinnhubItem(symbol, item as FinnhubNewsItem, idx))
+      .filter((item: BriefItem | null): item is BriefItem => Boolean(item))
+  } catch (err) {
+    console.warn('[news API] Finnhub fetch failed:', err)
+    return []
+  }
+}
+
+async function fetchYahooSearchNews(symbol: string): Promise<BriefItem[]> {
+  try {
+    const yhUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(symbol)}&quotesCount=0&newsCount=8&enableFuzzyQuery=false&enableNews=true`
+    const yhRes = await fetchWithRetry(yhUrl, { cache: 'no-store' }, 4500)
+    if (!yhRes) return []
+    const data = await yhRes.json()
+    if (!data || !Array.isArray(data.news) || !data.news.length) return []
+    return data.news
+      .slice(0, 12)
+      .map((item: YahooSearchNewsItem, idx: number): BriefItem | null => mapYahooSearchItem(symbol, item, idx))
+      .filter((item: BriefItem | null): item is BriefItem => Boolean(item))
+  } catch (err) {
+    console.warn('[news API] Yahoo fallback failed:', err)
+    return []
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const symbol = searchParams.get('symbol')?.trim().toUpperCase()
@@ -50,117 +241,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing symbol parameter' }, { status: 400 })
   }
 
-  // Finnhub requires 'from' and 'to' dates. We fetch the last 3 days of news to ensure coverage.
   const toDate = new Date()
   const fromDate = new Date()
   fromDate.setDate(toDate.getDate() - 7)
 
-  const finnhubKey = process.env.FINNHUB_API_KEY || process.env.NEXT_PUBLIC_FINNHUB_API_KEY || ''
-  
-  if (finnhubKey) {
-    try {
-      const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${formatDate(fromDate)}&to=${formatDate(toDate)}&token=${finnhubKey}`
-      const res = await fetchWithRetry(url, { cache: 'no-store' }, 4500)
+  const [finnhubItems, yahooItems] = await Promise.all([
+    fetchFinnhubNews(symbol, fromDate, toDate),
+    fetchYahooSearchNews(symbol),
+  ])
 
-      if (res) {
-        const data = await res.json()
-        if (Array.isArray(data) && data.length > 0) {
-          // Sort by newest first
-          data.sort((a, b) => b.datetime - a.datetime)
-          
-          // Map to 09:30 and 16:00 checkpoints.
-          const latestItems = data.slice(0, 2)
-          
-      const mapped = latestItems.map((item: any, i: number) => {
-        const dateObj = new Date(item.datetime * 1000)
-        const dateET = dateObj.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
-        return {
-          id: `${symbol}-news-${item.id}`,
-          ticker: symbol,
-          symbol,
-          checkpointET: i === 0 ? '16:00' : '09:30',
-          headline: item.headline,
-          source: item.source,
-          summary: item.summary || `${item.headline}. Content truncated or unavailable via free tier.`,
-              url: item.url,
-              dateET
-            }
-          })
-          
-          return NextResponse.json({ briefs: mapped })
-        }
-      }
-    } catch (err) {
-      console.warn('[news API] Finnhub fetch failed:', err)
-    }
-  }
-
-  // Fallback Free / Yahoo Finance Search API
-  try {
-    const yhUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${symbol}&newsCount=2`
-    const yhRes = await fetchWithRetry(yhUrl, { cache: 'no-store' }, 4500)
-    if (yhRes) {
-      const data = await yhRes.json()
-      if (data.news && data.news.length > 0) {
-                
-        const mapped = data.news.slice(0, 2).map((item: any, i: number) => {
-          const pubTime = item.providerPublishTime ? new Date(item.providerPublishTime * 1000) : toDate
-          const dateET = pubTime.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
-          return {
-            id: `${symbol}-news-${item.uuid || i}`,
-            ticker: symbol,
-            symbol,
-            checkpointET: i === 0 ? '16:00' : '09:30',
-            headline: item.title,
-            source: item.publisher || 'Yahoo Finance',
-            summary: item.title
-              ? `${item.title} — Source: ${item.publisher || 'Yahoo Finance'}. Click the headline to read the full article.`
-              : `Market news from ${item.publisher || 'Yahoo Finance'}. Click to read the full article.`,
-            url: item.link,
-            dateET
-          }
-        })
-        
-        // Ensure exactly two items to match the x-terminal layout expectation
-        if (mapped.length === 1) {
-             mapped.push({
-                ...mapped[0],
-                id: `${symbol}-news-fallback`,
-                checkpointET: '09:30',
-                headline: 'Additional Market Context',
-             })
-        }
-        
-        return NextResponse.json({ briefs: mapped })
-      }
-    }
-  } catch (e) {
-    console.warn('[news API] Yahoo fallback failed:', e)
-  }
-
-  // Final emergency fallback if even Yahoo fails
-  return NextResponse.json({
-    briefs: [
-      {
-        id: `${symbol}-mock-close`,
-        ticker: symbol,
-        symbol,
-        checkpointET: '16:00',
-        headline: `${symbol} sees strategic volume expansion into market close.`,
-        source: 'Fallback Proxy',
-        summary: `As we approach the end of the trading session, ${symbol} is demonstrating stable price action. Market analysts observe strong institutional support at these levels, offsetting brief periods of intra-day volatility.`,
-        dateET: formatDate(toDate)
-      },
-      {
-        id: `${symbol}-mock-open`,
-        ticker: symbol,
-        symbol,
-        checkpointET: '09:30',
-        headline: `Pre-market sentiment drives ${symbol} at the open.`,
-        source: 'Fallback Proxy',
-        summary: `At the opening bell, ${symbol} reacts to overnight global market cues and early sectoral rotations. Investors are balancing macro headwinds with company-specific catalysts.`,
-        dateET: formatDate(toDate)
-      }
-    ]
-  })
+  const mapped = dedupeAndRank([...finnhubItems, ...yahooItems], 5)
+  return NextResponse.json({ briefs: mapped })
 }

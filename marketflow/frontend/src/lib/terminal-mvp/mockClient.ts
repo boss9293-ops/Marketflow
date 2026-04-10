@@ -1,4 +1,4 @@
-import {
+﻿import {
   ET_TIMEZONE,
   type AskQuestionRequest,
   type EvidenceSheetExportRequest,
@@ -127,8 +127,30 @@ const envelope = <TData>(data: TData, dateET?: ETDateString) => ({
 
 const buildBriefs = (symbol: string, dateET: ETDateString): TickerBrief[] => {
   const base = BRIEF_COPY[symbol] ?? BRIEF_COPY.NFLX
-  return [
-    {
+  const now = new Date()
+  const currentEtDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: ET_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now)
+  const currentEtParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: ET_TIMEZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(now)
+  const currentEtHour = Number(currentEtParts.find((part) => part.type === 'hour')?.value ?? '0')
+  const currentEtMinute = Number(currentEtParts.find((part) => part.type === 'minute')?.value ?? '0')
+  const currentEtMinutes = currentEtHour * 60 + currentEtMinute
+  const isHistoricalDate = dateET !== currentEtDate
+  const includeOpenBrief = isHistoricalDate || currentEtMinutes >= (9 * 60 + 30)
+  const includeCloseBrief = isHistoricalDate || currentEtMinutes >= (16 * 60 + 30)
+
+  const briefs: TickerBrief[] = []
+
+  if (includeOpenBrief) {
+    briefs.push({
       id: `${symbol.toLowerCase()}-brief-0930`,
       symbol,
       dateET,
@@ -136,17 +158,22 @@ const buildBriefs = (symbol: string, dateET: ETDateString): TickerBrief[] => {
       headline: base.openHeadline,
       source: base.openSource,
       summary: base.openSummary,
-    },
-    {
-      id: `${symbol.toLowerCase()}-brief-1600`,
+    })
+  }
+
+  if (includeCloseBrief) {
+    briefs.push({
+      id: `${symbol.toLowerCase()}-brief-1630`,
       symbol,
       dateET,
-      checkpointET: '16:00',
+      checkpointET: '16:30',
       headline: base.closeHeadline,
       source: base.closeSource,
       summary: base.closeSummary,
-    },
-  ]
+    })
+  }
+
+  return briefs
 }
 
 const buildTickerNews = (symbol: string, dateET: ETDateString): TickerNewsItem[] => {
@@ -255,9 +282,8 @@ export function createMockClient(): TerminalMvpApiClient {
          const res = await fetch(`/api/news?symbol=${symbol}`)
          if (res.ok) {
             const data = await res.json()
-            if (data.briefs && data.briefs.length > 0) {
-               return envelope({ symbol, briefs: data.briefs }, dateET)
-            }
+            const briefs = Array.isArray(data.briefs) ? data.briefs : []
+            return envelope({ symbol, briefs }, dateET)
          }
       } catch (err) {
          console.warn("[Terminal MVP] Failed to fetch news briefs dynamically:", err)
@@ -381,3 +407,6 @@ export function createMockClient(): TerminalMvpApiClient {
     },
   }
 }
+
+
+

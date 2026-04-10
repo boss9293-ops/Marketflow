@@ -26,14 +26,37 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
+
+try:
+    from backend.services.data_contract import artifact_path as contract_artifact_path
+except Exception:
+    contract_artifact_path = None  # type: ignore[assignment]
 
 # ?? Paths ????????????????????????????????????????????????????????????????????
 SCRIPT_DIR  = Path(__file__).resolve().parent
 BACKEND_DIR = SCRIPT_DIR.parent
 CACHE_DIR   = BACKEND_DIR / "output" / "cache"
 OUTPUT_DIR  = BACKEND_DIR / "output"
-OUT_PATH    = CACHE_DIR / "daily_briefing_v3.json"
-FRONTEND_HEADLINE_CACHE_PATH = BACKEND_DIR.parent / "frontend" / ".cache" / "market-headlines-history.json"
+
+
+def artifact_path(relative_path: str) -> Path:
+    rel = str(relative_path or "").replace("\\", "/").strip("/")
+    if contract_artifact_path is not None:
+        try:
+            return Path(contract_artifact_path(rel)).resolve()
+        except Exception:
+            pass
+    if not rel:
+        return OUTPUT_DIR.resolve()
+    if rel.startswith("cache/"):
+        return (CACHE_DIR / rel[len("cache/"):]).resolve()
+    return (OUTPUT_DIR / Path(rel)).resolve()
+
+
+OUT_PATH    = artifact_path("cache/daily_briefing_v3.json")
+FRONTEND_HEADLINE_CACHE_PATH = artifact_path("cache/market-headlines-history.json")
+LEGACY_FRONTEND_HEADLINE_CACHE_PATH = BACKEND_DIR.parent / "frontend" / ".cache" / "market-headlines-history.json"
 
 # ?? Model & pricing ??????????????????????????????????????????????????????????
 MODEL_ID   = "claude-haiku-4-5-20251001"
@@ -61,6 +84,9 @@ MAJOR_NEWS_SOURCES = {"Reuters", "Bloomberg", "Financial Times", "WSJ", "CNBC", 
 GEO_KEYWORDS = ("iran", "hormuz", "strait", "middle east", "strike", "attack", "war")
 POLICY_KEYWORDS = ("trump", "tariff", "speech", "address", "fed", "powell")
 TESLA_KEYWORDS = ("tesla", "tsla", "deliveries", "cybertruck")
+ET_ZONE = ZoneInfo("America/New_York")
+MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
+MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
 
 
 # ?? Data loaders ??????????????????????????????????????????????????????????????
@@ -75,15 +101,24 @@ def load(fname: str, search_dirs: list[Path] | None = None) -> Any:
 
 
 def load_frontend_headline_cache() -> list[dict[str, Any]]:
-    if not FRONTEND_HEADLINE_CACHE_PATH.exists():
-        return []
-    try:
-        with open(FRONTEND_HEADLINE_CACHE_PATH, encoding="utf-8") as f:
-            payload = json.load(f)
-        rows = payload.get("headlines", []) if isinstance(payload, dict) else []
-        return [r for r in rows if isinstance(r, dict)]
-    except Exception:
-        return []
+    candidates = [FRONTEND_HEADLINE_CACHE_PATH, LEGACY_FRONTEND_HEADLINE_CACHE_PATH]
+    seen: set[str] = set()
+    for candidate in candidates:
+        candidate_str = str(candidate)
+        if not candidate_str or candidate_str in seen:
+            continue
+        seen.add(candidate_str)
+        if not candidate.exists():
+            continue
+        try:
+            with open(candidate, encoding="utf-8") as f:
+                payload = json.load(f)
+            rows = payload.get("headlines", []) if isinstance(payload, dict) else []
+            if rows:
+                return [r for r in rows if isinstance(r, dict)]
+        except Exception:
+            continue
+    return []
 
 
 def _shorten(text: str, limit: int = 180) -> str:
@@ -195,6 +230,17 @@ def fmt_pct(v: Any) -> str:
         return f"{float(v):+.2f}%"
     except (TypeError, ValueError):
         return str(v)
+
+
+def _current_briefing_slot(now: datetime | None = None) -> str:
+    ref = now or datetime.now(timezone.utc)
+    local_now = ref.astimezone(ET_ZONE)
+    minutes = local_now.hour * 60 + local_now.minute
+    if minutes < MARKET_OPEN_MINUTES_ET:
+        return "preopen"
+    if minutes < MARKET_CLOSE_MINUTES_ET:
+        return "morning"
+    return "close"
 
 
 # ?? Context builder ???????????????????????????????????????????????????????????
@@ -995,7 +1041,7 @@ def align_korean_from_english(client: Any, hook_en: str, one_line_en: str, secti
 
 
 # ?? Stale check ???????????????????????????????????????????????????????????????
-def is_stale(max_minutes: int = 1440) -> bool:
+def is_stale(max_minutes: int = 1440, slot: str | None = None) -> bool:
     if not OUT_PATH.exists():
         return True
     try:
@@ -1003,6 +1049,14 @@ def is_stale(max_minutes: int = 1440) -> bool:
             existing = json.load(f)
         ts  = existing.get("generated_at", "")
         gen = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        existing_slot = str(existing.get("slot") or "").strip().lower()
+        current_slot = str(slot or _current_briefing_slot()).strip().lower() or _current_briefing_slot()
+        current_date = datetime.now(timezone.utc).astimezone(ET_ZONE).strftime("%Y-%m-%d")
+        existing_date = str(existing.get("data_date") or existing.get("date") or "")[:10]
+        if existing_date and existing_date != current_date:
+            return True
+        if existing_slot and existing_slot != current_slot:
+            return True
         age = (datetime.now(timezone.utc) - gen).total_seconds() / 60
         return age > max_minutes
     except Exception:
@@ -1043,11 +1097,24 @@ def main() -> None:
     force = "--force" in sys.argv
     # Default: Korean only. Pass --lang=en to fill English fields.
     lang = "ko"
-    for arg in sys.argv[1:]:
+    slot = _current_briefing_slot()
+    argv = sys.argv[1:]
+    idx = 0
+    while idx < len(argv):
+        arg = argv[idx]
         if arg.startswith("--lang="):
             lang = arg.split("=", 1)[1].strip().lower()
+        elif arg == "--lang" and idx + 1 < len(argv):
+            lang = argv[idx + 1].strip().lower()
+            idx += 1
+        elif arg.startswith("--slot="):
+            slot = arg.split("=", 1)[1].strip().lower() or _current_briefing_slot()
+        elif arg == "--slot" and idx + 1 < len(argv):
+            slot = argv[idx + 1].strip().lower() or _current_briefing_slot()
+            idx += 1
+        idx += 1
 
-    if not force and not is_stale():
+    if not force and not is_stale(slot=slot):
         print("[build_daily_briefing_v3] output is fresh, skipping (use --force to override)")
         return
 
@@ -1125,6 +1192,7 @@ def main() -> None:
         output = {
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "data_date":    ctx["data_date"],
+            "slot":         slot,
             "model":        MODEL_ID,
             "lang":         "en",
             "tokens": {
@@ -1181,6 +1249,7 @@ def main() -> None:
         output = {
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "data_date":    ctx["data_date"],
+            "slot":         slot,
             "model":        MODEL_ID,
             "lang":         "ko",
             "tokens": {"input": in_tok, "output": out_tok, "cost_usd": round(cost, 6)},
@@ -1196,7 +1265,7 @@ def main() -> None:
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"[build_daily_briefing_v3] saved -> {OUT_PATH}  lang={lang}")
+    print(f"[build_daily_briefing_v3] saved -> {OUT_PATH}  lang={lang} slot={slot}")
     for sec in sections:
         print(f"  [{sec['id']:20}] signal={sec['signal']:8}")
     print(f"  Risk: triggered={risk_check['triggered']}  level={risk_check['level']}  mss={risk_check['mss']}")

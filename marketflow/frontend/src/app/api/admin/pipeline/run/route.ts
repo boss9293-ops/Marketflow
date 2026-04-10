@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   try {
     const { step } = await request.json().catch(() => ({ step: 'full' }));
 
-    let command = 'python scripts/run_all.py';
+    let command = 'python -X utf8 scripts/run_pipeline_scheduled.py';
     
     if (step === 'risk') {
       command = 'python scripts/build_risk_v1.py';

@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto'
+﻿import { randomUUID } from 'crypto'
 
 import {
   clusterNewsEvents,
@@ -6,7 +6,7 @@ import {
   type NewsClusterItem,
 } from '@/lib/terminal-mvp/newsClustering'
 import { ET_TIMEZONE, type ETDateString, type EvidenceRow, type QAQuestionType } from '@/lib/terminal-mvp/types'
-import { fetchTickerNewsFromYahoo } from '@/lib/terminal-mvp/serverTickerNews'
+import { fetchTickerNewsFromYahoo } from '@/lib/terminal-mvp/serverTickerNewsFree'
 
 type AskPipelineInput = {
   symbol: string
@@ -124,7 +124,7 @@ const resolveSessionBucket = (row: EvidenceRow): SessionBucket => {
   const minutes = parseEtMinutes(row.publishedAtET)
   if (minutes == null) return 'unknown'
   if (minutes < 9 * 60 + 30) return 'premarket'
-  if (minutes <= 16 * 60) return 'regular'
+  if (minutes <= 16 * 60 + 30) return 'regular'
   return 'afterhours'
 }
 
@@ -136,7 +136,7 @@ const classifyQuestionType = (question: string): QAQuestionType => {
   if (includesAny(lower, ['open', '09:30', KOR_OPEN, '\uc624\ud508'])) {
     return 'open_summary'
   }
-  if (includesAny(lower, ['close', '16:00', KOR_CLOSE, '\ud074\ub85c\uc988'])) {
+  if (includesAny(lower, ['close', '16:30', KOR_CLOSE, '\ud074\ub85c\uc988'])) {
     return 'close_summary'
   }
   if (includesAny(lower, ['why', KOR_WHY, 'move', 'up', 'down', KOR_RISE, KOR_DROP, KOR_MOVE])) {
@@ -145,14 +145,48 @@ const classifyQuestionType = (question: string): QAQuestionType => {
   return 'general_daily_summary'
 }
 
+const getCurrentEtDate = (): ETDateString =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
+const getCurrentEtMinutes = (): number => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date())
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? '0')
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? '0')
+  return hour * 60 + minute
+}
+
+const shouldIncludeCloseBrief = (dateET: ETDateString): boolean => {
+  const currentEtDate = getCurrentEtDate()
+  if (dateET !== currentEtDate) return true
+  return getCurrentEtMinutes() >= 16 * 60 + 30
+}
+
+const shouldIncludeOpenBrief = (dateET: ETDateString): boolean => {
+  const currentEtDate = getCurrentEtDate()
+  if (dateET !== currentEtDate) return true
+  return getCurrentEtMinutes() >= 9 * 60 + 30
+}
+
 const buildBriefRows = (
   sessionId: string,
   symbol: string,
   dateET: ETDateString,
 ): EvidenceRow[] => {
   const createdAt = new Date().toISOString()
-  return [
-    {
+  const rows: EvidenceRow[] = []
+
+  if (shouldIncludeOpenBrief(dateET)) {
+    rows.push({
       id: randomUUID(),
       sessionId,
       symbol,
@@ -166,23 +200,28 @@ const buildBriefRows = (
       publishedAtTs: parsePublishedAtTs(`${dateET}T09:30:00 ET`),
       aiRelevancy: 0,
       createdAtET: createdAt,
-    },
-    {
+    })
+  }
+
+  if (shouldIncludeCloseBrief(dateET)) {
+    rows.push({
       id: randomUUID(),
       sessionId,
       symbol,
       dateET,
       sourceType: 'brief',
-      sourceId: `${symbol.toLowerCase()}-brief-1600`,
-      title: `${symbol} 16:00 ET Close Brief`,
+      sourceId: `${symbol.toLowerCase()}-brief-1630`,
+      title: `${symbol} 16:30 ET Close Brief`,
       source: 'Terminal Brief Engine',
       summary: `${symbol} close summary with session reaction and key events.`,
-      publishedAtET: `${dateET}T16:00:00 ET`,
-      publishedAtTs: parsePublishedAtTs(`${dateET}T16:00:00 ET`),
+      publishedAtET: `${dateET}T16:30:00 ET`,
+      publishedAtTs: parsePublishedAtTs(`${dateET}T16:30:00 ET`),
       aiRelevancy: 0,
       createdAtET: createdAt,
-    },
-  ]
+    })
+  }
+
+  return rows
 }
 
 const buildMarketHeadlineRows = (
@@ -261,7 +300,7 @@ const sessionPreference = (row: EvidenceRow, questionType: QAQuestionType): numb
   const bucket = resolveSessionBucket(row)
   const minutes = parseEtMinutes(row.publishedAtET)
   const isOpenBrief = row.sourceType === 'brief' && row.sourceId.endsWith('0930')
-  const isCloseBrief = row.sourceType === 'brief' && row.sourceId.endsWith('1600')
+  const isCloseBrief = row.sourceType === 'brief' && row.sourceId.endsWith('1630')
 
   if (questionType === 'open_summary') {
     if (isOpenBrief) return 1
@@ -296,7 +335,7 @@ const sessionPreference = (row: EvidenceRow, questionType: QAQuestionType): numb
 
 const sourceIntentPreference = (row: EvidenceRow, questionType: QAQuestionType): number => {
   const isOpenBrief = row.sourceType === 'brief' && row.sourceId.endsWith('0930')
-  const isCloseBrief = row.sourceType === 'brief' && row.sourceId.endsWith('1600')
+  const isCloseBrief = row.sourceType === 'brief' && row.sourceId.endsWith('1630')
 
   if (questionType === 'move_explainer') {
     if (row.sourceType === 'news_cluster') return 0.98
@@ -449,7 +488,7 @@ const buildAnswerKo = (
   const typeLabel: Record<QAQuestionType, string> = {
     move_explainer: '\ubcc0\ub3d9 \uc6d0\uc778 \uc124\uba85',
     open_summary: '\uac1c\uc7a5 \uc694\uc57d(09:30 ET)',
-    close_summary: '\ub9c8\uac10 \uc694\uc57d(16:00 ET)',
+    close_summary: '\ub9c8\uac10 \uc694\uc57d(16:30 ET)',
     general_daily_summary: '\uc77c\ubc18 \ub370\uc77c\ub9ac \uc694\uc57d',
   }
 
@@ -532,4 +571,10 @@ export async function runAskResearchPipeline(
 }
 
 export const QA_ET_TIMEZONE = ET_TIMEZONE
+
+
+
+
+
+
 

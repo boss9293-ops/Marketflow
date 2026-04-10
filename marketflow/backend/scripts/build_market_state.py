@@ -31,7 +31,7 @@ OUTPUT_DIR   = os.path.join(BASE, 'output')
 CACHE_DIR    = os.path.join(BASE, 'output', 'cache')
 try:
     from db_utils import resolve_marketflow_db
-    DB_PATH = resolve_marketflow_db()
+    DB_PATH = resolve_marketflow_db(data_plane="live")
 except Exception:
     DB_PATH = os.path.join(BASE, 'data', 'marketflow.db')
 

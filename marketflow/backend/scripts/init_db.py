@@ -2,7 +2,7 @@
 Initialize SQLite database from repo-level schema.sql.
 
 Creates:
-- data/marketflow.db
+- data/marketflow.db (live)
 
 Loads:
 - db/schema.sql

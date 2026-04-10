@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import styles from '@/components/watchlist_mvp/watchlistMvp.module.css'
 import type { MarketHeadlinesHealth } from '@/lib/terminal-mvp/types'
 
@@ -40,6 +38,8 @@ const getHeadlineEpoch = (item: MarketNewsPanelProps['headlines'][number]): numb
 const sortHeadlines = (rows: MarketNewsPanelProps['headlines']) =>
   [...rows].sort((a, b) => getHeadlineEpoch(b) - getHeadlineEpoch(a))
 
+const MAX_HEADLINES_PER_DAY = 5
+
 const statusLabelMap: Record<NonNullable<MarketNewsPanelProps['health']>['status'], string> = {
   ok: 'LIVE',
   degraded: 'DEGRADED',
@@ -61,11 +61,16 @@ export default function MarketNewsPanel({
   health,
 }: MarketNewsPanelProps) {
   const feed = sortHeadlines(headlines)
+  const latestDate = feed[0]?.dateET ?? null
+  const visibleFeed = latestDate
+    ? feed.filter((item) => item.dateET === latestDate).slice(0, MAX_HEADLINES_PER_DAY)
+    : feed.slice(0, MAX_HEADLINES_PER_DAY)
+  const dateLabel = latestDate ? formatEtDateLabel(latestDate) : 'Latest ET day'
 
   return (
     <article className={styles.marketPanel}>
-      <p className={styles.panelLabel}>Portal Headlines</p>
-      <p className={styles.panelSubtle}>Real-time feed | cumulative cache | headline/source/time/url only</p>
+      <p className={styles.panelLabel}>Daily Headlines</p>
+      <p className={styles.panelSubtle}>One ET day for now | headline, source, time, and links only</p>
       {!isLoading && (
         <div className={styles.feedHealthRow}>
           <span className={`${styles.feedHealthBadge} ${getStatusClassName(health?.status)}`}>
@@ -96,31 +101,28 @@ export default function MarketNewsPanel({
 
       {!isLoading && !errorMessage && !headlines.length && (
         <div className={styles.panelStateBox}>
-          No portal headlines available for this ET date.
+          No headlines available for the current ET day yet.
         </div>
       )}
 
-      {!isLoading && !errorMessage && !!feed.length && (
+      {!isLoading && !errorMessage && !!visibleFeed.length && (
         <div className={styles.stack}>
-          {feed.map((item, index) => (
-            <Fragment key={item.id}>
-              {(index === 0 || feed[index - 1]?.dateET !== item.dateET) && (
-                <p className={styles.timelineDateHeader}>{formatEtDateLabel(item.dateET)}</p>
-              )}
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${styles.headlineCard} ${index === 0 ? styles.breakingHeadlineCard : ''}`}
-              >
-                <div className={styles.headlineTop}>
-                  <p className={index === 0 ? styles.breakingHeadlineTime : styles.headlineTime}>{item.timeET}</p>
-                  <span className={styles.headlineAction}>Open {'>'}</span>
-                </div>
-                <p className={styles.headlineText}>{item.headline}</p>
-                <p className={styles.headlineSource}>Source: {item.source}</p>
-              </a>
-            </Fragment>
+          <p className={styles.timelineDateHeader}>{dateLabel}</p>
+          {visibleFeed.map((item, index) => (
+            <a
+              key={item.id}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.headlineCard} ${index === 0 ? styles.breakingHeadlineCard : ''}`}
+            >
+              <div className={styles.headlineTop}>
+                <p className={index === 0 ? styles.breakingHeadlineTime : styles.headlineTime}>{item.timeET}</p>
+                <span className={styles.headlineAction}>Open {'>'}</span>
+              </div>
+              <p className={styles.headlineText}>{item.headline}</p>
+              <p className={styles.headlineSource}>Source: {item.source}</p>
+            </a>
           ))}
         </div>
       )}

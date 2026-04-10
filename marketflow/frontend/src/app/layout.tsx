@@ -1,16 +1,8 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import { Nanum_Gothic_Coding } from 'next/font/google'
 import './globals.css'
 import ClientLayout from '@/components/ClientLayout'
 import { CONTENT_LANG_COOKIE, UI_LANG_COOKIE, normalizeUiLang } from '@/lib/uiLang'
-
-const terminalFont = Nanum_Gothic_Coding({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-terminal',
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   title: 'MarketFlow - Investment Dashboard',
@@ -28,7 +20,7 @@ export default function RootLayout({
 
   return (
     <html lang={initialUiLang} data-lang-mode={initialUiLang} data-content-lang={initialContentLang}>
-      <body className={`${terminalFont.variable}`}>
+      <body>
         <ClientLayout initialUiLang={initialUiLang} initialContentLang={initialContentLang}>
           {children}
         </ClientLayout>

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       if (m.includes('risk')) commandsToRun.push('python scripts/build_risk_v1.py');
       else if (m.includes('vr')) commandsToRun.push('python scripts/build_execution_playback.py');
       else if (m.includes('macro')) commandsToRun.push('python scripts/build_macro_snapshot.py');
-      else commandsToRun.push('python scripts/run_all.py'); // catch all
+      else commandsToRun.push('python -X utf8 scripts/run_pipeline_scheduled.py'); // catch all
     }
 
     // Run unique commands

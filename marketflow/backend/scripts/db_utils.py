@@ -16,7 +16,22 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import sys
 from pathlib import Path
+
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+_BACKEND_DIR_STR = str(_BACKEND_DIR)
+if _BACKEND_DIR_STR not in sys.path:
+    sys.path.insert(0, _BACKEND_DIR_STR)
+
+from services.data_contract import (
+    backend_dir as contract_backend_dir,
+    core_db_path as contract_core_db_path,
+    data_mode as contract_data_mode,
+    engine_db_path as contract_engine_db_path,
+    live_db_path as contract_live_db_path,
+    snapshot_db_path as contract_snapshot_db_path,
+)
 
 
 def scripts_dir() -> Path:
@@ -24,7 +39,7 @@ def scripts_dir() -> Path:
 
 
 def backend_dir() -> Path:
-    return scripts_dir().parent
+    return contract_backend_dir()
 
 
 def repo_root() -> Path:
@@ -32,11 +47,23 @@ def repo_root() -> Path:
 
 
 def core_db_path() -> str:
-    return str((repo_root() / "data" / "marketflow.db").resolve())
+    return str(contract_core_db_path())
 
 
 def engine_db_path() -> str:
-    return str((backend_dir() / "data" / "marketflow.db").resolve())
+    return str(contract_engine_db_path())
+
+
+def live_db_path() -> str:
+    return str(contract_live_db_path())
+
+
+def snapshot_db_path(name: str = "playback") -> str:
+    return str(contract_snapshot_db_path(name))
+
+
+def data_mode() -> str:
+    return contract_data_mode()
 
 
 def daily_data_root() -> str:
@@ -104,18 +131,25 @@ def _db_has_tables(path: str, table_names: tuple[str, ...]) -> bool:
 def resolve_marketflow_db(
     required_tables: tuple[str, ...] = (),
     *,
-    prefer_engine: bool = False,
+    data_plane: str | None = None,
+    snapshot_name: str = "playback",
 ) -> str:
     """
     Resolve the active marketflow DB path.
 
-    Core analysis / VR engines should usually use the main DB under data/.
-    Backtest / risk engines should pass prefer_engine=True so they use the
-    dedicated backend/data/marketflow.db mirror when it is ready.
+    Canonical source is the live DB under repo/data/.
+    Snapshot/backtest callers should request the snapshot plane explicitly.
+    Any non-snapshot plane resolves to live first.
     """
-    engine = engine_db_path()
+    requested_plane = (data_plane or data_mode() or "live").strip().lower()
     core = core_db_path()
-    candidates = [engine, core] if prefer_engine else [core, engine]
+    snapshot = snapshot_db_path(snapshot_name)
+
+    if requested_plane in {"snapshot", "playback", "backtest"}:
+        candidates = [snapshot, core]
+    else:
+        candidates = [core, snapshot]
+
     for path in candidates:
         if not Path(path).exists():
             continue

@@ -9,8 +9,8 @@ param(
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backendDir = Split-Path -Parent $scriptDir
 
-if (-not (Test-Path (Join-Path $backendDir "run_all.py"))) {
-    Write-Host "run_all.py not found under backend directory: $backendDir" -ForegroundColor Red
+if (-not (Test-Path (Join-Path $backendDir "run_pipeline_scheduled.py"))) {
+    Write-Host "run_pipeline_scheduled.py not found under backend directory: $backendDir" -ForegroundColor Red
     exit 1
 }
 

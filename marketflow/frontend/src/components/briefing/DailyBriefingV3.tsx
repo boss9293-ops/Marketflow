@@ -29,6 +29,7 @@ export type BriefingV3RiskCheck = {
 export type DailyBriefingV3Data = {
   generated_at: string
   data_date: string
+  slot?: string
   model: string
   tokens: { input: number; output: number; cost_usd: number }
   hook: string
@@ -62,6 +63,36 @@ function formatTime(iso: string): string {
       hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York', hour12: false,
     }) + ' ET'
   } catch { return iso }
+}
+
+function formatSlotLabel(slot: string | undefined, uiLang: Lang): string | null {
+  if (!slot) return null
+  const normalized = slot.trim().toLowerCase()
+  if (!normalized) return null
+  if (normalized === 'preopen') return pickUiLang(uiLang, '장전', 'Pre-open')
+  if (normalized === 'morning' || normalized === 'open') return pickUiLang(uiLang, '장시작후', 'Open')
+  if (normalized === 'close') return pickUiLang(uiLang, '장마감후', 'Close')
+  if (normalized === 'manual') return pickUiLang(uiLang, '수동', 'Manual')
+  return slot
+}
+
+function formatDateKey(iso: string): string {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    const parts = dtf.formatToParts(new Date(iso))
+    const year = parts.find((part) => part.type === 'year')?.value
+    const month = parts.find((part) => part.type === 'month')?.value
+    const day = parts.find((part) => part.type === 'day')?.value
+    if (year && month && day) return `${year}-${month}-${day}`
+  } catch {
+    // fall through to the raw date fragment below
+  }
+  return String(iso || '').slice(0, 10)
 }
 
 function pick(en: string, ko: string | undefined, lang: Lang): string {
@@ -237,7 +268,7 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
       })
       const json = await res.json()
       if (json.ok) {
-        const newDate = json?.data?.data_date ? String(json.data.data_date) : null
+        const newDate = json?.data?.generated_at ? formatDateKey(String(json.data.generated_at)) : (json?.data?.data_date ? String(json.data.data_date) : null)
         setGenStatus(
           newDate
             ? pickUiLang(uiLang, `업데이트 ${json.elapsed}초 · ${newDate}`, `Updated in ${json.elapsed}s · ${newDate}`)
@@ -288,6 +319,11 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
   const hookLine = pick(data.hook, data.hook_ko, lang).trim()
   const heroLabel = lang === 'en' ? BRIEF_UI_TEXT.marketHook.en : BRIEF_UI_TEXT.oneLine.ko
   const heroLine = hookLine || summaryLine
+  const generatedDateKey = formatDateKey(data.generated_at)
+  const marketDateKey = String(data.data_date || '').trim()
+  const titleDateKey = generatedDateKey || marketDateKey
+  const showAsOfDate = marketDateKey && marketDateKey !== titleDateKey
+  const slotLabel = formatSlotLabel(data.slot, uiLang)
 
   return (
     <div style={{ maxWidth: 1120, margin: '0 auto', padding: '28px 24px 48px',
@@ -303,13 +339,15 @@ export default function DailyBriefingV3({ data, initialContentLang = 'en' }: Pro
             letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6,
           }}>
             <span style={{ color: '#00b8ff' }}>{pickUiLang(uiLang, BRIEF_UI_TEXT.dailyBriefing.ko, BRIEF_UI_TEXT.dailyBriefing.en)}</span>
-            <span style={{ color: '#d7ff3f' }}> | {data.data_date}</span>
+            <span style={{ color: '#d7ff3f' }}> | {titleDateKey}</span>
           </div>
           <div style={{
             fontFamily: MONO_FONT,
             fontSize: rem(1.04), color: '#94a3b8',
           }}>
             {pickUiLang(uiLang, BRIEF_UI_TEXT.generatedLabel.ko, BRIEF_UI_TEXT.generatedLabel.en)} {formatDate(data.generated_at)} | {formatTime(data.generated_at)} |{' '}
+            {slotLabel && <><span style={{ color: '#64748b' }}>{slotLabel}</span> | </>}
+            {showAsOfDate && <><span style={{ color: '#64748b' }}>{pickUiLang(uiLang, `기준 ${marketDateKey}`, `as of ${marketDateKey}`)}</span> | </>}
             <span style={{ color: '#cbd5e1' }}>{data.model}</span>
           </div>
         </div>

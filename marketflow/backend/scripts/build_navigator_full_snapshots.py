@@ -20,7 +20,7 @@ _BACKEND_DIR = os.path.dirname(_SCRIPTS_DIR)
 OUT_DIR = os.path.join(_BACKEND_DIR, 'output')
 DB_PATH = resolve_marketflow_db(
     required_tables=("ohlcv_daily", "indicators_daily"),
-    prefer_engine=True,
+    data_plane="live",
 )
 
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 
 import SourceTable from '@/components/watchlist_mvp/SourceTable'
 import styles from '@/components/watchlist_mvp/watchlistMvp.module.css'
@@ -50,11 +50,98 @@ type CenterPanelProps = {
   isNewsRefreshing: boolean
   newsLastFetchedAt: Date | null
   todayOpen: number | null
+  todayHigh: number | null
+  todayLow: number | null
   todayClose: number | null
+  todayVolume: number | null
 }
 
 const formatMetadataValue = (value?: string | number | null): string =>
   value == null || value === '' ? 'N/A' : String(value)
+
+const formatPrice = (value: number): string => `$${value.toFixed(2)}`
+
+const formatCompactNumber = (value: number): string => {
+  const abs = Math.abs(value)
+  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`
+  return `${Math.round(value)}`
+}
+
+const buildMarketLead = (
+  symbol: string,
+  todayOpen: number | null,
+  todayHigh: number | null,
+  todayLow: number | null,
+  todayClose: number | null,
+  todayVolume: number | null,
+  selectedItem: {
+    lastPrice: string
+    rangeLabel: string
+  } | null,
+): string => {
+  const clauses: string[] = []
+
+  if (todayOpen != null && todayClose != null) {
+    clauses.push(`opened at ${formatPrice(todayOpen)} and closed at ${formatPrice(todayClose)}`)
+  } else if (todayOpen != null) {
+    clauses.push(`opened at ${formatPrice(todayOpen)}`)
+  } else if (todayClose != null) {
+    clauses.push(`closed at ${formatPrice(todayClose)}`)
+  } else if (selectedItem?.lastPrice) {
+    clauses.push(`last traded at ${selectedItem.lastPrice}`)
+  }
+
+  const baseForRange = todayOpen ?? todayClose
+  if (todayHigh != null && todayLow != null && baseForRange != null && baseForRange > 0) {
+    const rangePct = ((todayHigh - todayLow) / baseForRange) * 100
+    if (Number.isFinite(rangePct)) {
+      clauses.push(`trading in a ${rangePct.toFixed(2)}% intraday range`)
+    }
+  } else if (selectedItem?.rangeLabel) {
+    clauses.push(selectedItem.rangeLabel.replace(/^Day Range(?: placeholder)?[:\s-]*/i, 'daily range '))
+  }
+
+  if (todayVolume != null) {
+    clauses.push(`on ${formatCompactNumber(todayVolume)} shares`)
+  }
+
+  if (!clauses.length) return `${symbol}.`
+  return `${symbol} ${clauses.join(', ')}.`
+}
+
+const stripLeadingTerminalNumbering = (text: string): string =>
+  text.replace(/^\s*(?:\d+[.)]|[-*])\s*/u, '').trim()
+
+const getCurrentEtDate = (): ETDateString =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
+const getCurrentEtMinutes = (): number => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date())
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? '0')
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? '0')
+  return hour * 60 + minute
+}
+
+const parseClockMinutes = (value: string): number | null => {
+  const match = value.match(/(\d{1,2}):(\d{2})/)
+  if (!match) return null
+  const hour = Number(match[1])
+  const minute = Number(match[2])
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null
+  return hour * 60 + minute
+}
 
 const formatTerminalDateLabel = (dateET: ETDateString): string => {
   const parsed = new Date(`${dateET}T00:00:00Z`)
@@ -94,10 +181,10 @@ const toBriefText = (
   const headline = (item.headline || '').trim()
   const summary = (item.summary || '').trim()
   const body = [headline, summary].filter(Boolean).join(' ')
-  // 09:30 → 시가, 16:00 → 종가
+  // 09:30 ET -> open, 16:30 ET -> close
   const timeKey = item.timeET || ''
   const isOpen  = timeKey.startsWith('09:30') || timeKey.startsWith('9:30')
-  const isClose = timeKey.startsWith('16:00')
+  const isClose = timeKey.startsWith('16:30')
   const price = isOpen ? todayOpen : isClose ? todayClose : null
   const priceStr = price != null ? ` $${price.toFixed(2)}` : ''
   const prefix = `${symbol}${priceStr}`
@@ -135,17 +222,42 @@ export default function CenterPanel({
   isNewsRefreshing,
   newsLastFetchedAt,
   todayOpen,
+  todayHigh,
+  todayLow,
   todayClose,
+  todayVolume,
 }: CenterPanelProps) {
   const dateLabel = useMemo(() => formatTerminalDateLabel(dateET), [dateET])
+  const marketLead = useMemo(
+    () => buildMarketLead(
+      selectedSymbol,
+      todayOpen,
+      todayHigh,
+      todayLow,
+      todayClose,
+      todayVolume,
+      selectedItem,
+    ),
+    [selectedSymbol, todayOpen, todayHigh, todayLow, todayClose, todayVolume, selectedItem],
+  )
+  const currentEtDate = getCurrentEtDate()
+  const currentEtMinutes = getCurrentEtMinutes()
   const groupedTimeline = useMemo(() => {
     const grouped = new Map<string, TickerNewsItem[]>()
-    timeline.forEach((item) => {
-      const dateKey = getNewsDateKey(item)
-      const items = grouped.get(dateKey) ?? []
-      items.push(item)
-      grouped.set(dateKey, items)
-    })
+    timeline
+      .filter((item) => {
+        if (item.dateET !== dateET) return false
+        if (dateET !== currentEtDate) return true
+        const itemMinutes = parseClockMinutes(item.timeET)
+        if (itemMinutes == null) return true
+        return itemMinutes <= currentEtMinutes
+      })
+      .forEach((item) => {
+        const dateKey = getNewsDateKey(item)
+        const items = grouped.get(dateKey) ?? []
+        items.push(item)
+        grouped.set(dateKey, items)
+      })
     return Array.from(grouped.entries())
       .map(([dateKey, items]) => ({
         dateKey,
@@ -153,7 +265,7 @@ export default function CenterPanel({
         items: [...items].sort((a, b) => b.publishedAtET.localeCompare(a.publishedAtET)),
       }))
       .sort((a, b) => b.dateKey.localeCompare(a.dateKey))
-  }, [dateET, timeline])
+  }, [currentEtDate, currentEtMinutes, dateET, timeline])
   const [langMode, setLangMode] = useState<'EN' | 'KR'>('EN')
   const [synthEN, setSynthEN] = useState<Map<string, string>>(new Map())
   const [synthKO, setSynthKO] = useState<Map<string, string>>(new Map())
@@ -165,7 +277,7 @@ export default function CenterPanel({
   const [exportStatus, setExportStatus] = useState<ExportUiStatus>('idle')
   const [exportFeedback, setExportFeedback] = useState<string | null>(null)
 
-  // 심볼 변경 시 합성 캐시 초기화
+  // ?щ낵 蹂寃????⑹꽦 罹먯떆 珥덇린??
   useEffect(() => {
     setSynthEN(new Map())
     setSynthKO(new Map())
@@ -176,7 +288,7 @@ export default function CenterPanel({
     setIsSynthesizingKO(false)
   }, [selectedSymbol])
 
-  // EN 자동 합성 (심볼/뉴스 로드 시)
+  // EN ?먮룞 ?⑹꽦 (?щ낵/?댁뒪 濡쒕뱶 ??
   useEffect(() => {
     const allItems = groupedTimeline.flatMap(g => g.items)
     const pending = allItems.filter(item => !synthENRequested.current.has(item.id))
@@ -196,22 +308,16 @@ export default function CenterPanel({
         setSynthEN(prev => {
           const next = new Map(prev)
           for (const r of data.results) {
-            const item = pending.find(it => it.id === r.id)
-            const timeKey = item?.timeET ?? ''
-            const isOpen = timeKey.startsWith('09:30') || timeKey.startsWith('9:30')
-            const isClose = timeKey.startsWith('16:00')
-            const price = isOpen ? todayOpen : isClose ? todayClose : null
-            const priceStr = price != null ? ` $${price.toFixed(2)}` : ''
-            next.set(r.id, `${selectedSymbol}${priceStr} ${r.text}`)
+            next.set(r.id, r.text.trim())
           }
           return next
         })
       } catch { /* ignore */ } finally { setIsSynthesizingEN(false) }
     }
     void run()
-  }, [groupedTimeline, selectedSymbol, todayOpen, todayClose])
+  }, [groupedTimeline, selectedSymbol])
 
-  // KR 버튼 클릭 시 한국어 합성
+  // KR 踰꾪듉 ?대┃ ???쒓뎅???⑹꽦
   useEffect(() => {
     if (langMode !== 'KR') return
     const allItems = groupedTimeline.flatMap(g => g.items)
@@ -232,20 +338,14 @@ export default function CenterPanel({
         setSynthKO(prev => {
           const next = new Map(prev)
           for (const r of data.results) {
-            const item = pending.find(it => it.id === r.id)
-            const timeKey = item?.timeET ?? ''
-            const isOpen = timeKey.startsWith('09:30') || timeKey.startsWith('9:30')
-            const isClose = timeKey.startsWith('16:00')
-            const price = isOpen ? todayOpen : isClose ? todayClose : null
-            const priceStr = price != null ? ` $${price.toFixed(2)}` : ''
-            next.set(r.id, `${selectedSymbol}${priceStr} ${r.text}`)
+            next.set(r.id, r.text.trim())
           }
           return next
         })
       } catch { /* ignore */ } finally { setIsSynthesizingKO(false) }
     }
     void run()
-  }, [langMode, groupedTimeline, selectedSymbol, todayOpen, todayClose])
+  }, [langMode, groupedTimeline, selectedSymbol])
 
   useEffect(() => {
     setExportStatus('idle')
@@ -284,7 +384,7 @@ export default function CenterPanel({
             )}
             <button
               onClick={() => setLangMode(m => m === 'EN' ? 'KR' : 'EN')}
-              title="한국어/영어 전환"
+              title="?쒓뎅???곸뼱 ?꾪솚"
               style={{
                 background: langMode === 'KR' ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.05)',
                 border: `1px solid ${langMode === 'KR' ? 'rgba(56,189,248,0.45)' : 'rgba(255,255,255,0.15)'}`,
@@ -302,7 +402,7 @@ export default function CenterPanel({
             <button
               onClick={onRefreshNews}
               disabled={isNewsRefreshing}
-              title="뉴스 새로고침"
+              title="?댁뒪 ?덈줈怨좎묠"
               style={{
                 background: 'rgba(56,189,248,0.08)',
                 border: '1px solid rgba(56,189,248,0.25)',
@@ -317,7 +417,7 @@ export default function CenterPanel({
                 opacity: isNewsRefreshing ? 0.5 : 1,
               }}
             >
-              {isNewsRefreshing ? '...' : '⟳ Refresh'}
+              {isNewsRefreshing ? '...' : '??Refresh'}
             </button>
           </div>
         </div>
@@ -340,7 +440,15 @@ export default function CenterPanel({
                     {group.items.length ? (
                       group.items.map((item) => {
                         const isActive = selectedNewsId === item.id
-                        const briefText = toBriefText(selectedSymbol, item, todayOpen, todayClose)
+                        const briefText = [item.headline, item.summary].filter(Boolean).join(' ')
+                        const synthText = langMode === 'KR'
+                          ? (synthKO.get(item.id) ?? (isSynthesizingKO ? '...' : (synthEN.get(item.id) ?? briefText)))
+                          : (synthEN.get(item.id) ?? (isSynthesizingEN ? '...' : briefText))
+                        const cleanedSynthText = synthText === '...' ? synthText : stripLeadingTerminalNumbering(synthText)
+                        const narrativeText =
+                          cleanedSynthText === '...'
+                            ? cleanedSynthText
+                            : `${marketLead} ${cleanedSynthText}`.trim()
                         return (
                           <button
                             key={item.id}
@@ -353,15 +461,13 @@ export default function CenterPanel({
                               <span className={styles.timelineAction}>Open {'>'}</span>
                             </div>
                             <p className={styles.timelineSummary}>
-                              {langMode === 'KR'
-                                ? (synthKO.get(item.id) ?? (isSynthesizingKO ? '...' : (synthEN.get(item.id) ?? briefText)))
-                                : (synthEN.get(item.id) ?? (isSynthesizingEN ? '...' : briefText))}
+                              {narrativeText}
                             </p>
                           </button>
                         )
                       })
                     ) : (
-                      <div className={styles.panelStateBox}>No 09:30 / 16:00 checkpoint item captured for this date.</div>
+                      <div className={styles.panelStateBox}>No 09:30 / 16:30 checkpoint item captured for this date.</div>
                     )}
                   </section>
                 ))}
@@ -490,3 +596,4 @@ export default function CenterPanel({
     </section>
   )
 }
+

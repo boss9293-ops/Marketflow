@@ -37,6 +37,8 @@ ROOT_DIR = BACKEND_DIR.parent
 OUTPUT_DIR = BACKEND_DIR / "output"
 AI_DIR = OUTPUT_DIR / "ai"
 ET_ZONE = ZoneInfo("America/New_York")
+MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
+MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
 
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
@@ -92,6 +94,17 @@ def _text(value: Any, default: str = "") -> str:
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         return str(int(value)) if float(value).is_integer() else str(value)
     return default
+
+
+def _current_briefing_slot(now: Optional[datetime] = None) -> str:
+    ref = now or datetime.now(timezone.utc)
+    local_now = ref.astimezone(ET_ZONE)
+    minutes = local_now.hour * 60 + local_now.minute
+    if minutes < MARKET_OPEN_MINUTES_ET:
+        return "preopen"
+    if minutes < MARKET_CLOSE_MINUTES_ET:
+        return "morning"
+    return "close"
 
 
 def _num(value: Any, digits: int = 1) -> str:
@@ -216,7 +229,7 @@ def _load_context() -> Dict[str, Any]:
     return {
         "asof_day": asof_day,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "slot": "manual",
+        "slot": _current_briefing_slot(),
         "source_files": source_files,
         "market_state": {
             "data_date": _text(_pick(market_state, "data_date") or asof_day),
@@ -1293,6 +1306,9 @@ def _legacy_briefing(integrated: Dict[str, Any], context: Dict[str, Any]) -> Dic
     ]
     return {
         "timestamp": context["generated_at"],
+        "generated_at": context["generated_at"],
+        "asof_day": context["asof_day"],
+        "slot": context["slot"],
         "summary": integrated["summary"]["en"] or integrated["summary"]["ko"],
         "content": "\n".join(content_lines).strip() + "\n",
         "model": integrated["model"],
@@ -1322,15 +1338,16 @@ def _write_json(path: Path, payload: Dict[str, Any]) -> None:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Build cached AI briefings.")
-    parser.add_argument("--slot", default="manual", help="Schedule label: morning, close, or manual.")
+    parser.add_argument("--slot", default="", help="Schedule label: preopen, morning, close, or manual.")
     args = parser.parse_args(argv)
 
     context = _load_context()
-    context["slot"] = args.slot
+    slot = (args.slot or "").strip().lower() or _current_briefing_slot()
+    context["slot"] = slot
     pipeline = os.getenv("AI_BRIEF_PIPELINE", "legacy").strip().lower()
 
     print(
-        f"[AIBriefings] slot={args.slot} asof={context['asof_day']} files={len(context['source_files'])} pipeline={pipeline}",
+        f"[AIBriefings] slot={slot} asof={context['asof_day']} files={len(context['source_files'])} pipeline={pipeline}",
         flush=True,
     )
 
@@ -1391,7 +1408,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 context=context,
                 provider=provider_name,
                 model=model_name,
-                slot=args.slot,
+                slot=slot,
                 fallback_reason=fallback_reason,
             )
         else:
@@ -1405,7 +1422,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         outputs[layer]["asof_day"] = context["asof_day"]
         existing_meta = outputs[layer].get("_meta") if isinstance(outputs[layer].get("_meta"), dict) else {}
         merged_meta = {
-            "slot": args.slot,
+            "slot": slot,
             "generated_at": context["generated_at"],
             "asof_day": context["asof_day"],
             "provider": provider_name,

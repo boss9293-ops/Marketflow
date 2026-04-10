@@ -2,7 +2,7 @@
 Build Smart Money v1 from local DB proxies (no external flow feed).
 
 Inputs:
-  - data/marketflow.db
+  - data/marketflow.db (live)
   - universe_symbols, ohlcv_daily, indicators_daily
 
 Outputs:
@@ -44,7 +44,7 @@ def repo_root() -> str:
 def db_path() -> str:
     try:
         from db_utils import resolve_marketflow_db
-        return resolve_marketflow_db(required_tables=("ohlcv_daily",))
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane="live")
     except Exception:
         return os.path.join(repo_root(), "data", "marketflow.db")
 

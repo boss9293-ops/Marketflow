@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from db_utils import resolve_marketflow_db
 
-DB = resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
+DB = resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane="snapshot")
 SYM = 'TQQQ'
 START = '2018-01-01'
 OUTDIR = 'marketflow/backend/output'

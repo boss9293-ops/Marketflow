@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 1. Add NASDAQ-100 + S&P500 Top200 to universe_symbols in CORE DB
-2. Sync MIRROR DB from CORE DB
+2. Sync runtime DB from CORE DB
 """
 
 import sqlite3
@@ -173,15 +173,19 @@ def normalize_legacy_symbols(conn: sqlite3.Connection):
 
 
 # ============================================================================
-# STEP 2: Sync MIRROR DB from CORE DB
+# STEP 2: Sync runtime DB from CORE DB
 # ============================================================================
 
-def sync_mirror_db(core_db_path, mirror_db_path):
-    """Sync MIRROR DB from CORE DB"""
+def sync_runtime_db(core_db_path, runtime_db_path):
+    """Sync runtime DB from CORE DB."""
 
-    print(f"\n[STEP 2] Syncing MIRROR DB from CORE DB")
+    print(f"\n[STEP 2] Syncing runtime DB from CORE DB")
     print(f"Core:   {core_db_path}")
-    print(f"Mirror: {mirror_db_path}\n")
+    print(f"Target: {runtime_db_path}\n")
+
+    if os.path.abspath(core_db_path) == os.path.abspath(runtime_db_path):
+        print("  Skipped: runtime path now aliases core DB; no copy needed.")
+        return True
 
     core_conn = sqlite3.connect(core_db_path)
     try:
@@ -191,9 +195,9 @@ def sync_mirror_db(core_db_path, mirror_db_path):
     finally:
         core_conn.close()
 
-    shutil.copy2(core_db_path, mirror_db_path)
-    mirror_size_mb = os.path.getsize(mirror_db_path) / (1024 * 1024)
-    print(f"  COPIED core DB -> mirror DB ({mirror_size_mb:.1f}MB)")
+    shutil.copy2(core_db_path, runtime_db_path)
+    runtime_size_mb = os.path.getsize(runtime_db_path) / (1024 * 1024)
+    print(f"  COPIED core DB -> runtime DB ({runtime_size_mb:.1f}MB)")
     return True
 
 
@@ -203,10 +207,10 @@ def sync_mirror_db(core_db_path, mirror_db_path):
 
 if __name__ == "__main__":
     core_db = core_db_path()
-    mirror_db = engine_db_path()
+    runtime_db = engine_db_path()
 
     print("=" * 80)
-    print("[SYNC PROCEDURE: Add universe_symbols + Sync MIRROR DB]")
+    print("[SYNC PROCEDURE: Add universe_symbols + Sync runtime DB]")
     print("=" * 80)
 
     # Check files exist
@@ -214,8 +218,8 @@ if __name__ == "__main__":
         print(f"ERROR: Core DB not found: {core_db}")
         exit(1)
 
-    if not os.path.exists(mirror_db):
-        print(f"ERROR: Mirror DB not found: {mirror_db}")
+    if not os.path.exists(runtime_db):
+        print(f"ERROR: Runtime DB not found: {runtime_db}")
         exit(1)
 
     # Step 1: Update universe_symbols
@@ -227,7 +231,7 @@ if __name__ == "__main__":
 
     # Step 2: Sync mirror DB
     try:
-        sync_mirror_db(core_db, mirror_db)
+        sync_runtime_db(core_db, runtime_db)
     except Exception as e:
         print(f"ERROR in Step 2: {e}")
         exit(1)

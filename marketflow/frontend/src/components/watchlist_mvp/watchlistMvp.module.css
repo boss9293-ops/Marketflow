@@ -1,4 +1,4 @@
-.shell {
+﻿.shell {
   height: 100vh;
   width: 100%;
   display: grid;
@@ -622,7 +622,7 @@
 }
 
 
-/* ── Brief Card (09:30 / 16:00 terminal style) ────────────────── */
+/* ?? Brief Card (09:30 / 16:30 terminal style) ?????????????????? */
 .briefCard {
   padding: 14px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1587,3 +1587,5 @@
   font-size: 11px;
   line-height: 1.35;
 }
+
+

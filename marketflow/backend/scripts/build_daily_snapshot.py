@@ -25,10 +25,10 @@ from db_utils import db_connect, resolve_marketflow_db
 
 def db_path() -> str:
     # Railway: /app/data/marketflow.db
-    # Local:   marketflow/data/marketflow.db or marketflow/backend/data/marketflow.db
+    # Local:   marketflow/data/marketflow.db
     return resolve_marketflow_db(
         required_tables=("ohlcv_daily",),
-        prefer_engine=True,
+        data_plane="live",
     )
 
 

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 
 import { ET_TIMEZONE, type ETDateString } from '@/lib/terminal-mvp/types'
 import { upsertNewsDetails } from '@/lib/terminal-mvp/serverNewsStore'
-import { fetchTickerNewsFromYahoo } from '@/lib/terminal-mvp/serverTickerNews'
+import { fetchTickerNewsFromYahoo } from '@/lib/terminal-mvp/serverTickerNewsFree'
 
 const resolveDateET = (input: string | null): ETDateString => {
   if (input && /^\d{4}-\d{2}-\d{2}$/.test(input)) {
@@ -50,3 +50,4 @@ export async function GET(req: NextRequest, { params }: Params) {
     )
   }
 }
+

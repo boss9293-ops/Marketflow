@@ -1,82 +1,84 @@
 {
-  "generated_at": "2026-04-03T20:54:53.681597+00:00",
-  "data_date": "2026-04-02",
+  "generated_at": "2026-04-09T22:36:26.654935+00:00",
+  "data_date": "2026-04-06",
+  "slot": "close",
   "model": "claude-haiku-4-5-20251001",
+  "lang": "ko",
   "tokens": {
-    "input": 2952,
-    "output": 6481,
-    "cost_usd": 0.028286
+    "input": 2674,
+    "output": 2309,
+    "cost_usd": 0.011375
   },
-  "hook": "Trump's escalation rhetoric on Iran sent crude oil to a record near-term premium over deferred contracts—a classic geopolitical risk-on signal—yet equities clawed back from morning lows with only modest gains. The transmission chain is textbook: Hormuz vulnerability concerns pushed WTI up 11.93% to $112.06, but rate volatility compressed (US10Y fell 14 bps) and equities stabilized rather than sold off, suggesting the market is pricing containment rather than crisis. Semiconductors and tech led the recovery (SOXL +9.08%, QQQ +1.24%), while defensives and cyclicals lagged, revealing a tactical shift toward growth on the view that oil supply risk is priced and policy may yet deescalate.",
-  "hook_ko": "트럼프의 이란 인프라 공격 위협으로 유가(WTI)가 선물 프리미엄 기록을 경신했지만, 주식시장은 아침의 약세에서 회복하며 제한적 상승률로 마감했다. 전염 메커니즘은 명확하다: 호르무즈 공급 위험 우려 → 유가 11.93% 상승(112.06달러) → 10년물 수익률 14bp 하락 → 주식 부분 회복. 시장은 위기보다는 관리 가능한 시나리오를 가격 책정 중이며, 반도체와 기술주(SOXL +9.08%, QQQ +1.24%)가 주도한 반등은 성장주에 대한 전술적 선회를 나타낸다.",
+  "hook": "",
+  "hook_ko": "트럼프-이란 2주 휴전 → 유가 프리미엄 완화 → 금리인하 기대 부활 → 나스닥 +0.68% 랠리",
   "sections": [
     {
       "id": "market_flow",
       "title": "Market Flow",
-      "structural": "The session began in genuine frenzy—Dow, S&P 500, and Nasdaq all tanked at the open as Trump's Iran escalation headlines flooded the tape, creating a mini liquidity shock in equities. By midday, however, the panic unwound with surgical precision. SPY recovered to nearly flat (+0.09%), QQQ to +0.11%, while small-caps outperformed (IWM +0.69%), signaling risk rotation rather than broad risk-off. The Gate score of 60 (yellow, up 5.3 points from the 10-day average of 44.3) reflects this transitional state—no longer in sustained panic, not yet confidence. QQQ sits 2.59% above its 200-day moving average, confirming that the uptrend structure remains intact despite intraday volatility. Volume and breadth data (implied by the modest recovery and sector divergence) suggest institutional buyers stepped in during the dip, treating the move as a tactical entry point.",
-      "structural_ko": "개장 직후 트럼프의 이란 발언으로 지수가 급락했으나, 장중 회복세로 전환되었다. SPY는 +0.09%, QQQ는 +0.11%에 그쳤고, 소형주(IWM +0.69%)가 상대적으로 강세를 보였다. Gate 점수 60(노란색)은 공포에서 벗어났지만 확신도 부족한 전환 국면을 반영한다. QQQ는 200일선 상단 2.59%에 위치하며 상승 구조는 유지 중이며, 기관투자자들이 매수에 나섰음을 시사한다.",
-      "implication": "The structural integrity of the rally persists—no break of key support, no capitulation close. However, the volatility and intraday whipsaws warn that conviction is thin. If oil prices fail to sustain above $110 or geopolitical headlines turn decisively hawkish (e.g., retaliatory Iranian action or NATO escalation), equity weakness could resume quickly. Conversely, if Trump's rhetoric remains theatrical and no immediate Hormuz disruption emerges, the next pullback should be bought. Watch the 200-day for QQQ; a break below 580 (200-day ~587.84) would signal regime deterioration.",
-      "implication_ko": "상승 구조는 유지 중이나 확신이 약하다는 신호다. 유가가 110달러 이하로 떨어지거나 지정학적 뉴스가 악화되면 주식 약세가 빠르게 재개될 수 있다. 반대로 실제 호르무즈 지장이 없으면 다음 낙폭은 매수 기회가 될 가능성이 높다. QQQ의 200일선 이탈(580 미만) 여부를 주시해야 한다.",
-      "signal": "caution",
-      "color": "#f59e0b"
+      "structural": "",
+      "structural_ko": "SPY +0.58%, QQQ +0.68% 완만한 상승장이지만 Gate score 60점 유지로 구조적 불안정성이 완전히 해소되지 않았다. QQQ가 SMA200 대비 +2.59%로 단기 매수세를 유지 중이나, VIX -7.37%까지 급락한 것은 지정학 리스크 일시 프리징을 반영한 것으로 보인다.",
+      "implication": "",
+      "implication_ko": "2주 휴전 뉴스가 변동성 폭탄을 해제했으나 진정한 리스크 오프 신호는 아니다. 4월 말 deadline 앞두고 포지션 재조정 기간이 될 가능성 높으므로, 단기 매수 후 익절 타이밍을 미리 설정할 필요가 있다.",
+      "signal": "neutral",
+      "color": "#64748b"
     },
     {
       "id": "event_drivers",
       "title": "Event Drivers",
-      "structural": "Geopolitical shock dominated the tape today: Trump's publicly stated intent to strike Iranian infrastructure (bridges, power plants) and his declaration that oil supply risks from Hormuz disruption justify further escalation created a real-time risk repricing. The headline cascade—from early morning threats through midday Hormuz negotiations—compressed the uncertainty window from abstract to concrete. Near-term crude oil derivatives (spot and front-month futures) hit record premiums, widening the term structure and signaling that traders expect supply tightness in the next 30–60 days if escalation persists. This is classic geopolitical event-mode pricing: immediate risk premium for near-dated assets, gradual repricing for longer-dated contracts and equities. Earnings season begins next week (Goldman Sachs on 4/13, J&J and Citigroup on 4/14), but today's volatility is purely exogenous, unrelated to fundamentals.",
-      "structural_ko": "이란 인프라 공격 위협이 시장을 지배했다. 트럼프의 구체적 발언(다리, 전력시설 공격)과 호르무즈 통과 우려로 인해 위험 재평가가 실시간으로 진행되었다. 근월물 유가 선물의 기록적 프리미엄 확대는 향후 30~60일 공급 긴축을 예상하는 거래자들의 반응을 보여준다. 이는 전형적인 지정학적 이벤트 장세다. 다음주부터 업적발표(4/13 골드만삭스, 4/14 존슨앤존슨 등)가 본격화되지만, 오늘의 변동성은 순전히 외생 충격이다.",
-      "implication": "If geopolitical tensions de-escalate (e.g., diplomatic breakthrough or Trump's rhetoric cooling), the oil premium will collapse rapidly, unwinding the risk tail and benefiting rate-sensitive growth stocks. Conversely, any hard news of Iranian retaliation, Hormuz bottleneck, or NATO involvement will reignite the shock cycle. Earnings season will occur against this backdrop of elevated geopolitical tail risk, so watch guidance commentary for supply-chain inflation hedges and energy exposure mentions. The VIX at 23.87 (elevated but not panic) reflects this contained-but-watchful state.",
-      "implication_ko": "지정학적 긴장 완화 시 유가 프리미엄은 급락하고 성장주가 수혜를 입을 것이다. 반대로 이란 보복이나 호르무즈 실제 차단 뉴스 나올 시 충격 사이클이 재개된다. 다음주 업적발표는 이러한 지정학적 위험 속에서 진행되므로, 경영진 발언에서 공급망 인플레 헤지와 에너지 노출 언급을 주시해야 한다.",
-      "signal": "bear",
-      "color": "#ef4444"
+      "structural": "",
+      "structural_ko": "트럼프의 2주 휴전 선언이 즉시 세 가지 전달경로로 작동했다: ① 호르무즈 차단 리스크 감소 → 유가 스트레스 완화(단, 98.16 +3.97%로 여전히 높음) ② 인플레이션 피크 시나리오 후퇴 → Fed 인하 기대 복원 ③ 성장주 밸류에이션 압박 감소로 기술주 반등.",
+      "implication": "",
+      "implication_ko": "향후 4월 23~28일 기업실적 발표 시즌 진입 전 '희망적' 거래장이 펼쳐질 가능성이 높다. 다만 Trump이 추가 공격을 언급한 만큼, 휴전 연장 실패 시 유가 스파이크 재가능성(기존 spike 구조 유지)에 대비해야 한다.",
+      "signal": "caution",
+      "color": "#f59e0b"
     },
     {
       "id": "sector_structure",
       "title": "Sector Structure",
-      "structural": "The sector tape reveals a tactical regrouping around growth-at-reasonable-rates. Technology (XLK +0.8%) and Real Estate (XLRE +1.6%) outperformed, while discretionary consumer (XLY −1.5%), healthcare (XLV −0.6%), and industrials (XLI −0.4%) lagged. The pattern is internally consistent: equities that benefit from lower rates (tech multiples, real estate cap rates) rallied when the 10Y fell 14 bps, while defensive and rate-insensitive sectors stalled. Notably, semiconductor leverage (SOXL +9.08%, SMH +2.24%) massively outpaced the broad tech index (QQQ +1.24%), suggesting chip-design and -supply narratives (geopolitically exposed) are being re-valued upward as Iran tensions create a long-term industrial policy bid. Consumer cyclicals' weakness (XLY −1.5%) reflects near-term inflation anxiety from oil prices, not demand destruction.",
-      "structural_ko": "기술주(XLK +0.8%)와 부동산(XLRE +1.6%)이 주도하는 반면, 소비재 경기민감주(XLY −1.5%)와 헬스케어(XLV −0.6%)가 뒤떨어졌다. 10년물 수익률이 14bp 내려가면서 이자율 민감주가 살아났고, 소비재 약세는 수요 감소라기보다 유가 인상에 따른 단기 인플레 우려를 반영한다. 반도체 레버리지(SOXL +9.08%)의 강한 상승은 지정학적 공급망 재평가를 시사한다.",
-      "implication": "If the rate-down regime persists (and oil stabilizes), growth/tech and real estate will continue to outperform. If oil surges further and inflation re-accelerates, the current positioning will reverse quickly, with defensives and industrials reclaiming leadership. Consumer cyclicals are the most vulnerable to whipsaw; monitor discretionary earnings guides closely next week. Semiconductors' outperformance may also reverse if geopolitical fears ease and the long-term capex tailwind loses urgency.",
-      "implication_ko": "금리 인하 기조가 이어지면 성장주와 부동산 우위가 지속될 것이다. 유가가 더 오르면 현 포지셔닝이 빠르게 반전되고 경기민감주가 주도권을 되찾을 수 있다. 소비재는 변동성이 가장 크므로 다음주 업적 가이던스를 주시해야 한다.",
+      "structural": "",
+      "structural_ko": "소비 경기 사이클주(XLY +1.7%, XLI +1.0%)가 선도했으나 에너지(XLE -1.2%)는 유가 상승에도 약세다. 이는 유가 프리미엄 구조(선물 역프리미엄)가 정상화되지 않은 채 단기 옵션성 수익 실현이 벌어졌음을 시사한다.",
+      "implication": "",
+      "implication_ko": "경기 민감주 우위는 금리 기대 하락에 따른 기술적 반등이 주 배경이므로, 실질 수익성 개선(매출/마진)이 검증되지 않으면 지속성이 제한적이다. Healthcare/Materials 약세는 인플레이션 불안이 완전히 걷히지 않았음을 의미한다.",
       "signal": "neutral",
       "color": "#64748b"
     },
     {
       "id": "macro_commodities",
       "title": "Macro & Commodities",
-      "structural": "Crude oil's +11.93% rally to $112.06 is the day's defining macro event. The move reflects pure geopolitical risk premium: Trump's credible (given his track record) threat to target Iranian energy infrastructure combined with Hormuz chokepoint jeopardy has forced a sharp repricing of near-term supply risk. The fact that the premium is concentrated in near-dated contracts (spot and front-month futures at record spreads) tells us traders expect temporary disruption, not sustained shortage. US 10Y yields fell 14 basis points to 4.31%, a classic risk-off reflex, yet equities did not capitulate—suggesting the oil move is being interpreted as a temporary shock rather than a growth-killing recession signal. The dollar (DXY +0.37% to 100.02) barely budged despite oil volatility, indicating no panic in FX markets. Gold (−1.68% to $4,702.70) actually sold off on the day, a counter-intuitive move that underscores the equity-led recovery narrative; investors rotated from precious metals into equities once panic eased. VIX at 23.87 (−2.73% on the day, 86.9th percentile) remains elevated but declining, confirming that fear is fading as the session wore on.",
-      "structural_ko": "유가의 11.93% 상승(112.06달러)이 오늘의 핵심 이벤트다. 근월물 프리미엄 기록 경신은 트럼프의 이란 에너지 인프라 공격 위협과 호르무즈 병목 우려를 반영한다. 근월 선물의 프리미엄 확대는 일시적 공급 차질을 예상하는 것이며, 10년물 수익률의 14bp 하락에도 주식이 항복하지 않은 것은 장기 경기 악화 신호가 아닌 단기 충격으로 평가함을 의미한다. 달러는 거의 움직이지 않았고(100.02), 금은 오히려 하락했다(−1.68%). VIX는 여전히 높지만(23.87) 하향 추세를 보이며 공포가 완화되고 있음을 시사한다.",
-      "implication": "Oil's holding power above $110 is critical; a break below that level would suggest the geopolitical premium is rolling off and near-term supply concerns are easing. If oil stabilizes in the $105–115 range, rates will likely remain contained, supporting equity valuations. However, if Trump follows through with strikes and Iranian retaliation occurs, oil could spike to $130+, forcing rates higher and equities sharply lower. The dollar's stability is constructive—no disruptive FX moves in crisis mode. Gold's weakness signals that inflation hedges are being replaced by equity risk appetite; this is a bullish signal for tech/growth but a warning for defensive rotations if sentiment flips. Monitor the oil curve inversion (near-term vs. deferred) closely; when the premium compresses, that will mark the true end of the event shock.",
-      "implication_ko": "유가가 110달러 상단 유지 여부가 핵심이다. 이 수준 이탈 시 지정학적 프리미엄이 축소되고 있음을 의미한다. 105~115달러 범위 안정화 시 금리는 억제되고 주식 밸류에이션은 지지받을 것이다. 유가 곡선 역전(근월 vs 원월물) 완화 시점이 충격 종료 신호가 된다.",
+      "structural": "",
+      "structural_ko": "유가 98.16 (+3.97%)으로 '근월물 프리미엄' 기록 경신 후에도 10Y yield 4.29%대 유지, DXY -0.34% 약세로 금리 인하 기대는 제한적임을 시사한다. Gold +0.86%는 휴전에도 '보험료' 유지 중으로, 시장이 완전한 위험 해소를 믿지 않는다.",
+      "implication": "",
+      "implication_ko": "유가와 금리의 불일치는 중기적 스태그플레이션 우려가 아직 깊게 자리하고 있음을 의미한다. 다음주 CPI/고용통계(선택 관찰 필요)에서 인플레이션 낮아지는 신호 필요—없으면 금리인하 기대는 다시 반납될 수 있다.",
       "signal": "caution",
       "color": "#f59e0b"
     },
     {
       "id": "stock_moves",
       "title": "Key Stocks",
-      "structural": "Three narratives dominate individual stock action today. First, Tesla (−5.42%) underperformed the broad indices despite the tech rally, a warning signal that deserves scrutiny. Tesla's weakness is not mechanical selloff; it reflects genuine fundamental concern around supply-chain exposure to geopolitical disruption and margin pressure from oil-driven inflation. The company's just-in-time manufacturing model, heavy reliance on port logistics, and exposure to energy costs make it acutely vulnerable to Hormuz risk. A 5%+ down day while QQQ rallies +1.24% signals that investors are re-rating Tesla on the specific geopolitical tail, not on broad market sentiment. Second, semiconductor leadership (SOXL +9.08%, SMH +2.24%, NVDA +0.77%) is outpacing the tech index, a tactical vote that chip supply concerns and industrial policy tailwinds offset near-term margin risk. Third, the TQQQ (3x QQQ) leverage ETF gained +3.72% (vs. QQQ +1.24%), indicating retail/tactical buyers are net long, not hedged—a sign of crowd optimism despite macro uncertainty. Notable biotech volatility (CYCN +311.61%) and semiconductor strength (INTC +8.84%) are idiosyncratic and event-driven (likely M&A speculation or short-covering), not structural.",
-      "structural_ko": "세 가지 내러티브가 지배한다. 첫째, 테슬라(−5.42%)는 기술주 랠리에도 불구하고 약세를 보였다. 이는 호르무즈 위험에 따른 공급망 노출과 유가 상승에 따른 마진 압박을 반영한 기본적 약세다. 테슬라의 적시 제조 방식과 항만 물류 의존도는 지정학적 꼬리 위험에 매우 취약하다. 둘째, 반도체 주도(SOXL +9.08%, NVDA +0.77%)는 공급 우려와 산업정책 테일윈드를 반영한 전술적 투표다. 셋째, TQQQ(3배 레버리지) +3.72% 상승은 소매 매수 우위를 시사한다.",
-      "implication": "Tesla's weakness is the market's canary-in-the-coal-mine for supply-chain inflation and geopolitical logistics risk. If TSLA stabilizes or rebounds, it signals the market is pricing out near-term disruption. If it breaks lower, watch for cascade selling in other cyclicals. The semiconductor outperformance is fragile—it depends on the narrative that geopolitical tensions justify industrial policy capex, not that they impair current earnings. Monitor NVDA and INTC earnings guides for supply-chain commentary; any hawkish tone on logistics or tariff exposure will unwind the current rally. The TQQQ strength (retail long bias) is a contrarian warning; elevated leverage amid geopolitical stress suggests complacency, not prudent positioning.",
-      "implication_ko": "테슬라의 약세는 공급망 인플레와 지정학적 물류 위험의 카나리 신호다. TSLA가 안정화하면 시장이 단기 지장을 배제하고 있다는 의미이고, 추가 하락 시 다른 경기민감주 매도 확산이 우려된다. 반도체 우위는 산업정책 테일윈드 내러티브에 달려 있으므로 NVDA, INTC의 업적 발표 시 공급망 언급을 주시해야 한다. TQQQ의 강세(소매 롱 편향)는 역행 경고 신호로, 지정학적 스트레스 속 레버리지 증대는 안이함을 시사한다.",
-      "signal": "bear",
-      "color": "#ef4444"
-    },
-    {
-      "id": "economic_data",
-      "title": "Economic Data",
-      "structural": "No major economic data released today; the session was entirely event-driven by geopolitical headlines. Earnings season kicks off next week with Goldman Sachs (4/13), followed by J&J, Citigroup, and BNY Mellon (4/14–16), ramping into healthcare and industrials by late April (UnitedHealth 4/21, Wabtec 4/22). Today's oil and rate moves will create a headwind for near-term earnings guidance, particularly for energy-intensive and logistics-dependent sectors. The lack of hard macro data today means the market is pricing entirely on forward expectations of geopolitical escalation and rate policy response, leaving little anchor to reality.",
-      "structural_ko": "오늘 발표된 주요 경제지표가 없었으며, 세션은 순전히 지정학적 이벤트 구동이다. 다음주부터 업적발표가 본격화되며, 유가 상승과 금리 변화는 경기민감 섹터와 에너지 다중 산업의 가이던스에 역풍이 될 것이다.",
-      "implication": "Earnings will be heavily colored by management commentary on geopolitical risk, supply-chain inflation, and energy cost hedging. Guidance reductions or warnings on Hormuz exposure could trigger sharp repricing. Conversely, confident management teams that downplay geopolitical tail risk or have hedged oil exposure will be rewarded. The absence of hard macro data today means the next economic calendar moment (jobs, inflation, Fed speakers) will be heavily scrutinized for policy signals on the geopolitical shock.",
-      "implication_ko": "경영진 발언에서 지정학적 위험, 공급망 인플레, 에너지 헤징 현황이 중요할 것이다. 가이던스 하향이나 호르무즈 노출 경고는 급락을 유발할 수 있다. 반대로 지정학적 위험을 낮게 평가하거나 헤징한 경영진은 보상받을 것이다.",
+      "structural": "",
+      "structural_ko": "TQQQ +3.72%, SOXL +9.08%으로 레버리지 기술주 ETF가 초강세다. NVDA +0.77%, MSFT -0.22%, META +1.24% 등 메가캡 간 개별차가 크며, TSLA +0.69%는 관심 이하 수준으로 경량이다. INTC +8.84%는 이란 휴전→인프라 재투자 기대 반영으로 보인다.",
+      "implication": "",
+      "implication_ko": "TSLA가 +0.69%에 그친 것은 이번 랠리가 거시 금리 재조정이지, 전기차/에너지 수요 개선이 아님을 보여준다. 차기 실적(4월 중 예상) 전까지 모멘텀 약세를 유지할 가능성 높으므로, 매집보다는 성과 대기 입장이 바람직하다.",
       "signal": "neutral",
       "color": "#64748b"
     },
     {
+      "id": "economic_data",
+      "title": "Economic Data",
+      "structural": "",
+      "structural_ko": "근시일 경제 데이터(4월 6일 기준)가 발표되지 않았으나, JNJ(4.14), UNH(4.21), INTC(4.23), V(4.28) 등 거대 기업 실적 발표가 2주 내에 연쇄 예정돼 있다. 현재의 '휴전 랠리'는 이들 실적 깜짝 악재에 취약한 상태다.",
+      "implication": "",
+      "implication_ko": "4월 중순부터 실적 시즌이 본격화되면서 거시 시나리오보다 개별 가이던스가 주가를 좌우할 것이다. Healthcare(JNJ, UNH)와 Semi(INTC)에서 여행비용 압박, 매출 증속 부진이 드러나면 금리 기대 반등으로 이어질 수 있다.",
+      "signal": "caution",
+      "color": "#f59e0b"
+    },
+    {
       "id": "technical_regime",
       "title": "Technical & Regime",
-      "structural": "The Market Structure Score (MSS) remains pinned at 79.0—a Level 4 Crisis classification—for three consecutive days (3/31, 4/1, 4/2), signaling that structural fragility persists despite today's intraday recovery. The VIX percentile at 86.9th (extreme volatility territory) confirms that the market is under real stress, not algorithmic noise. QQQ's drawdown from peak is −7.99%, a meaningful but not catastrophic pullback that sits at the edge of correction territory (−10%). The fact that QQQ is +2.59% above its 200-day moving average (close 584.98 vs. SMA 587.84 estimated) and that small-caps (IWM) outperformed today both suggest that the uptrend structure, while tested, remains technically intact. The Gate score of 60 (yellow, up from 10-day average of 44.3) indicates the market is exiting extreme panic but has not yet regained normal positioning. Support levels: QQQ 200-day moving average (~587.84), IWM around 250. Resistance: QQQ back to 595–600 (recent consolidation zone).",
-      "structural_ko": "MSS가 79.0(레벨 4 위기)으로 3일 연속 고정되어 있으며, 구조적 취약성이 지속되고 있음을 시사한다. VIX 백분위수 86.9는 극단적 변동성 영역이다. QQQ 낙폭은 −7.99%(피크에서)로 의미 있지만 수정국면(−10%) 직전이다. QQQ가 200일선 상단에 있고 IWM이 상승했다는 것은 상승 구조가 테스트되었지만 유지되고 있음을 의미한다. Gate 점수 60은 극도의 공포에서 벗어났지만 정상 포지셔닝은 아직이다.",
-      "implication": "The technical regime remains fragile. If geopolitical tensions escalate further and oil breaks above $120, QQQ could retest its 200-day moving average (587.84) or break below, triggering a cascade to the 50-day average (around 570–575). Conversely, if oil stabilizes and equities hold above the 200-day, the next leg of the uptrend begins. The elevated MSS and VIX percentile suggest that a large tail-risk event (e.g., Iranian attack, NATO involvement) is priced into options, but spot equities have not fully repriced downward. This creates a dangerous disconnect: if the event occurs, cash equities may gap lower sharply. Watch the close of the 200-day support; a weekly close below it would be a major technical breakdown. The yellow Gate score is a green light for cautious dip-buying only if geopolitical sentiment improves materially.",
-      "implication_ko": "기술적 환경은 여전히 취약하다. 유가가 120달러 이상 상승하면 QQQ는 200일선을 재테스트하거나 이탈할 수 있다. 반대로 유가 안정화와 200일선 유지 시 상승세 계속 가능성이 높다. 높은 MSS와 극단적 VIX 백분위수는 꼬리 위험 이벤트가 옵션 시장에 가격 책정되었지만 현물 주식은 아직 충분히 재평가되지 않음을 시사한다. 200일선 이탈은 주간 기준 주요 기술적 붕괴 신호가 될 것이다.",
+      "structural": "",
+      "structural_ko": "MSS 79.0 Level 4(위기)→Structural Risk 존 상태가 3월 31일 이후 지속되고 있으며, VIX percentile 86.9th에서 본 일일 -7.37% 락은 '반발' 수준의 변동성 정상화일 뿐이다. QQQ drawdown -7.99%는 기술주 약세 구간이 아직 미해결임을 의미한다.",
+      "implication": "",
+      "implication_ko": "테크니컬 환경이 '위기'에서 '약세'로 전환되려면 VIX가 14~15 수준까지 더 내려와야 하고, QQQ가 peak에서 -5% 이상 회복해야 한다. 현재는 단기 호재로 인한 숨고르기 단계일 가능성이 높으므로, 하단 지지(SMA50, 590대) 이탈 시 재하락 모멘텀이 급해질 수 있다.",
       "signal": "bear",
       "color": "#ef4444"
     }
@@ -89,6 +91,6 @@
     "message": "CRISIS ALERT - MSS 79.0 has entered Structural Risk territory (Level 4: Crisis). The structural foundation of the market is deteriorating. Exposure management is critical. Any rally should be treated as a distribution opportunity until MSS recovers above 100.",
     "color": "#ef4444"
   },
-  "one_line": "Geopolitical oil shock met early equity weakness, but tech-led recovery and compressed rates suggest markets are pricing oil supply risk as contained; structural risk remains elevated at MSS 79, warranting caution on deeper reversals.",
-  "one_line_ko": "지정학적 유가 충격이 초반 주식 약세를 유발했으나, 기술주 주도 반등과 수익률 하락으로 공급 위험을 관리 가능한 수준으로 평가하고 있으며, 구조적 리스크(MSS 79)는 여전히 높아 추가 하락에 주의 필요."
+  "one_line": "",
+  "one_line_ko": "호르무즈 지정학 리스크 일시 완화(2주 휴전)가 유가 급등 모멘텀을 꺾고 Fed 인하 시나리오를 복원하면서 성장주 중심 반등을 견인했으나, 기저 긴장 상태는 지속돼 수익률 하락에 제약이 남아있다."
 }

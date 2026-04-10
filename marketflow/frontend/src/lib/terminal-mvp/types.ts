@@ -1,4 +1,4 @@
-export const ET_TIMEZONE = 'America/New_York' as const
+﻿export const ET_TIMEZONE = 'America/New_York' as const
 
 export type ETTimezone = typeof ET_TIMEZONE
 export type ETDateString = string
@@ -34,7 +34,7 @@ export type WatchlistItem = {
   quoteStale?: boolean
 }
 
-export type TickerBriefCheckpoint = '09:30' | '16:00'
+export type TickerBriefCheckpoint = '09:30' | '16:30'
 
 export type TickerBrief = {
   id: string
@@ -251,3 +251,5 @@ export interface TerminalMvpApiClient {
   ): Promise<PostEvidenceExportSheetResponse>
   postQaAsk(payload: AskQuestionRequest): Promise<PostAskQuestionResponse>
 }
+
+

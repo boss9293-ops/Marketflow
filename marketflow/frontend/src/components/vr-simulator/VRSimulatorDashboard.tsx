@@ -72,7 +72,7 @@ export default function VRSimulatorDashboard({
     const sym = deferredInputs.symbol
     if (localDatasets[sym]) return
     setFetchingSymbol(sym)
-    fetch(`/api/vr-ohlcv/${encodeURIComponent(sym)}`)
+    fetch(`/api/vr-ohlcv/${encodeURIComponent(sym)}?plane=snapshot`)
       .then(r => r.json())
       .then(d => {
         if (!d.bars) return

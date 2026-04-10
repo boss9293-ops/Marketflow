@@ -13,6 +13,7 @@ import argparse
 from datetime import date, datetime, timedelta
 
 import requests
+from zoneinfo import ZoneInfo
 
 
 if sys.platform == "win32":
@@ -43,6 +44,11 @@ SCRIPT_TIMEOUTS: dict[str, int] = {
 
 SCRIPT_TIMEOUTS["build_ai_briefings.py"] = 300
 SCRIPT_TIMEOUTS["build_daily_briefing_v3.py"] = 120
+SCRIPT_TIMEOUTS["build_vr_pattern_dashboard.py"] = 180
+SCRIPT_TIMEOUTS["build_data_manifest.py"] = 60
+ET_ZONE = ZoneInfo("America/New_York")
+MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
+MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
 
 
 SCRIPTS = [
@@ -84,18 +90,20 @@ SCRIPTS = [
     ("build_market_tape.py", "Build Market Tape Cache"),
     ("build_health_snapshot.py", "Build Health Snapshot Row"),
     ("build_action_snapshot.py", "Build Action Snapshot Row"),
+    ("build_context_news.py", "Build Context News Cache"),
     ("build_daily_briefing.py", "Build Daily Briefing Snapshot"),
     ("build_daily_briefing_v3.py", "Build Daily Briefing V3 Narrative"),
-    ("build_context_news.py", "Build Context News Cache"),
     ("build_market_health.py", "Build Market Health 4-Score"),
     ("risk_engine.py",       "Compute Risk Engine Metrics"),
     ("build_risk_v1.py",     "Build Risk v1 (Standard Risk System)"),
     ("build_risk_alert.py",  "Build Risk Alert System (Crash Engine)"),
     ("build_current_90d.py",  "Build Current 90-Day Playback (cur90)"),
+    ("build_vr_pattern_dashboard.py", "Build VR Pattern Dashboard Cache"),
     ("build_macro_snapshot.py", "Build Macro Layer v2 Snapshot"),
     ("build_validation_snapshot.py", "Build Macro Validation Auto-Guard Snapshot"),
     ("build_tqqq_dca.py",   "Build TQQQ DCA Backtest Cache"),
     ("build_ai_briefings.py", "Build Cached AI Briefings"),
+    ("build_data_manifest.py", "Build Data Manifest"),
     ("validate_cache.py",   "Validate Cache & Write healthcheck.json"),
 ]
 
@@ -182,6 +190,63 @@ def run_script_args(
     except Exception as e:
         print(f"     ERROR - {e}")
         return False, 0.0
+
+
+def _load_json(path: str):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _current_et_date_slot() -> tuple[str, str]:
+    now = datetime.now(ET_ZONE)
+    date_key = now.strftime("%Y-%m-%d")
+    minutes = now.hour * 60 + now.minute
+    if minutes < MARKET_OPEN_MINUTES_ET:
+        slot = "preopen"
+    elif minutes < MARKET_CLOSE_MINUTES_ET:
+        slot = "morning"
+    else:
+        slot = "close"
+    return date_key, slot
+
+
+def _is_context_news_fresh(out_path: str) -> bool:
+    payload = _load_json(out_path)
+    if not isinstance(payload, dict):
+        return False
+    current_date, current_slot = _current_et_date_slot()
+    return (
+        str(payload.get("date") or "")[:10] == current_date
+        and str(payload.get("slot") or "").strip().lower() == current_slot
+    )
+
+
+def _is_daily_briefing_v3_fresh(out_path: str) -> bool:
+    market_state_path = os.path.join(OUTPUT_DIR, "cache", "market_state.json")
+    market_state = _load_json(market_state_path)
+    target_date = str((market_state or {}).get("data_date") or "")[:10]
+    if not target_date:
+        return _is_today(out_path)
+
+    payload = _load_json(out_path)
+    if not isinstance(payload, dict):
+        return False
+    _, current_slot = _current_et_date_slot()
+    return str(payload.get("data_date") or "")[:10] == target_date and str(payload.get("slot") or "").strip().lower() == current_slot
+
+
+def _is_ai_briefings_fresh(out_path: str) -> bool:
+    payload = _load_json(out_path)
+    if not isinstance(payload, dict):
+        return False
+    current_date, current_slot = _current_et_date_slot()
+    return (
+        str(payload.get("asof_day") or "")[:10] == current_date
+        and str(payload.get("slot") or "").strip().lower() == current_slot
+    )
 
 
 def macro_snapshot_dir() -> str:

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { cookies } from 'next/headers'
 
 import styles from '@/app/dashboard/dashboardTerminal.module.css'
@@ -116,108 +116,154 @@ type MssSeriesPoint = {
 }
 
 const DASHBOARD_UI = {
-  pageTitle: { ko: '리스크 시큐리티 매니저-베타', en: 'Risk Security Manager-Beta' },
-  pageSubtitle: { ko: '레트로 터미널 포지션 보드 - 구조 우선 - 디테일은 후속', en: 'retro terminal posture board - structure first - detail later' },
-  asOf: { ko: '기준', en: 'AS OF' },
-  cardRegime: { ko: '시장 국면 & 포지션', en: 'Market Regime & Posture' },
-  cardLeverage: { ko: '레버리지 렌즈', en: 'Leverage Lens' },
-  cardQueue: { ko: '포지셔닝 큐', en: 'Positioning Queue' },
-  cardEvent: { ko: '이벤트 시계 (24h)', en: 'Event Clock (24h)' },
-  cardNews: { ko: '뉴스 슬라이스', en: 'News Slice' },
-  cardBreadth: { ko: '브레드스 & 플로우', en: 'Breadth & Flow' },
-  gateScore: { ko: '게이트 스코어', en: 'Gate Score' },
-  breadthPulse: { ko: '브레드스 펄스', en: 'Breadth Pulse' },
-  whyMatters: { ko: '핵심 해석', en: 'Why this matters' },
-  openLeverageLens: { ko: '레버리지 렌즈 열기', en: 'Open Leverage Lens' },
-  fullBriefing: { ko: '전체 브리핑', en: 'Full Briefing' },
-  newsDetail: { ko: '뉴스 상세', en: 'News Detail' },
-  railIndices: { ko: '지수', en: 'Indices' },
-  railRatesFx: { ko: '금리 & 환율', en: 'Rates & FX' },
-  railCommoditiesAlt: { ko: '원자재 & 대체자산', en: 'Commodities & Alt' },
-  railHeadlineTape: { ko: '헤드라인 테이프', en: 'Headline Tape' },
-  sourceDailyBriefingCache: { ko: '출처: 데일리 브리핑 캐시', en: 'Source: Daily briefing cache' },
-  gateEstimated: { ko: '추정', en: 'est' },
-  flowShiftDetected: { ko: '플로우 전환 감지', en: 'shift detected' },
-  flowMonitorMode: { ko: '플로우 모니터 모드', en: 'monitor mode' },
-  labelRegime: { ko: '레짐', en: 'Regime' },
-  labelRisk: { ko: '리스크', en: 'Risk' },
-  labelExposure: { ko: '익스포저', en: 'Exposure' },
-  labelGate: { ko: '게이트', en: 'Gate' },
-  labelDrawdown: { ko: '드로우다운', en: 'Drawdown' },
-  labelFlow: { ko: '플로우', en: 'Flow' },
-  labelAboveMa200: { ko: 'MA200 상회', en: 'Above MA200' },
-  labelTracked: { ko: '추적', en: 'Tracked' },
-  labelNames: { ko: '종목', en: 'names' },
-  labelBreadth: { ko: '브레드스', en: 'Breadth' },
-  labelDivergence: { ko: '다이버전스', en: 'Divergence' },
-  labelPattern: { ko: '패턴', en: 'Pattern' },
-  labelVrPosture: { ko: 'VR 포지션', en: 'VR posture' },
+  pageTitle: { ko: 'Risk Security Manager - Beta', en: 'Risk Security Manager - Beta' },
+  pageSubtitle: { ko: 'Structure first. Detail later.', en: 'Structure first. Detail later.' },
+  asOf: { ko: 'AS OF', en: 'AS OF' },
+  cardRegime: { ko: 'Market Regime & Posture', en: 'Market Regime & Posture' },
+  cardLeverage: { ko: 'Leverage Lens', en: 'Leverage Lens' },
+  cardQueue: { ko: 'Positioning Queue', en: 'Positioning Queue' },
+  cardEvent: { ko: 'Event Clock (24h)', en: 'Event Clock (24h)' },
+  cardNews: { ko: 'News Slice', en: 'News Slice' },
+  cardBreadth: { ko: 'Breadth & Flow', en: 'Breadth & Flow' },
+  gateScore: { ko: 'Gate Score', en: 'Gate Score' },
+  breadthPulse: { ko: 'Breadth Pulse', en: 'Breadth Pulse' },
+  whyMatters: { ko: 'Why this matters', en: 'Why this matters' },
+  openLeverageLens: { ko: 'Open Leverage Lens', en: 'Open Leverage Lens' },
+  fullBriefing: { ko: 'Full Briefing', en: 'Full Briefing' },
+  newsDetail: { ko: 'News Detail', en: 'News Detail' },
+  railIndices: { ko: 'Indices', en: 'Indices' },
+  railRatesFx: { ko: 'Rates & FX', en: 'Rates & FX' },
+  railCommoditiesAlt: { ko: 'Commodities & Alt', en: 'Commodities & Alt' },
+  railHeadlineTape: { ko: 'Headline Tape', en: 'Headline Tape' },
+  sourceDailyBriefingCache: { ko: 'Source: Daily briefing cache', en: 'Source: Daily briefing cache' },
+  gateEstimated: { ko: 'est', en: 'est' },
+  flowShiftDetected: { ko: 'shift detected', en: 'shift detected' },
+  flowMonitorMode: { ko: 'monitor mode', en: 'monitor mode' },
+  labelRegime: { ko: 'Regime', en: 'Regime' },
+  labelRisk: { ko: 'Risk', en: 'Risk' },
+  labelExposure: { ko: 'Exposure', en: 'Exposure' },
+  labelGate: { ko: 'Gate', en: 'Gate' },
+  labelDrawdown: { ko: 'Drawdown', en: 'Drawdown' },
+  labelFlow: { ko: 'Flow', en: 'Flow' },
+  labelAboveMa200: { ko: 'Above MA200', en: 'Above MA200' },
+  labelTracked: { ko: 'Tracked', en: 'Tracked' },
+  labelNames: { ko: 'Names', en: 'Names' },
+  labelBreadth: { ko: 'Breadth', en: 'Breadth' },
+  labelDivergence: { ko: 'Divergence', en: 'Divergence' },
+  labelPattern: { ko: 'Pattern', en: 'Pattern' },
+  labelVrPosture: { ko: 'VR posture', en: 'VR posture' },
 } as const
 
 const DASHBOARD_ENGINE = {
-  regimeHeadline: { ko: '{{regime}} 레짐 · 리스크 {{riskLevel}}', en: '{{regime}} regime with {{riskLevel}} risk posture' },
-  gateZoneUnavailable: { ko: '게이트 데이터 없음', en: 'unavailable' },
-  gateZoneDefensive: { ko: '방어 구간', en: 'defensive zone' },
-  gateZoneNeutral: { ko: '중립 구간', en: 'neutral zone' },
-  gateZoneRiskOn: { ko: '리스크온 구간', en: 'risk-on zone' },
-  gateGuide:
-    { ko: '게이트 구간: 0-39 방어, 40-69 중립, 70-100 리스크온. 현재 {{current}}은(는) {{zone}}입니다.', en: 'Gate scale: 0-39 defensive, 40-69 neutral, 70-100 risk-on. Current {{current}} means {{zone}}.' },
-  queueCore:
-    { ko: '레짐 {{regime}} 동안 핵심 익스포저를 {{exposureBand}} 안에서 유지합니다.', en: 'Keep core exposure within {{exposureBand}} while regime is {{regime}}.' },
-  queueGateAvailable:
-    { ko: '게이트 {{gate}}: 돌파 추격보다 눌림 품질 확인 후 리스크를 추가합니다.', en: 'Gate score {{gate}}: add risk only on pullback quality, not breakaway spikes.' },
-  queueGateUnavailable:
-    { ko: '게이트 미확인: 게이트가 확인되기 전까지 리스크 패리티 포지션 유지.', en: 'Gate score unavailable: keep risk parity posture until gate data confirms.' },
-  queueHighRisk:
-    { ko: '헤지와 현금 버퍼를 우선하고 신규 레버리지는 보류합니다.', en: 'Prioritize hedge and cash buffer; defer fresh leverage entries.' },
-  queueDefaultRisk:
-    { ko: '분할 진입하고 단일 테마 집중도를 낮춥니다.', en: 'Use staged entries and reduce single-theme concentration risk.' },
-  event0830:
-    { ko: '08:30 ET - 매크로 발표 구간 (CPI/PPI/고용) 모니터링.', en: '08:30 ET - Macro releases window (CPI/PPI/Jobs feed watch).' },
-  event1000:
-    { ko: '10:00 ET - 장중 브레드스 + 금리 추세 재확인.', en: '10:00 ET - Intraday breadth check + rates trend confirmation.' },
-  event1400:
-    { ko: '14:00 ET - 연준 민감 시간대 (헤드라인 + 금리).', en: '14:00 ET - Fed tape sensitivity window (headlines + yields).' },
-  event1600:
-    { ko: '16:00 ET - 종가 점검: 신호 이탈 시에만 리밸런싱.', en: '16:00 ET - Close audit: rebalance only if signal drift persists.' },
-  leverageDeRiskLabel: { ko: '레버리지 축소', en: 'DE-RISK LEVERAGE' },
-  leverageDeRiskLine:
-    { ko: '브레드스 확인 전까지 레버리지 규모를 줄이고 대기합니다.', en: 'Use smaller size, wait for breadth confirmation before adding leverage.' },
-  leverageMeasuredLabel: { ko: '측정형 레버리지', en: 'MEASURED LEVERAGE' },
-  leverageMeasuredLine:
-    { ko: '레버리지는 전술적으로만 사용하고 오버나잇 집중을 피합니다.', en: 'Keep leverage tactical and avoid overnight concentration.' },
-  leverageAllowedLabel: { ko: '레버리지 허용', en: 'LEVERAGE ALLOWED' },
-  leverageAllowedLine:
-    { ko: '추세가 우호적이지만 진입은 여전히 분할로 진행합니다.', en: 'Trend support is constructive, but entries should still be staged.' },
-  tqqqMeta:
-    { ko: 'TQQQ DD {{dd}} - 바닥: {{bottom}} - 반등: {{rebound}}', en: 'TQQQ DD {{dd}} - Bottom: {{bottom}} - Rebound: {{rebound}}' },
-  tqqqDd135:
-    { ko: 'TQQQ DD1/3/5: {{dd1}} / {{dd3}} / {{dd5}}', en: 'TQQQ DD1/3/5: {{dd1}} / {{dd3}} / {{dd5}}' },
-  tqqqPeakBottom:
-    { ko: '피크→저점 DD (45D): {{drop}} - 저점→현재 반등: {{rebound}}{{bottomMeta}}', en: 'Peak->Bottom DD (45D): {{drop}} - Bottom->Now Rebound: {{rebound}}{{bottomMeta}}' },
-  reboundStage: { ko: '반등 단계: {{stage}}', en: 'Rebound stage: {{stage}}' },
-  bottomMeta:
-    { ko: ' (저점 {{bottomDate}}, +{{days}}일)', en: ' (bottom {{bottomDate}}, +{{days}}d)' },
-  bottomSignalPattern: { ko: '바닥 패턴 감지', en: 'Bottoming analog detected' },
-  bottomSignalDeepDd: { ko: '깊은 DD 구간: 바닥 확인 전 관망', en: 'Deep DD zone: bottom watch only' },
-  bottomSignalEarlyWatch: { ko: '초기 바닥 관찰 구간', en: 'Early bottom-watch posture' },
-  bottomSignalNone: { ko: '바닥 확인 신호 없음', en: 'No bottom confirmation' },
-  reboundSignalFragile: { ko: '반등 취약 (데드캣 위험)', en: 'Rebound is fragile (dead-cat risk)' },
-  reboundSignalPossible: { ko: '지속 확인 시 반등 가능', en: 'Rebound possible with persistence confirmation' },
-  reboundSignalNone: { ko: '반등 미확인', en: 'Rebound not confirmed' },
+  regimeHeadline: { ko: '{{regime}} regime with {{riskLevel}} risk posture', en: '{{regime}} regime with {{riskLevel}} risk posture' },
+  gateZoneUnavailable: { ko: 'unavailable', en: 'unavailable' },
+  gateZoneDefensive: { ko: 'defensive zone', en: 'defensive zone' },
+  gateZoneNeutral: { ko: 'neutral zone', en: 'neutral zone' },
+  gateZoneRiskOn: { ko: 'risk-on zone', en: 'risk-on zone' },
+  gateGuide: {
+    ko: 'Gate scale: 0-39 defensive, 40-69 neutral, 70-100 risk-on. Current {{current}} means {{zone}}.',
+    en: 'Gate scale: 0-39 defensive, 40-69 neutral, 70-100 risk-on. Current {{current}} means {{zone}}.',
+  },
+  queueCore: {
+    ko: 'Keep core exposure within {{exposureBand}} while regime is {{regime}}.',
+    en: 'Keep core exposure within {{exposureBand}} while regime is {{regime}}.',
+  },
+  queueGateAvailable: {
+    ko: 'Gate score {{gate}}: add risk only on pullback quality, not breakaway spikes.',
+    en: 'Gate score {{gate}}: add risk only on pullback quality, not breakaway spikes.',
+  },
+  queueGateUnavailable: {
+    ko: 'Gate score unavailable: keep risk parity posture until gate data confirms.',
+    en: 'Gate score unavailable: keep risk parity posture until gate data confirms.',
+  },
+  queueHighRisk: {
+    ko: 'Prioritize hedge and cash buffer; defer fresh leverage entries.',
+    en: 'Prioritize hedge and cash buffer; defer fresh leverage entries.',
+  },
+  queueDefaultRisk: {
+    ko: 'Use staged entries and reduce single-theme concentration risk.',
+    en: 'Use staged entries and reduce single-theme concentration risk.',
+  },
+  event0830: {
+    ko: '08:30 ET - Macro releases window (CPI/PPI/Jobs feed watch).',
+    en: '08:30 ET - Macro releases window (CPI/PPI/Jobs feed watch).',
+  },
+  event1000: {
+    ko: '10:00 ET - Intraday breadth check + rates trend confirmation.',
+    en: '10:00 ET - Intraday breadth check + rates trend confirmation.',
+  },
+  event1400: {
+    ko: '14:00 ET - Fed tape sensitivity window (headlines + yields).',
+    en: '14:00 ET - Fed tape sensitivity window (headlines + yields).',
+  },
+  event1630: {
+    ko: '16:30 ET - Close audit: rebalance only if signal drift persists.',
+    en: '16:30 ET - Close audit: rebalance only if signal drift persists.',
+  },
+  leverageDeRiskLabel: { ko: 'DE-RISK LEVERAGE', en: 'DE-RISK LEVERAGE' },
+  leverageDeRiskLine: {
+    ko: 'Use smaller size, wait for breadth confirmation before adding leverage.',
+    en: 'Use smaller size, wait for breadth confirmation before adding leverage.',
+  },
+  leverageMeasuredLabel: { ko: 'MEASURED LEVERAGE', en: 'MEASURED LEVERAGE' },
+  leverageMeasuredLine: {
+    ko: 'Keep leverage tactical and avoid overnight concentration.',
+    en: 'Keep leverage tactical and avoid overnight concentration.',
+  },
+  leverageAllowedLabel: { ko: 'LEVERAGE ALLOWED', en: 'LEVERAGE ALLOWED' },
+  leverageAllowedLine: {
+    ko: 'Trend support is constructive, but entries should still be staged.',
+    en: 'Trend support is constructive, but entries should still be staged.',
+  },
+  tqqqMeta: {
+    ko: 'TQQQ DD {{dd}} - Bottom: {{bottom}} - Rebound: {{rebound}}',
+    en: 'TQQQ DD {{dd}} - Bottom: {{bottom}} - Rebound: {{rebound}}',
+  },
+  tqqqDd135: {
+    ko: 'TQQQ DD1/3/5: {{dd1}} / {{dd3}} / {{dd5}}',
+    en: 'TQQQ DD1/3/5: {{dd1}} / {{dd3}} / {{dd5}}',
+  },
+  tqqqPeakBottom: {
+    ko: 'Peak->Bottom DD (45D): {{drop}} - Bottom->Now Rebound: {{rebound}}{{bottomMeta}}',
+    en: 'Peak->Bottom DD (45D): {{drop}} - Bottom->Now Rebound: {{rebound}}{{bottomMeta}}',
+  },
+  reboundStage: { ko: 'Rebound stage: {{stage}}', en: 'Rebound stage: {{stage}}' },
+  bottomMeta: {
+    ko: ' (bottom {{bottomDate}}, +{{days}}d)',
+    en: ' (bottom {{bottomDate}}, +{{days}}d)',
+  },
+  bottomSignalPattern: { ko: 'Bottoming analog detected', en: 'Bottoming analog detected' },
+  bottomSignalDeepDd: { ko: 'Deep DD zone: bottom watch only', en: 'Deep DD zone: bottom watch only' },
+  bottomSignalEarlyWatch: { ko: 'Early bottom-watch posture', en: 'Early bottom-watch posture' },
+  bottomSignalNone: { ko: 'No bottom confirmation', en: 'No bottom confirmation' },
+  reboundSignalFragile: { ko: 'Rebound is fragile (dead-cat risk)', en: 'Rebound is fragile (dead-cat risk)' },
+  reboundSignalPossible: {
+    ko: 'Rebound possible with persistence confirmation',
+    en: 'Rebound possible with persistence confirmation',
+  },
+  reboundSignalNone: { ko: 'Rebound not confirmed', en: 'Rebound not confirmed' },
   reboundStageNa: { ko: 'N/A', en: 'N/A' },
-  reboundStageEscapeConviction: { ko: '탈출 확신 (+30)', en: 'Escape conviction (+30)' },
-  reboundStageEscapeEntry: { ko: '탈출 진입 (+25)', en: 'Escape entry (+25)' },
-  reboundStageRebound: { ko: '반등 (+20)', en: 'Rebound (+20)' },
-  reboundStageEarly: { ko: '반등 초입 (+15)', en: 'Early rebound (+15)' },
-  reboundStageWatch: { ko: '관찰 구간 (<+15)', en: 'Watch zone (<+15)' },
-  breadthPending: { ko: '브레드스 데이터 대기', en: 'Breadth data pending' },
-  breadthImproving: { ko: '브레드스 개선', en: 'Breadth improving' },
-  breadthMixed: { ko: '브레드스 혼조', en: 'Breadth mixed' },
-  breadthWeak: { ko: '브레드스 약세', en: 'Breadth weak' },
-  fallbackHeadline: { ko: '구조 중심 터미널 대시보드가 활성화되었습니다.', en: 'Structure-first terminal dashboard is active.' },
-  fallbackTeaser: { ko: '신호 맥락을 불러오는 중입니다. 우측 레일에서 오늘의 크로스에셋 펄스를 확인하세요.', en: 'Signal context is loading. Use right rail for today\'s cross-asset pulse.' },
-  fallbackWhy: { ko: '헤드라인 변동성보다 레짐과 레버리지의 정합성을 우선합니다.', en: 'Keep posture and leverage in sync with regime, not with headline volatility.' },
+  reboundStageEscapeConviction: { ko: 'Escape conviction (+30)', en: 'Escape conviction (+30)' },
+  reboundStageEscapeEntry: { ko: 'Escape entry (+25)', en: 'Escape entry (+25)' },
+  reboundStageRebound: { ko: 'Rebound (+20)', en: 'Rebound (+20)' },
+  reboundStageEarly: { ko: 'Early rebound (+15)', en: 'Early rebound (+15)' },
+  reboundStageWatch: { ko: 'Watch zone (<+15)', en: 'Watch zone (<+15)' },
+  breadthPending: { ko: 'Breadth data pending', en: 'Breadth data pending' },
+  breadthImproving: { ko: 'Breadth improving', en: 'Breadth improving' },
+  breadthMixed: { ko: 'Breadth mixed', en: 'Breadth mixed' },
+  breadthWeak: { ko: 'Breadth weak', en: 'Breadth weak' },
+  fallbackHeadline: {
+    ko: 'Structure-first terminal dashboard is active.',
+    en: 'Structure-first terminal dashboard is active.',
+  },
+  fallbackTeaser: {
+    ko: "Signal context is loading. Use right rail for today's cross-asset pulse.",
+    en: "Signal context is loading. Use right rail for today's cross-asset pulse.",
+  },
+  fallbackWhy: {
+    ko: 'Keep posture and leverage in sync with regime, not with headline volatility.',
+    en: 'Keep posture and leverage in sync with regime, not with headline volatility.',
+  },
 } as const
 
 const uiText = (lang: UiLang, text: { ko: string; en: string }): string => pickLang(lang, text.ko, text.en)
@@ -227,7 +273,7 @@ const engineText = (lang: UiLang, template: LocalizedText, vars: Record<string, 
 
 const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value))
 
-const hasHangul = (value: string): boolean => /[가-힣]/.test(value)
+const hasHangul = (value: string): boolean => /[\uac00-\ud7a3]/.test(value)
 const hasLatin = (value: string): boolean => /[A-Za-z]/.test(value)
 
 const preferLangText = (value: string | null | undefined, lang: UiLang): string => {
@@ -282,33 +328,33 @@ const toTeaser = (value: string, max = 260): string => {
 }
 
 const REGIME_LABELS: Record<string, { ko: string; en: string }> = {
-  TRANSITION: { ko: '전환', en: 'TRANSITION' },
-  BULL: { ko: '강세', en: 'BULL' },
-  BEAR: { ko: '약세', en: 'BEAR' },
-  NEUTRAL: { ko: '중립', en: 'NEUTRAL' },
-  RISK_ON: { ko: '리스크온', en: 'RISK_ON' },
-  RISK_OFF: { ko: '리스크오프', en: 'RISK_OFF' },
+  TRANSITION: { ko: 'TRANSITION', en: 'TRANSITION' },
+  BULL: { ko: 'BULL', en: 'BULL' },
+  BEAR: { ko: 'BEAR', en: 'BEAR' },
+  NEUTRAL: { ko: 'NEUTRAL', en: 'NEUTRAL' },
+  RISK_ON: { ko: 'RISK_ON', en: 'RISK_ON' },
+  RISK_OFF: { ko: 'RISK_OFF', en: 'RISK_OFF' },
 }
 
 const RISK_LABELS: Record<string, { ko: string; en: string }> = {
-  LOW: { ko: '낮음', en: 'LOW' },
-  MEDIUM: { ko: '중간', en: 'MEDIUM' },
-  HIGH: { ko: '높음', en: 'HIGH' },
-  EXTREME: { ko: '극단', en: 'EXTREME' },
+  LOW: { ko: 'LOW', en: 'LOW' },
+  MEDIUM: { ko: 'MEDIUM', en: 'MEDIUM' },
+  HIGH: { ko: 'HIGH', en: 'HIGH' },
+  EXTREME: { ko: 'EXTREME', en: 'EXTREME' },
 }
 
 const BREADTH_LABELS: Record<string, { ko: string; en: string }> = {
-  IMPROVING: { ko: '개선', en: 'IMPROVING' },
-  MIXED: { ko: '혼조', en: 'MIXED' },
-  WEAK: { ko: '약화', en: 'WEAK' },
-  STRONG: { ko: '강함', en: 'STRONG' },
-  NORMAL: { ko: '보통', en: 'NORMAL' },
+  IMPROVING: { ko: 'IMPROVING', en: 'IMPROVING' },
+  MIXED: { ko: 'MIXED', en: 'MIXED' },
+  WEAK: { ko: 'WEAK', en: 'WEAK' },
+  STRONG: { ko: 'STRONG', en: 'STRONG' },
+  NORMAL: { ko: 'NORMAL', en: 'NORMAL' },
 }
 
 const DIVERGENCE_LABELS: Record<string, { ko: string; en: string }> = {
-  TOP_WARNING_STRONG: { ko: '상단 경고(강)', en: 'TOP_WARNING_STRONG' },
-  TOP_WARNING: { ko: '상단 경고', en: 'TOP_WARNING' },
-  NONE: { ko: '없음', en: 'NONE' },
+  TOP_WARNING_STRONG: { ko: 'TOP_WARNING_STRONG', en: 'TOP_WARNING_STRONG' },
+  TOP_WARNING: { ko: 'TOP_WARNING', en: 'TOP_WARNING' },
+  NONE: { ko: 'NONE', en: 'NONE' },
 }
 
 const toLabelKey = (value: string | null | undefined): string =>
@@ -595,7 +641,7 @@ export default async function DashboardPage() {
     engineText(contentLang, DASHBOARD_ENGINE.event0830),
     engineText(contentLang, DASHBOARD_ENGINE.event1000),
     engineText(contentLang, DASHBOARD_ENGINE.event1400),
-    engineText(contentLang, DASHBOARD_ENGINE.event1600),
+    engineText(contentLang, DASHBOARD_ENGINE.event1630),
   ]
 
   const tqqqPlayback = (current90d.risk_v1?.playback || [])
@@ -713,7 +759,7 @@ export default async function DashboardPage() {
     (contentLang === 'ko' ? dailyBriefing.bullets?.ko : dailyBriefing.bullets?.en)
       ?.map((item) => item?.text?.trim())
       .filter((v): v is string => Boolean(v)) || []
-  const tapeTimes = ['16:00 ET', '12:30 ET', '09:30 ET']
+  const tapeTimes = ['16:30 ET', '12:30 ET', '09:30 ET']
   const tapeHeadlines = (bulletLines.length ? bulletLines : [headline, teaser, whyMatters]).slice(0, 3).map((text, idx) => ({
     time: tapeTimes[idx] || '--:-- ET',
     text: toTeaser(text, 120),
@@ -949,3 +995,8 @@ export default async function DashboardPage() {
     </div>
   )
 }
+
+
+
+
+

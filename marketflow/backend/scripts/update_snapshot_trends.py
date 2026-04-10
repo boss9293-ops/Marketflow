@@ -29,10 +29,10 @@ def repo_root() -> str:
 
 
 def db_path() -> str:
-    # Prefer the DB mirror that actually has the snapshot tables ready.
+    # Use the canonical live DB; snapshot tables are now maintained there.
     return resolve_marketflow_db(
         required_tables=("daily_snapshots", "signals"),
-        prefer_engine=True,
+        data_plane="live",
     )
 
 

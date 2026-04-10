@@ -65,6 +65,9 @@ import json, os, re, sqlite3, subprocess, sys, threading
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
+_BACKEND_DIR = os.path.dirname(__file__)
+if _BACKEND_DIR not in sys.path:
+    sys.path.insert(0, _BACKEND_DIR)
 
 
 from db_utils import db_connect as _db_connect, resolve_marketflow_db
@@ -82,6 +85,17 @@ from ai import gpt_client, gemini_client
 
 
 from services.prompt_manager import PromptManager
+
+try:
+    from services.data_contract import (
+        artifact_path as contract_artifact_path,
+        load_manifest as contract_load_manifest,
+        live_db_path as contract_live_db_path,
+    )
+except Exception:
+    contract_artifact_path = None
+    contract_load_manifest = None
+    contract_live_db_path = None
 
 
 from api.analyze_srs import srs_bp
@@ -318,27 +332,14 @@ app.register_blueprint(pipeline_digest_bp)
 
 @app.route('/api/data/<path:filename>')
 def serve_data_json(filename):
-    candidates = [
-        os.path.join(os.path.dirname(__file__), '..', 'data', 'snapshots', filename),
-        os.path.join(os.path.dirname(__file__), 'output', filename),
-        os.path.join(os.path.dirname(__file__), 'output', 'cache', filename),
-    ]
-
-    def _try_read():
-        for c in candidates:
-            if os.path.exists(c):
-                with open(c, 'r', encoding='utf-8') as f:
-                    return jsonify(json.load(f))
-        return None
-
-    data = _try_read()
+    data = _read_json_from_candidates(filename)
     if data is not None:
-        return data
+        return jsonify(data)
 
-    if filename in _RISK_V1_OUTPUTS and _ensure_risk_v1_outputs():
-        data = _try_read()
+    if _ensure_data_artifact(filename):
+        data = _read_json_from_candidates(filename)
         if data is not None:
-            return data
+            return jsonify(data)
 
     return jsonify({"error": "not found"}), 404
 
@@ -358,12 +359,19 @@ MACRO_SNAPSHOT_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 
 
 def _resolve_main_db_path() -> str:
     """Prefer the canonical marketflow/data DB, but fall back to the legacy root DB."""
+    candidates = []
+    if contract_live_db_path is not None:
+        try:
+            candidates.append(str(contract_live_db_path()))
+        except Exception:
+            pass
+
     base_dir = os.path.dirname(__file__)
-    candidates = [
+    candidates.extend([
         os.path.abspath(os.path.join(base_dir, 'data', 'marketflow.db')),
         os.path.abspath(os.path.join(base_dir, '..', 'data', 'marketflow.db')),
         os.path.abspath(os.path.join(base_dir, '..', '..', 'data', 'marketflow.db')),
-    ]
+    ])
     for candidate in candidates:
         if os.path.exists(candidate):
             return candidate
@@ -402,6 +410,13 @@ def _run_builds_if_needed():
             ('build_smart_money.py', os.path.join(_out, 'smart_money.json')),
             ('build_market_tape.py', os.path.join(_out, 'market_tape.json')),
             ('build_market_state.py', os.path.join(_out, 'market_state.json')),
+            ('build_snapshots_120d.py', os.path.join(_out, 'cache', 'snapshots_120d.json')),
+            ('build_health_snapshot.py', os.path.join(_out, 'cache', 'health_snapshot.json')),
+            ('build_action_snapshot.py', os.path.join(_out, 'cache', 'action_snapshot.json')),
+            ('build_context_news.py', os.path.join(_out, 'cache', 'context_news.json')),
+            ('build_daily_briefing.py', os.path.join(_out, 'cache', 'daily_briefing.json')),
+            ('build_daily_briefing_v3.py', os.path.join(_out, 'cache', 'daily_briefing_v3.json')),
+            ('build_vr_pattern_dashboard.py', os.path.join(_out, 'vr_pattern_dashboard.json')),
         ]
         for script, output_file in builds:
             if not os.path.exists(output_file):
@@ -716,6 +731,69 @@ def _ensure_risk_v1_outputs(force: bool = False):
 
 
 
+_DATA_BUILD_SPECS: dict[str, tuple[str, int]] = {
+    'risk_v1.json': ('build_risk_v1.py', 1200),
+    'risk_v1_playback.json': ('build_risk_v1.py', 1200),
+    'risk_v1_sim.json': ('build_risk_v1.py', 1200),
+    'mss_history.json': ('build_risk_v1.py', 1200),
+    'risk_alert.json': ('build_risk_alert.py', 600),
+    'risk_alert_playback.json': ('build_risk_alert.py', 600),
+    'current_90d.json': ('build_current_90d.py', 600),
+    'smart_money.json': ('build_smart_money.py', 300),
+    'market_tape.json': ('build_market_tape.py', 300),
+    'market_state.json': ('build_market_state.py', 300),
+    'overview.json': ('build_overview.py', 300),
+    'snapshots_120d.json': ('build_snapshots_120d.py', 600),
+    'health_snapshot.json': ('build_health_snapshot.py', 300),
+    'action_snapshot.json': ('build_action_snapshot.py', 300),
+    'context_news.json': ('build_context_news.py', 180),
+    'daily_briefing.json': ('build_daily_briefing.py', 300),
+    'daily_briefing_v3.json': ('build_daily_briefing_v3.py', 300),
+    'vr_pattern_dashboard.json': ('build_vr_pattern_dashboard.py', 180),
+    'vr_survival.json': ('build_vr_survival.py', 600),
+    'vr_survival_playback.json': ('build_vr_survival.py', 600),
+}
+_DATA_BUILD_LOCKS: dict[str, threading.Lock] = {}
+_DATA_BUILD_LOCKS_GUARD = threading.Lock()
+
+
+def _data_build_lock(name: str) -> threading.Lock:
+    with _DATA_BUILD_LOCKS_GUARD:
+        lock = _DATA_BUILD_LOCKS.get(name)
+        if lock is None:
+            lock = threading.Lock()
+            _DATA_BUILD_LOCKS[name] = lock
+        return lock
+
+
+def _ensure_data_artifact(filename: str) -> bool:
+    name = os.path.basename(str(filename or '').replace('\\', '/').strip())
+    if not name:
+        return False
+
+    if _read_json_from_candidates(filename) is not None:
+        return True
+
+    if name == 'risk_v1.json' or name in _RISK_V1_OUTPUTS:
+        return _ensure_risk_v1_outputs()
+
+    script_spec = _DATA_BUILD_SPECS.get(name)
+    if not script_spec:
+        return False
+
+    script_name, timeout = script_spec
+    lock = _data_build_lock(name)
+    with lock:
+        if _read_json_from_candidates(filename) is not None:
+            return True
+        result = _run_backend_script(script_name, timeout=timeout)
+        if result.returncode != 0:
+            tail = (result.stdout or result.stderr or '')[-3000:]
+            print(f"[data-build] {script_name} failed for {name}: {tail}", flush=True)
+            return _read_json_from_candidates(filename) is not None
+        return _read_json_from_candidates(filename) is not None
+
+
 def _get_sa_json() -> str:
 
 
@@ -830,41 +908,176 @@ def now_iso():
 
 
 
+_DATA_MANIFEST_CACHE: dict | None = None
+_DATA_MANIFEST_LOCK = threading.Lock()
+
+
+def _dedupe_candidate_paths(candidates: list[str]) -> list[str]:
+    seen = set()
+    deduped: list[str] = []
+    for candidate in candidates:
+        candidate = os.path.abspath(candidate)
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        deduped.append(candidate)
+    return deduped
+
+
+def _load_data_manifest() -> dict:
+    global _DATA_MANIFEST_CACHE
+    if _DATA_MANIFEST_CACHE is not None:
+        return _DATA_MANIFEST_CACHE
+
+    with _DATA_MANIFEST_LOCK:
+        if _DATA_MANIFEST_CACHE is not None:
+            return _DATA_MANIFEST_CACHE
+
+        manifest: dict = {}
+        if contract_load_manifest is not None:
+            try:
+                loaded = contract_load_manifest()
+                if isinstance(loaded, dict):
+                    manifest = loaded
+            except Exception:
+                manifest = {}
+
+        _DATA_MANIFEST_CACHE = manifest
+        return _DATA_MANIFEST_CACHE
+
+
+def _manifest_relative_candidates(filename: str) -> list[str]:
+    rel = str(filename or '').strip().replace('\\', '/').lstrip('/').strip()
+    if not rel:
+        return []
+
+    manifest = _load_data_manifest()
+    artifacts = manifest.get('artifacts') if isinstance(manifest.get('artifacts'), dict) else {}
+    if not artifacts:
+        return [rel]
+
+    base = os.path.basename(rel)
+    candidates: list[str] = []
+    for key, artifact in artifacts.items():
+        key_rel = str(key or '').replace('\\', '/').strip('/').strip()
+        if not key_rel:
+            continue
+        key_base = os.path.basename(key_rel)
+        if key_rel == rel or key_base == base or key_rel == base:
+            relative_path = key_rel
+            if isinstance(artifact, dict):
+                artifact_rel = str(artifact.get('relative_path') or '').replace('\\', '/').strip('/').strip()
+                if artifact_rel:
+                    relative_path = artifact_rel
+            candidates.append(relative_path)
+
+    if rel not in candidates:
+        candidates.append(rel)
+
+    return list(dict.fromkeys(candidates))
+
+
+def _legacy_json_candidate_paths(rel: str) -> list[str]:
+    rel = str(rel or '').strip().replace('\\', os.sep).lstrip('/\\')
+    if not rel:
+        return []
+
+    base = os.path.basename(rel)
+    base_dir = os.path.dirname(__file__)
+    candidates = [
+        os.path.abspath(os.path.join(base_dir, '..', 'data', 'snapshots', rel)),
+        os.path.abspath(os.path.join(base_dir, 'output', rel)),
+    ]
+
+    if base == rel:
+        candidates.append(os.path.abspath(os.path.join(base_dir, 'output', 'cache', base)))
+    else:
+        candidates.append(os.path.abspath(os.path.join(base_dir, 'output', base)))
+        candidates.append(os.path.abspath(os.path.join(base_dir, 'output', 'cache', base)))
+
+    return candidates
+
+
+def _json_candidate_paths(filename: str) -> list[str]:
+
+
+    rel = str(filename or '').strip().replace('\\', os.sep).lstrip('/\\')
+
+
+    if not rel:
+
+
+        return []
+
+
+    candidates = []
+    for rel_path in _manifest_relative_candidates(rel):
+        if contract_artifact_path is not None:
+            try:
+                candidates.append(str(contract_artifact_path(rel_path)))
+            except Exception:
+                pass
+        candidates.extend(_legacy_json_candidate_paths(rel_path))
+
+    if contract_artifact_path is not None:
+        try:
+            candidates.append(str(contract_artifact_path(rel)))
+        except Exception:
+            pass
+
+    candidates.extend(_legacy_json_candidate_paths(rel))
+    return _dedupe_candidate_paths(candidates)
+
+
+
+
+def _read_json_from_candidates(filename: str):
+
+
+    for candidate in _json_candidate_paths(filename):
+
+
+        if not os.path.exists(candidate):
+
+
+            continue
+
+
+        try:
+
+
+            with open(candidate, 'r', encoding='utf-8') as f:
+
+
+                return json.load(f)
+
+
+        except Exception:
+
+
+            continue
+
+
+    return None
+
+
+
+
 def load_json(filename):
-
-
-    path = os.path.join(OUTPUT_DIR, filename)
-
-
-    if os.path.exists(path):
-
-
-        with open(path, 'r', encoding='utf-8') as f:
-
-
-            return json.load(f)
-
-
-    return {}
+    data = _read_json_from_candidates(filename)
+    return data if data is not None else {}
 
 
 
 
 
 def load_json_or_none(filename):
+    data = _read_json_from_candidates(filename)
+    if data is not None:
+        return data
 
-
-    path = os.path.join(OUTPUT_DIR, filename)
-
-
-    if os.path.exists(path):
-
-
-        with open(path, 'r', encoding='utf-8') as f:
-
-
-            return json.load(f)
-
+    if _ensure_data_artifact(filename):
+        return _read_json_from_candidates(filename)
 
     return None
 
@@ -8370,7 +8583,7 @@ def backtest_symbols():
 
     try:
 
-        backtest_db = resolve_marketflow_db(required_tables=("ohlcv_daily",), prefer_engine=True)
+        backtest_db = resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane="snapshot")
 
         con = _db_connect(backtest_db)
 

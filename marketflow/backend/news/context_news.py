@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from zoneinfo import ZoneInfo
 
-from .providers import Article, YahooNewsProvider, PremiumNewsProvider
+from .providers import Article, CompositeNewsProvider, GoogleNewsRSSProvider, PremiumNewsProvider, ReutersRSSProvider, YahooNewsProvider
 
 try:
     from backend.services.data_contract import artifact_path as contract_artifact_path
@@ -186,10 +186,18 @@ def _dedupe_articles(articles: List[Article]) -> List[Article]:
 
 
 def _pick_provider() -> Tuple[str, Any]:
-    mode = os.environ.get("NEWS_PROVIDER", "yahoo").strip().lower() or "yahoo"
+    mode = os.environ.get("NEWS_PROVIDER", "composite").strip().lower() or "composite"
     if mode == "premium" and ALLOW_PAID_NEWS:
         vendor = os.environ.get("PREMIUM_VENDOR", "polygon").strip().lower() or "polygon"
         return mode, PremiumNewsProvider(vendor=vendor)
+    if mode == "yahoo":
+        return mode, YahooNewsProvider()
+    if mode == "google":
+        return mode, GoogleNewsRSSProvider()
+    if mode == "reuters":
+        return mode, ReutersRSSProvider()
+    if mode in {"composite", "broad", "hybrid"}:
+        return mode, CompositeNewsProvider()
     return "yahoo", YahooNewsProvider()
 
 

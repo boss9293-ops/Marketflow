@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const eventId = searchParams.get('event_id')
     const playbackEventId = searchParams.get('playback_event_id')
+    const debugMode = searchParams.get('debug') === '1'
     const simStart = searchParams.get('sim_start') ?? undefined
     const simCapital = searchParams.get('sim_capital')
     const simStockPct = searchParams.get('sim_stock_pct')
@@ -48,9 +49,11 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(data)
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('[api/vr-playback] failed', error)
     return NextResponse.json(
-      { error: 'Failed to build playback data — run build scripts first' },
+      { error: debugMode ? message : 'Failed to build playback data — run build scripts first' },
       { status: 500 }
     )
   }

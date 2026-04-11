@@ -3610,7 +3610,6 @@ def main() -> None:
     }
 
     all_dates = df.index.tolist()
-    all_ns = df.index.view("i8")
     events: list[dict] = []
     playback_events: list[dict] = []
     sim_events: list[dict] = []
@@ -3639,18 +3638,17 @@ def main() -> None:
                 tqqq_trough = float(tqqq_ev.min())
                 tqqq_drawdown = (tqqq_trough - tqqq_start) / tqqq_start * 100.0
 
-        start_ns = np.int64(pd.Timestamp(start).value)
-        end_ns = np.int64(pd.Timestamp(end).value)
-
-        start_idx = int(np.searchsorted(all_ns, start_ns, side="left"))
-        if start_idx >= len(all_ns):
-            start_idx = len(all_ns) - 1
-        elif all_ns[start_idx] != start_ns and start_idx > 0 and all_ns[start_idx] > start_ns:
-            # Defensive fallback: if exact timestamp is missing, align to nearest prior bar.
+        # Use DatetimeIndex.searchsorted to avoid pandas 2.x datetime64[us] vs ns mismatch
+        # that arises when using df.index.view("i8") + pd.Timestamp.value comparisons.
+        start_idx = int(df.index.searchsorted(start, side="left"))
+        if start_idx >= len(df):
+            start_idx = len(df) - 1
+        elif start_idx > 0 and df.index[start_idx] > start:
+            # Defensive fallback: align to nearest prior bar.
             start_idx -= 1
 
         # Equivalent to ffill indexer: right-most index <= event end.
-        end_idx = int(np.searchsorted(all_ns, end_ns, side="right") - 1)
+        end_idx = int(df.index.searchsorted(end, side="right")) - 1
         if end_idx < 0:
             raise ValueError(f"End date {end.strftime('%Y-%m-%d')} is before available data")
 

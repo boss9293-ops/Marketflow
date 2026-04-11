@@ -1,96 +1,112 @@
 {
-  "generated_at": "2026-04-09T22:36:26.654935+00:00",
+  "generated_at": "2026-04-11T23:46:17.507093+00:00",
   "data_date": "2026-04-06",
   "slot": "close",
-  "model": "claude-haiku-4-5-20251001",
+  "model": "claude-sonnet-4-6",
   "lang": "ko",
   "tokens": {
-    "input": 2674,
-    "output": 2309,
-    "cost_usd": 0.011375
+    "input": 5377,
+    "output": 4612,
+    "cost_usd": 0.085311
+  },
+  "freshness": {
+    "status": "stale",
+    "lag_days": 5,
+    "current_et_date": "2026-04-11",
+    "source_data_date": "2026-04-06",
+    "overview_latest_date": "",
+    "market_state_generated_at": "2026-04-11T18:44:29",
+    "warning": "Source data_date 2026-04-06 is 5 ET day(s) behind current ET date 2026-04-11."
+  },
+  "prompt": {
+    "page": "briefing",
+    "version": "v2.0.0",
+    "key": "market_briefing",
+    "source": "registry",
+    "fallback_used": false
   },
   "hook": "",
-  "hook_ko": "트럼프-이란 2주 휴전 → 유가 프리미엄 완화 → 금리인하 기대 부활 → 나스닥 +0.68% 랠리",
+  "hook_ko": "이란 휴전 2주, 시장은 안도했지만 호르무즈 리스크 프리미엄은 아직 해제되지 않았다",
   "sections": [
     {
       "id": "market_flow",
-      "title": "Market Flow",
+      "title": "The Battleground",
       "structural": "",
-      "structural_ko": "SPY +0.58%, QQQ +0.68% 완만한 상승장이지만 Gate score 60점 유지로 구조적 불안정성이 완전히 해소되지 않았다. QQQ가 SMA200 대비 +2.59%로 단기 매수세를 유지 중이나, VIX -7.37%까지 급락한 것은 지정학 리스크 일시 프리징을 반영한 것으로 보인다.",
+      "structural_ko": "오늘 전장의 주인공은 단 하나의 헤드라인이었다. 트럼프 행정부가 이란과 2주 휴전에 전격 합의하면서 장 초반 Dow는 1,000포인트 이상 폭등했고, S&P 500과 Nasdaq도 동반 급등하며 매수 세력이 단숨에 전선을 장악했다. 그러나 장중 트럼프가 추가 공습 가능성을 재차 언급하며 근월물 유가가 사상 최고 백워데이션(near-term premium) 수준으로 치솟자, 차익 실현 매물이 쏟아지며 Dow는 -0.5%, S&P 500은 -0.07%로 마감해 상승분 대부분을 반납했다. Nasdaq만이 +0.14%로 간신히 초록색을 유지하며 기술주 중심의 방어적 저항이 이어졌다. 매수·매도 세력의 공방은 결국 무승부로 끝났고, 시장은 '불확실성 할인'을 완전히 거두지 못한 채 주말을 맞이했다.",
       "implication": "",
-      "implication_ko": "2주 휴전 뉴스가 변동성 폭탄을 해제했으나 진정한 리스크 오프 신호는 아니다. 4월 말 deadline 앞두고 포지션 재조정 기간이 될 가능성 높으므로, 단기 매수 후 익절 타이밍을 미리 설정할 필요가 있다.",
+      "implication_ko": "혼조 마감은 단순한 방향 부재가 아니라, 지정학 리스크 프리미엄이 아직 가격에 온전히 소화되지 않았다는 신호다. 스마트 머니는 휴전 뉴스에 반사적으로 매수로 대응했지만, '2주짜리 휴전'이 분쟁 종식이 아님을 인식하며 고점에서 물량을 넘기는 전략을 병행했다. 투자자 입장에서는 추격 매수보다 되돌림 시 분할 접근이 유효하며, 호르무즈 관련 헤드라인이 재차 부상할 경우 빠른 손절 라인 설정이 필수다.",
       "signal": "neutral",
       "color": "#64748b"
     },
     {
       "id": "event_drivers",
-      "title": "Event Drivers",
+      "title": "Live Triggers & Transmission",
       "structural": "",
-      "structural_ko": "트럼프의 2주 휴전 선언이 즉시 세 가지 전달경로로 작동했다: ① 호르무즈 차단 리스크 감소 → 유가 스트레스 완화(단, 98.16 +3.97%로 여전히 높음) ② 인플레이션 피크 시나리오 후퇴 → Fed 인하 기대 복원 ③ 성장주 밸류에이션 압박 감소로 기술주 반등.",
+      "structural_ko": "전달 경로는 명확하다. ① 트럼프-이란 휴전 합의 → ② 호르무즈 해협 선박 통행 재개 기대 → ③ 원유 공급 차질 리스크 급감 → ④ WTI -1.33% 급락 → ⑤ 에너지 비용 하락 기대로 인플레이션 압력 완화 → ⑥ Fed 금리인하 베팅 소폭 복원(CNBC·Reuters 보도) → ⑦ 장기금리 부담 경감으로 기술·성장주 밸류에이션 반등. 반대로 트럼프가 '추가 공습 가능성'을 재언급하자 근월물 유가는 역대급 콘탱고 역전(백워데이션)을 기록하며 공급 불안이 재점화되었고, 이 역설적 신호가 장 후반 차익 실현의 명분이 되었다. Gold가 -0.63%로 하락한 것은 공포 프리미엄 일부 해소를 반영하지만, VIX 90th 퍼센타일 유지는 시장이 완전한 안도 모드로 전환하지 않았음을 보여준다.",
       "implication": "",
-      "implication_ko": "향후 4월 23~28일 기업실적 발표 시즌 진입 전 '희망적' 거래장이 펼쳐질 가능성이 높다. 다만 Trump이 추가 공격을 언급한 만큼, 휴전 연장 실패 시 유가 스파이크 재가능성(기존 spike 구조 유지)에 대비해야 한다.",
-      "signal": "caution",
-      "color": "#f59e0b"
+      "implication_ko": "이번 휴전은 '일시 정전'이지 구조적 해결이 아니다. 2주 후 협상 재개 여부가 다음 대형 이벤트 리스크로 부상하며, 시장은 매주 지정학 업데이트에 민감하게 반응할 것이다. Fed 금리인하 기대는 '소폭 복원' 수준에 그쳤고, 인플레이션 데이터(CPI 등)가 확인되기 전까지 금리인하 트레이드를 과도하게 확신하는 것은 위험하다. 향후 발표될 인플레이션 지표가 이 기대를 강화하거나 꺾는 핵심 변수가 될 것이다.",
+      "signal": "neutral",
+      "color": "#64748b"
     },
     {
       "id": "sector_structure",
-      "title": "Sector Structure",
+      "title": "Money Velocity & Rotation",
       "structural": "",
-      "structural_ko": "소비 경기 사이클주(XLY +1.7%, XLI +1.0%)가 선도했으나 에너지(XLE -1.2%)는 유가 상승에도 약세다. 이는 유가 프리미엄 구조(선물 역프리미엄)가 정상화되지 않은 채 단기 옵션성 수익 실현이 벌어졌음을 시사한다.",
+      "structural_ko": "오늘 자금 흐름의 승자는 경기소비재(XLY +1.7%)와 산업재(XLI +1.0%), 그리고 필수소비재(XLP +0.8%)였다. 유가 하락→물가 부담 완화→소비 여력 회복 기대가 XLY 매수로 이어졌고, 호르무즈 해협 재개통 기대가 글로벌 물류·공급망 수혜주 중심의 XLI 상승을 견인했다. 반면 에너지(XLE -1.2%)는 유가 급락의 직격탄을 맞으며 주간 -2.8% 최대 낙폭을 기록했고, 헬스케어(XLV -0.2%)도 UnitedHealth 어닝 불확실성 앞에서 관망 매물이 나왔다. 1개월 기준으로는 소재(XLB +3.6%)와 에너지(XLE +3.1%)가 여전히 상위권이지만 최근 모멘텀은 급격히 꺾였다.",
       "implication": "",
-      "implication_ko": "경기 민감주 우위는 금리 기대 하락에 따른 기술적 반등이 주 배경이므로, 실질 수익성 개선(매출/마진)이 검증되지 않으면 지속성이 제한적이다. Healthcare/Materials 약세는 인플레이션 불안이 완전히 걷히지 않았음을 의미한다.",
-      "signal": "neutral",
-      "color": "#64748b"
+      "implication_ko": "스마트 머니의 로테이션 방향은 '에너지→소비·산업재'로 뚜렷하다. 유가 변동성이 안정되는 국면에서 경기소비재와 산업재의 추가 강세를 노릴 수 있으나, 이 로테이션은 지정학 재악화 시 즉각 역전될 수 있다. 에너지 섹터는 단기 과매도 구간이지만 반등 매수보다는 관망이 유리하며, 헬스케어는 JNJ·UNH 어닝 시즌(4월 중순~하순) 전후 변동성 확대를 대비해야 한다.",
+      "signal": "bull",
+      "color": "#22c55e"
     },
     {
       "id": "macro_commodities",
-      "title": "Macro & Commodities",
+      "title": "Macro Tremors",
       "structural": "",
-      "structural_ko": "유가 98.16 (+3.97%)으로 '근월물 프리미엄' 기록 경신 후에도 10Y yield 4.29%대 유지, DXY -0.34% 약세로 금리 인하 기대는 제한적임을 시사한다. Gold +0.86%는 휴전에도 '보험료' 유지 중으로, 시장이 완전한 위험 해소를 믿지 않는다.",
+      "structural_ko": "미국 10년물 금리는 4.32%로 소폭 상승했으나, 유가(-1.33%)와 VIX(-1.33%)의 동반 하락이 위험자산에 숨통을 틔워줬다. 달러(DXY -0.17%)의 완만한 약세는 다국적 기업 실적 기대를 지지하고 신흥국 자금 환경에 긍정적이다. 금(Gold -0.63%)의 하락은 극단적 공포 프리미엄의 일부 환원이지만, 여전히 4,761달러 고공에 위치해 있어 인플레이션 헤지 수요가 완전히 소멸하지 않았음을 시사한다. Bitcoin은 72,923달러로 거의 보합, 위험선호 재개의 선행 신호로 보기엔 아직 미약하다. 원유 백워데이션 심화는 현물 공급 타이트 우려가 선물 시장에서도 지속됨을 의미한다.",
       "implication": "",
-      "implication_ko": "유가와 금리의 불일치는 중기적 스태그플레이션 우려가 아직 깊게 자리하고 있음을 의미한다. 다음주 CPI/고용통계(선택 관찰 필요)에서 인플레이션 낮아지는 신호 필요—없으면 금리인하 기대는 다시 반납될 수 있다.",
-      "signal": "caution",
-      "color": "#f59e0b"
-    },
-    {
-      "id": "stock_moves",
-      "title": "Key Stocks",
-      "structural": "",
-      "structural_ko": "TQQQ +3.72%, SOXL +9.08%으로 레버리지 기술주 ETF가 초강세다. NVDA +0.77%, MSFT -0.22%, META +1.24% 등 메가캡 간 개별차가 크며, TSLA +0.69%는 관심 이하 수준으로 경량이다. INTC +8.84%는 이란 휴전→인프라 재투자 기대 반영으로 보인다.",
-      "implication": "",
-      "implication_ko": "TSLA가 +0.69%에 그친 것은 이번 랠리가 거시 금리 재조정이지, 전기차/에너지 수요 개선이 아님을 보여준다. 차기 실적(4월 중 예상) 전까지 모멘텀 약세를 유지할 가능성 높으므로, 매집보다는 성과 대기 입장이 바람직하다.",
+      "implication_ko": "10년물 금리 4.32%는 기술주 멀티플에 여전히 부담이지만, 유가 하락이 실질금리 상승 압력을 일부 상쇄하고 있어 단기적으로 밸류에이션 충격은 제한적이다. VIX가 90th 퍼센타일에서 서서히 내려오는 과정이 기술주·성장주 회복의 선행 조건이며, VIX 18 이하로 안착 여부가 다음 주 핵심 관찰 포인트다. 달러 약세 추세가 이어질 경우 해외 매출 비중이 높은 빅테크 수혜를 기대할 수 있다.",
       "signal": "neutral",
       "color": "#64748b"
     },
     {
-      "id": "economic_data",
-      "title": "Economic Data",
+      "id": "stock_moves",
+      "title": "The Hotzones",
       "structural": "",
-      "structural_ko": "근시일 경제 데이터(4월 6일 기준)가 발표되지 않았으나, JNJ(4.14), UNH(4.21), INTC(4.23), V(4.28) 등 거대 기업 실적 발표가 2주 내에 연쇄 예정돼 있다. 현재의 '휴전 랠리'는 이들 실적 깜짝 악재에 취약한 상태다.",
+      "structural_ko": "오늘 가장 격렬한 전투는 반도체 전선에서 벌어졌다. SOXL이 +9.08% 폭등하며 주도주 역할을 탈환했고, SMH +2.24%, NVDA +0.77%가 뒤를 이었다. 특히 INTC는 +8.84%(rvol 1.4x)를 기록, Intel CPU 공급망 관련 긍정 뉴스 또는 숏커버링이 맞물린 것으로 추정된다. TSLA는 +0.69%로 조용한 하루를 보냈다. TSLA의 소폭 상승은 유가 하락→전기차 수요 구조적 우위 내러티브에 힘입은 것으로 읽히지만, 모델 업데이트나 분기 인도량 서프라이즈 같은 자체 촉매 없이 시장 베타에 편승한 수준에 그쳤다. TSLA는 현재 지정학 안도 랠리에서 후발 수혜 포지션이며, 다음 인도량 데이터(2분기 말 예정)가 실질 모멘텀 전환의 열쇠다. 바이오테크 소형주 CYCN +311.6%(rvol 8149x)는 극단적 투기 수요의 존재를 보여주지만, 메인스트림 자금 흐름과 무관한 개별 이벤트로 분류된다.",
       "implication": "",
-      "implication_ko": "4월 중순부터 실적 시즌이 본격화되면서 거시 시나리오보다 개별 가이던스가 주가를 좌우할 것이다. Healthcare(JNJ, UNH)와 Semi(INTC)에서 여행비용 압박, 매출 증속 부진이 드러나면 금리 기대 반등으로 이어질 수 있다.",
+      "implication_ko": "반도체 섹터의 단기 급등(SOXL +9%)은 레버리지 ETF 특성상 변동성 확대 구간에서의 복원 효과가 포함되어 있어 추격 매수는 신중해야 한다. NVDA는 1% 수준의 안정적 상승으로 기술적 지지를 확인했고, 다음 어닝(5월 예정) 전까지 점진적 축적이 유효하다. TSLA는 독자적 촉매 부재 시 시장 대비 아웃퍼폼을 기대하기 어려우므로, 인도량·마진 데이터 발표 전까지는 비중 유지 수준의 포지션이 적절하다.",
+      "signal": "bull",
+      "color": "#22c55e"
+    },
+    {
+      "id": "economic_data",
+      "title": "Next 24H Radar",
+      "structural": "",
+      "structural_ko": "향후 24시간 내 시장 방향을 결정할 핀포인트 이벤트는 인플레이션 데이터다. Reuters와 시장이 이미 '이란 휴전→인플레 완화→금리인하 기대 복원' 경로를 선반영 중인 만큼, CPI나 PPI가 예상을 상회하면 이 논리 전체가 역전될 수 있다. 중기적으로는 JNJ(4/14), UNH(4/21), INTC·Digital Realty(4/23), Visa·Corning(4/28) 어닝 시즌이 연속 대기 중이며, 헬스케어(JNJ·UNH)와 반도체(INTC) 실적이 섹터 로테이션의 방향을 재조율할 것이다. 이란 2주 휴전 만료 시점(4월 20일 전후)도 지정학 재점화의 시한폭탄으로 레이더에 올려야 한다.",
+      "implication": "",
+      "implication_ko": "이번 주는 '인플레 데이터 vs. 지정학 재악화' 두 가지 꼬리 리스크를 동시에 관리해야 하는 구간이다. 인플레가 예상치를 하회하면 Fed 금리인하 기대가 강화되며 기술·성장주 추가 상승 여지가 생기고, 반대로 인플레가 높게 나오면 오늘 반영된 안도 랠리가 빠르게 되돌려질 수 있다. 어닝 시즌 진입 전 포지션 크기를 조절하고, UNH 실적 불확실성(의료비 청구 이슈)을 헬스케어 섹터 전반의 리스크로 인식하는 것이 필요하다.",
       "signal": "caution",
       "color": "#f59e0b"
     },
     {
       "id": "technical_regime",
-      "title": "Technical & Regime",
+      "title": "System DEFCON",
       "structural": "",
-      "structural_ko": "MSS 79.0 Level 4(위기)→Structural Risk 존 상태가 3월 31일 이후 지속되고 있으며, VIX percentile 86.9th에서 본 일일 -7.37% 락은 '반발' 수준의 변동성 정상화일 뿐이다. QQQ drawdown -7.99%는 기술주 약세 구간이 아직 미해결임을 의미한다.",
+      "structural_ko": "MSS 98.0, 'Neutral' 존에 위치해 있으며 전일 102.0(Healthy Bull)에서 소폭 하락했다. Gate Score는 60/100으로 BULL 판정이지만, VIX가 90.1th 퍼센타일에 머물러 있어 시스템이 내보내는 신호는 '조심스러운 공격(Cautious Offense)'이다. QQQ는 SMA200 대비 +2.59% 위에 있고, Defensive Trigger(570.2)까지는 상당한 완충 공간이 존재하므로 극단적 방어 전환은 정당화되지 않는다. Shock Probability 12%(Low, Decreasing)는 30일 내 대형 급락 가능성이 낮음을 시사하나, VIX 고공비행이 지속되는 한 단기 변동성 스파이크 위험은 상존한다. TQQQ RV20이 p80을 상회(73.1 vs 64.7)해 레버리지 ETF 내재 변동성이 여전히 구조적으로 높다.",
       "implication": "",
-      "implication_ko": "테크니컬 환경이 '위기'에서 '약세'로 전환되려면 VIX가 14~15 수준까지 더 내려와야 하고, QQQ가 peak에서 -5% 이상 회복해야 한다. 현재는 단기 호재로 인한 숨고르기 단계일 가능성이 높으므로, 하단 지지(SMA50, 590대) 이탈 시 재하락 모멘텀이 급해질 수 있다.",
-      "signal": "bear",
-      "color": "#ef4444"
+      "implication_ko": "현 DEFCON 수준에서의 액션 플랜: ① 레버리지 ETF(TQQQ·SOXL) 신규 진입은 분할 매수로 제한하고, 단일 세션 급등 후 추격은 자제한다. ② QQQ SMA200(587.84) 이탈 없이 Gate Score 60 이상을 유지하는 한 코어 포지션은 유지한다. ③ VIX 18 하회를 리스크온 전환의 공식 신호로 설정하고, 그 이전까지는 헤지(현금 비중 확보 또는 인버스 소량 유지)를 병행한다. ④ 이란 헤드라인이 재악화되거나 인플레 서프라이즈가 나올 경우 즉각 비중 축소 준비를 갖춰둔다.",
+      "signal": "caution",
+      "color": "#f59e0b"
     }
   ],
   "risk_check": {
     "triggered": true,
-    "level": 4,
-    "mss": 79.0,
-    "zone": "Structural Risk",
-    "message": "CRISIS ALERT - MSS 79.0 has entered Structural Risk territory (Level 4: Crisis). The structural foundation of the market is deteriorating. Exposure management is critical. Any rally should be treated as a distribution opportunity until MSS recovers above 100.",
-    "color": "#ef4444"
+    "level": 2,
+    "mss": 98.0,
+    "zone": "Neutral",
+    "message": "WARNING - MSS 98.0 has crossed into Neutral territory (Level 2: Warning). Market structure is under pressure. Review position sizing and monitor key support levels closely.",
+    "color": "#f59e0b"
   },
   "one_line": "",
-  "one_line_ko": "호르무즈 지정학 리스크 일시 완화(2주 휴전)가 유가 급등 모멘텀을 꺾고 Fed 인하 시나리오를 복원하면서 성장주 중심 반등을 견인했으나, 기저 긴장 상태는 지속돼 수익률 하락에 제약이 남아있다."
+  "one_line_ko": "트럼프-이란 2주 휴전 합의가 유가 급락·Fed 금리인하 기대 복원·주식 장중 급등을 촉발했으나, 장 마감은 혼조로 끝나며 지정학 불확실성이 여전히 스마트 머니의 공격적 베팅을 제한하고 있다."
 }

@@ -1,5 +1,14 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
+import { readCacheJsonOrNull } from '@/lib/readCacheJson'
 import { truncateText } from '@/lib/text/vrTone'
+import { clusterNewsItems } from '@/lib/terminal-mvp/clusterEngine'
+import { buildConfidenceProfile } from '@/lib/terminal-mvp/confidenceEngine'
+import { buildRelativeView, type MarketTapeItem } from '@/lib/terminal-mvp/multiSymbolEngine'
+import { buildNarrativeSpine } from '@/lib/terminal-mvp/narrativeSpineBuilder'
+import { renderNarrativeBrief } from '@/lib/terminal-mvp/narrativeRenderer'
+import { buildPriceAnchorLayer } from '@/lib/terminal-mvp/priceAnchorLayer'
+import { buildSessionThesis } from '@/lib/terminal-mvp/sessionThesisEngine'
+import { buildTimelineFlow } from '@/lib/terminal-mvp/timelineEngine'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -16,6 +25,9 @@ type NewsSynthSession = 'morning' | 'afternoon' | 'auto'
 type SynthesizeRequest = {
   symbol: string
   companyName?: string
+  dateET?: string
+  price?: number | null
+  changePct?: number | null
   items: NewsInputItem[]
   lang: 'ko' | 'en'
   marketContext?: string
@@ -33,6 +45,7 @@ type ItemBlock = {
 }
 
 const MAX_ITEMS_PER_BATCH = 20
+const LOW_DENSITY_ITEM_THRESHOLD = 2
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages'
 const ANTHROPIC_MODEL = 'claude-sonnet-4-6'
 const OPENAI_API = 'https://api.openai.com/v1/chat/completions'
@@ -45,7 +58,7 @@ const normalizeText = (value: string): string =>
   value
     .toLowerCase()
     .replace(/[\u200B-\u200D\uFEFF]/g, '')
-    .replace(/[^a-z0-9가-힣\s]/gu, ' ')
+    .replace(/[^a-z0-9\uac00-\ud7a3\s]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
@@ -185,7 +198,7 @@ const normalizeForMatch = (value: string): string =>
   value
     .toLowerCase()
     .replace(/[\u200B-\u200D\uFEFF]/g, ' ')
-    .replace(/[^a-z0-9가-힣\s]/gu, ' ')
+    .replace(/[^a-z0-9\uac00-\ud7a3\s]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
@@ -474,7 +487,7 @@ const compactEventLabel = (value: string): string => {
   }
 
   const firstSentence = cleaned.split(/(?<=[.!?])\s+/u)[0] ?? cleaned
-  return truncateText(firstSentence.replace(/[。！？]+$/u, '').trim(), 140)
+  return truncateText(firstSentence.replace(/[^a-z0-9가-힣\s.,;:/'"()\-+%$]/giu, '').trim(), 140)
 }
 
 const buildNarrativePlan = (
@@ -566,75 +579,189 @@ type DigestResult = {
   text: string
 }
 
+const getCurrentEtDate = (): string =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
 const buildDigestSystemPrompt = (lang: 'ko' | 'en'): string =>
   lang === 'ko'
     ? [
         'You are an institutional financial terminal editor writing Korean outputs.',
-        'Combine the batch into one company/day digest note with Terminal X-like density.',
-        'Do not write item-by-item notes.',
-        'Use EVENT CARDS and NARRATIVE PLAN as the primary truth source; raw items are supporting evidence only.',
-        'Start with price, time, and change, then the main catalyst, secondary factors, counterweight or risk, and one forward checkpoint.',
-        'Write 4 to 6 sentences. Korean outputs should target 420 to 700 non-space characters.',
+        'Use the rendered narrative draft and structured spine as the only primary sources.',
+        'Do not reference raw news or headlines.',
+        'Write a 5 to 7 line market brief in a Terminal X style.',
+        'Line 1 must include price, time, and change.',
+        'Line 2 must describe the intraday progression or timeline flow.',
+        'Later lines should cover the main catalyst, institutional or flow context, numbers or relative view, confidence tone, and risk.',
+        'The final line must be the forward risk or checkpoint.',
+        'Keep the tone dense, analytical, and explanation-first.',
         'Return JSON only in this exact shape: {"text":"..."}',
       ].join('\n')
     : [
         'You are an institutional financial terminal editor.',
-        'Combine the batch into one company/day digest note with Terminal X-like density.',
-        'Do not write item-by-item notes.',
-        'Use EVENT CARDS and NARRATIVE PLAN as the primary truth source; raw items are supporting evidence only.',
-        'Start with price and time, then the main catalyst, secondary factors, counterweight or risk, and one forward checkpoint.',
-        'Write 4 to 6 sentences. English outputs should target around 900 non-space characters.',
+        'Use the rendered narrative draft and structured spine as the only primary sources.',
+        'Do not reference raw news or headlines.',
+        'Write a 5 to 7 line market brief in a Terminal X style.',
+        'Line 1 must include price, time, and change.',
+        'Line 2 must describe the intraday progression or timeline flow.',
+        'Later lines should cover the main catalyst, institutional or flow context, numbers or relative view, confidence tone, and risk.',
+        'The final line must be the forward risk or checkpoint.',
+        'Keep the tone dense, analytical, and explanation-first.',
         'Return JSON only in this exact shape: {"text":"..."}',
       ].join('\n')
 
 const buildDigestPrompt = (
   symbol: string,
-  items: ItemBlock[],
-  lang: 'ko' | 'en',
+  _lang: 'ko' | 'en',
   marketContext?: string,
   companyName?: string,
-  eventCardsJson?: string,
-  narrativePlanJson?: string,
+  renderedDraft?: string,
+  spineJson?: string,
+  price?: number | null,
+  changePct?: number | null,
+  dateET?: string,
 ): string => {
   const marketContextBlock = marketContext?.trim() ? marketContext.trim() : 'N/A'
   const companyNameBlock = companyName?.trim() ? companyName.trim() : 'N/A'
-  const eventCardsBlock = eventCardsJson?.trim() || '[]'
-  const narrativePlanBlock = narrativePlanJson?.trim() || '{}'
-  const itemText = items
-    .map(({ item, sessionHint }, index) =>
-      [
-        `[ITEM-${index}]`,
-        `id: ${item.id}`,
-        `session_hint: ${sessionHint}`,
-        `timeET: ${item.timeET}`,
-        `headline: ${item.headline || ''}`,
-        `summary: ${item.summary || ''}`,
-      ].join('\n'),
-    )
-    .join('\n\n')
+  const renderedDraftBlock = renderedDraft?.trim() || '[]'
+  const spineBlock = spineJson?.trim() || '{}'
+  const priceBlock = Number.isFinite(price ?? NaN) ? `${Number(price).toFixed(2)}` : 'N/A'
+  const changeBlock = Number.isFinite(changePct ?? NaN)
+    ? `${Number(changePct) >= 0 ? '+' : ''}${Number(changePct).toFixed(2)}%`
+    : 'N/A'
+  const dateBlock = dateET?.trim() || 'N/A'
 
   return [
     `Symbol: ${symbol}`,
     `Company name: ${companyNameBlock}`,
     `Market context: ${marketContextBlock}`,
+    `Date ET: ${dateBlock}`,
+    `Price: ${priceBlock}`,
+    `Change: ${changeBlock}`,
     '',
     'Write one digest note for the whole batch, not separate item notes.',
-    'Use the narrative plan as the spine and the raw items as supporting evidence.',
-    'Primary sources are EVENT CARDS and NARRATIVE PLAN; raw items are supporting evidence only.',
+    'Use the rendered narrative draft and narrative spine as the only primary sources.',
+    'Do not repeat headlines or mention raw items.',
     'The output should read like a Terminal X daily note: explanation-first, not headline-first.',
-    'Include one main catalyst, one or two secondary factors, a counterweight or risk, and a forward checkpoint.',
-    'Do not repeat the headlines verbatim.',
+    'Use the spine fields in this priority order: PRICE, TIMELINE, CATALYST, INSTITUTION, NUMBERS, RELATIVE_VIEW, CONFIDENCE, RISK.',
+    'Keep the narrative anchored to price action, intraday progression, relative view, confidence tone, numbers, and forward risk.',
+    'The rendered draft is the preferred shape; improve fluency, but keep the causal chain and line order.',
     'Return JSON only: {"text":"..."}',
     '',
-    'EVENT CARDS (Layer 1-2, scored evidence pack):',
-    eventCardsBlock,
+    'RENDERER DRAFT (Layer 5, line draft):',
+    renderedDraftBlock,
     '',
-    'NARRATIVE PLAN (Layer 3-4, storyline spine):',
-    narrativePlanBlock,
-    '',
-    'RAW ITEMS (supporting evidence):',
-    itemText,
+    'NARRATIVE SPINE (Layer 3-6, primary source):',
+    spineBlock,
   ].join('\n')
+}
+
+const buildSystemPrompt = (_lang: 'ko' | 'en'): string =>
+  [
+    'You are an institutional financial terminal editor.',
+    'Turn each news item into a dense, explanation-first Terminal X-style note with Terminal X-level length.',
+    'Treat the batch as a compact evidence pack, not isolated clips; if several items point to the same catalyst, connect them into one storyline.',
+    'Do not repeat the headline verbatim. Use the headline and summary to explain why the item matters to the stock.',
+    'Each item should be 3 to 5 sentences, not a headline fragment.',
+    'Include one main catalyst, one or two secondary factors, a counterpoint or risk when possible, and one forward checkpoint.',
+    'Korean outputs should target 300 to 400 characters excluding spaces. English outputs should target around 600 characters excluding spaces.',
+    'If marketContext is provided, use it only to explain the news reaction; do not mechanically restate it.',
+    'Morning-like items should emphasize premarket/open implications.',
+    'Afternoon-like items should emphasize close/session reaction and the next checkpoint.',
+    'Avoid hype, sensational language, and unsupported speculation.',
+    'If evidence is thin, note that fresh material is limited without collapsing into a headline.',
+    'Return JSON only in this exact shape: {"items":[{"id":"...","text":"..."}]}',
+  ].join('\n')
+
+const buildDigestRetryPrompt = (
+  originalPrompt: string,
+  validationReasons: string[],
+  lang: 'ko' | 'en',
+): string => {
+  const reasons = validationReasons.join(', ')
+
+  if (lang === 'ko') {
+    return [
+      '이전 출력은 Terminal X 스타일 기준을 충족하지 못했다.',
+      `실패 사유: ${reasons}`,
+      '',
+      '다시 작성하라.',
+      '',
+      '조건:',
+      '- 한국어',
+      '- JSON만 반환',
+      '- 5~7줄',
+      '- 첫 줄에 가격, 시각, 등락률 포함',
+      '- 둘째 줄은 intraday progression 또는 timeline flow를 설명할 것',
+      '- 뉴스 제목 반복 금지',
+      '- 원인, 보조 요인, 상대 비교, confidence, 리스크, 관전 포인트를 모두 담아라',
+      '- 마지막 줄은 반드시 리스크 또는 다음 관전 포인트로 끝낼 것',
+      '- 설명형 문장으로 쓰고 헤드라인처럼 끊지 말 것',
+      '',
+      '기존 의도는 유지하되, 더 설명적이고 Terminal X 수준의 길이로 다시 써라.',
+      '',
+      originalPrompt,
+    ].join('\n')
+  }
+
+  return [
+    'The previous output failed the Terminal X-style quality check.',
+    `Failure reasons: ${reasons}`,
+    '',
+    'Rewrite the entire batch.',
+    '',
+    'Requirements:',
+    '- English only',
+    '- JSON only',
+    '- 5 to 7 lines',
+    '- First line must include price, time, and change',
+    '- Second line must describe intraday progression or timeline flow',
+    '- Do not repeat headlines',
+    '- Include a main catalyst, secondary factor, relative view, confidence tone, risk, and a forward checkpoint',
+    '- The final line must close on risk or the next checkpoint',
+    '- Write dense explanation-first prose',
+    '',
+    'Keep the original intent, but make the output more explanatory and Terminal X-level in length.',
+    '',
+    originalPrompt,
+  ].join('\n')
+}
+
+const buildDigestFallbackText = (
+  symbol: string,
+  _lang: 'ko' | 'en',
+  spine: {
+    PRICE: string
+    TIMELINE: string
+    CATALYST: string
+    INSTITUTION: string
+    NUMBERS: string
+    RELATIVE_VIEW: string
+    CONFIDENCE: string
+    RISK: string
+  },
+  renderedDraft?: string,
+  marketContext?: string,
+): string => {
+  if (renderedDraft?.trim()) {
+    return renderedDraft.trim()
+  }
+
+  const lines = [
+    spine.PRICE,
+    spine.TIMELINE,
+    spine.CATALYST,
+    spine.INSTITUTION,
+    spine.NUMBERS,
+    [spine.CONFIDENCE, spine.RELATIVE_VIEW].filter(Boolean).join(' '),
+    spine.RISK || (marketContext?.trim() ? `Market context: ${marketContext.trim()}` : `${symbol} remains tied to the tape and the next session follow-through.`),
+  ]
+
+  return lines.join('\n')
 }
 
 const parseDigestResponse = (raw: string): string | null => {
@@ -664,30 +791,61 @@ const validateDigestText = (
 ): { passed: boolean; reasons: string[] } => {
   const reasons: string[] = []
   const chars = countNonSpaceChars(text)
-  const sentences = sentenceCount(text)
-  const minChars = lang === 'ko' ? 340 : 560
-  const maxChars = lang === 'ko' ? 1100 : 1300
-  const priceKeywords = lang === 'ko'
-    ? ['가격', '등락', '상승', '하락', '시각', '장중', '마감', '%', '원']
-    : ['price', 'time', 'trading', 'closed', 'opened', '$', 'up', 'down', 'session']
-  const causeKeywords = lang === 'ko'
-    ? ['영향', '반영', '힘입어', '지지', '압박', '촉매', '원인', '재료', '실적', '가이던스', '목표가', '공급', '계약', '규제']
-    : ['driven by', 'because', 'due to', 'catalyst', 'support', 'pressure', 'backed by', 'anchor']
-  const riskKeywords = lang === 'ko'
-    ? ['다만', '리스크', '변수', '주목', '주시', '향후', '관전 포인트', '다음', '이벤트']
-    : ['however', 'risk', 'watch', 'checkpoint', 'next', 'variable', 'caution']
+  const lines = text
+    .split(/\r?\n+/u)
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  const minChars = lang === 'ko' ? 300 : 520
+  const maxChars = lang === 'ko' ? 2200 : 2600
+  const priceKeywords =
+    lang === 'ko'
+      ? ['가격', '등락', '시각', '마감', '장중', '오전', '오후', 'ET', '%']
+      : ['price', 'time', 'change', 'opened', 'closed', '%', 'session']
+  const timelineKeywords =
+    lang === 'ko'
+      ? ['장초반', '장중', '마감', '개장', '후반', '초반', '흐름', 'timeline']
+      : ['premarket', 'open', 'midday', 'afternoon', 'close', 'early', 'late', 'timeline']
+  const relativeKeywords =
+    lang === 'ko'
+      ? ['상대', '대비', '비교', 'QQQ', 'SPY', '시장', '업종']
+      : ['relative', 'vs', 'outperform', 'underperform', 'QQQ', 'SPY', 'market', 'sector']
+  const confidenceKeywords =
+    lang === 'ko'
+      ? ['확신', '신뢰', '강함', '혼재', '약함', 'conviction']
+      : ['confidence', 'conviction', 'strong', 'mixed', 'weak', 'high conviction']
+  const causeKeywords =
+    lang === 'ko'
+      ? ['영향', '반영', '힘입어', '지지', '부담', '촉매', '원인', '드라이버']
+      : ['driven by', 'because', 'due to', 'catalyst', 'support', 'pressure', 'backed by', 'anchor']
+  const riskKeywords =
+    lang === 'ko'
+      ? ['다만', '리스크', '주의', '관전', '주목', '향후', '다음', '변수', '점검']
+      : ['however', 'risk', 'watch', 'checkpoint', 'next', 'variable', 'caution']
+  const institutionKeywords =
+    lang === 'ko'
+      ? ['애널리스트', '기관', '목표가', '평가', '증권사', '매크로', '금리', '국채']
+      : ['analyst', 'institution', 'target', 'rating', 'macro', 'rates', 'yield', 'wall street']
 
   if (chars < minChars) reasons.push('too_short')
   if (chars > maxChars) reasons.push('too_long')
-  if (sentences < 4) reasons.push('too_few_sentences')
-  if (sentences > 6) reasons.push('too_many_sentences')
+  if (lines.length < 5) reasons.push('too_few_lines')
+  if (lines.length > 7) reasons.push('too_many_lines')
 
-  const firstSentence = text
-    .split(/[.!?]+/u)
-    .map((part) => part.trim())
-    .filter(Boolean)[0] || ''
-  if (!containsAny(firstSentence, priceKeywords)) {
+  const firstLine = lines[0] || ''
+  const lastLine = lines[lines.length - 1] || ''
+
+  if (!containsAny(firstLine, priceKeywords)) {
     reasons.push('missing_price_context')
+  }
+  if (lines[1] && !containsAny(lines[1], timelineKeywords)) {
+    reasons.push('missing_timeline')
+  }
+  if (!containsAny(text, relativeKeywords)) {
+    reasons.push('missing_relative_view')
+  }
+  if (!containsAny(text, confidenceKeywords)) {
+    reasons.push('missing_confidence')
   }
   if (!containsAny(text, causeKeywords)) {
     reasons.push('missing_cause')
@@ -695,174 +853,21 @@ const validateDigestText = (
   if (!containsAny(text, riskKeywords)) {
     reasons.push('missing_risk')
   }
-  if (sentences <= 1) {
+  if (!(containsAny(text, institutionKeywords) || containsAny(text, ['macro', 'rate', 'yield', 'inflation']))) {
+    reasons.push('missing_institution_or_macro')
+  }
+  if (!containsAny(lastLine, riskKeywords)) {
+    reasons.push('final_line_missing_risk')
+  }
+  if (!/\d/.test(text)) {
+    reasons.push('missing_numbers')
+  }
+  if (lines.length <= 1) {
     reasons.push('headline_like')
   }
 
   return { passed: reasons.length === 0, reasons }
 }
-
-const buildDigestFallbackText = (
-  symbol: string,
-  lang: 'ko' | 'en',
-  narrativePlan: ReturnType<typeof buildNarrativePlan>,
-  marketContext?: string,
-): string => {
-  const leadContext = marketContext?.trim()
-    ? marketContext.trim().replace(/\s*\|\s*/g, ' · ')
-    : narrativePlan.price_context
-        .replace(/^Market context:\s*/i, '')
-        .replace(/^Ticker context:\s*/i, '')
-        .trim()
-  const priceContext = narrativePlan.price_context
-    .replace(/^Market context:\s*/i, '')
-    .replace(/^Ticker context:\s*/i, '')
-    .trim()
-  const primaryWhy = narrativePlan.primary_driver.why || 'the main catalyst'
-  const secondaryWhy = narrativePlan.secondary_driver.why || 'broader support'
-  const counterWhy = narrativePlan.counterweight.why || 'risk to the move'
-  const watchWhy = narrativePlan.watchpoint.why || 'confirmation of the thesis'
-  const translateImpactHint = (hint: string): string => {
-    if (lang !== 'ko') {
-      return hint
-    }
-    const normalized = hint.toLowerCase().trim()
-    const mapping: Array<[string, string]> = [
-      ['valuation / expectations', '밸류에이션 기대'],
-      ['earnings / margin', '실적과 마진 모멘텀'],
-      ['demand / supply', '수요와 공급 균형'],
-      ['macro / rates', '매크로와 금리 환경'],
-      ['geo / policy', '지정학과 정책 변수'],
-      ['product cycle', '제품 사이클'],
-      ['risk / legal', '리스크와 법적 이슈'],
-      ['technical setup', '기술적 수급'],
-      ['sector rotation', '섹터 로테이션'],
-      ['broad market read-through', '시장 전반의 해석'],
-      ['confirmation of growth thesis', '성장 논리 확인'],
-      ['confirmation of the thesis', '논리 확인'],
-      ['risk to the move', '상승 여력에 대한 부담'],
-      ['broader support', '추가 지지'],
-      ['the main catalyst', '핵심 촉매'],
-    ]
-    const found = mapping.find(([key]) => normalized.includes(key))
-    return found ? found[1] : hint
-  }
-  const primaryLabel = translateImpactHint(primaryWhy)
-  const secondaryLabel = translateImpactHint(secondaryWhy)
-  const counterLabel = translateImpactHint(counterWhy)
-  const watchLabel = translateImpactHint(watchWhy)
-  const resolvedSecondaryLabel = secondaryLabel === primaryLabel ? (lang === 'ko' ? '추가 지지' : 'secondary support') : secondaryLabel
-  const resolvedCounterLabel = counterLabel === primaryLabel || counterLabel === secondaryLabel
-    ? (lang === 'ko' ? '상단 제한 요인' : 'counterweight')
-    : counterLabel
-  const resolvedWatchLabel = watchLabel === primaryLabel || watchLabel === secondaryLabel || watchLabel === counterLabel
-    ? (lang === 'ko' ? '다음 거래일 확인 포인트' : 'next checkpoint')
-    : watchLabel
-
-  if (lang === 'ko') {
-    return `${symbol}는 ${leadContext || priceContext || '현재 흐름'} 속에서 ${primaryLabel}${particle(primaryLabel, '이', '가')} 장세를 이끌고 있다. ${resolvedSecondaryLabel}${particle(resolvedSecondaryLabel, '이', '가')} 보조 재료로 붙으며 투자심리를 지지했고, ${resolvedCounterLabel}${particle(resolvedCounterLabel, '이', '가')} 남아 있다. 다만 다음 거래일에는 추가 뉴스와 업종 흐름을 확인해야 한다.`
-  }
-
-  return `${symbol} traded against ${leadContext || priceContext || 'the current tape'} with ${primaryLabel} as the main catalyst driving the session narrative. ${resolvedSecondaryLabel} added a secondary layer of support, while ${resolvedCounterLabel} remained the counterweight that kept the move from becoming one-way. The next checkpoint is ${resolvedWatchLabel}, where the market will test whether ${watchWhy} still holds.`
-}
-
-async function synthesizeDigest(
-  symbol: string,
-  batch: NewsInputItem[],
-  lang: 'ko' | 'en',
-  marketContext: string | undefined,
-  companyName: string | undefined,
-): Promise<DigestResult | null> {
-  const selectedBatch = selectRelevantItems(batch, symbol, companyName)
-  if (selectedBatch.length < 2) {
-    return null
-  }
-
-  const items = buildItemBlocks(selectedBatch)
-  const eventCards = buildEventCards(items, symbol, companyName)
-  const narrativePlan = buildNarrativePlan(eventCards, symbol, companyName, marketContext)
-  const systemPrompt = buildDigestSystemPrompt(lang)
-  const baseUserPrompt = buildDigestPrompt(
-    symbol,
-    items,
-    lang,
-    marketContext,
-    companyName,
-    JSON.stringify(eventCards, null, 2),
-    JSON.stringify(narrativePlan, null, 2),
-  )
-
-  const providers: Array<() => Promise<string>> = [
-    () => callAnthropic(systemPrompt, baseUserPrompt),
-    () => callOpenAI(systemPrompt, baseUserPrompt),
-  ]
-
-  let best: string | null = null
-  let validation = { passed: false, reasons: ['uninitialized'] }
-
-  for (const [providerIndex, provider] of providers.entries()) {
-    try {
-      const raw = await provider()
-      const parsed = parseDigestResponse(raw)
-      if (!parsed) continue
-      best = parsed
-      validation = validateDigestText(parsed, lang)
-      if (validation.passed) {
-        return { text: parsed }
-      }
-
-      const retryPrompt = buildRetryPrompt(baseUserPrompt, validation.reasons, lang)
-      const retryRaw = providerIndex === 0
-        ? await callAnthropic(systemPrompt, retryPrompt)
-        : await callOpenAI(systemPrompt, retryPrompt)
-      const retryParsed = parseDigestResponse(retryRaw)
-      if (!retryParsed) continue
-      best = retryParsed
-      const retryValidation = validateDigestText(retryParsed, lang)
-      if (retryValidation.passed) {
-        return { text: retryParsed }
-      }
-      validation = retryValidation
-    } catch (err) {
-      console.error('[news-synthesize][digest] provider failed:', err)
-      continue
-    }
-  }
-
-  const fallback = buildDigestFallbackText(symbol, lang, narrativePlan, marketContext)
-  return { text: fallback }
-}
-
-const buildSystemPrompt = (lang: 'ko' | 'en'): string =>
-  lang === 'ko'
-    ? [
-        '당신은 기관투자자용 금융 터미널 브리핑 에디터다.',
-        '목표는 개별 뉴스 항목을 Terminal X 스타일의 설명형 시장 메모로 바꾸는 것이다.',
-        '뉴스 제목을 복사하지 말고, headline과 summary를 바탕으로 왜 이 뉴스가 종목 흐름에 중요한지 설명하라.',
-        '각 항목은 3~4문장으로 작성하고, 한 줄 헤드라인처럼 짧게 쓰지 말라.',
-        '핵심 원인 1개, 보조 요인 1~2개, 가능하면 반대 요인 또는 리스크 1개, 마지막에는 관전 포인트 1개를 자연스럽게 포함하라.',
-        'marketContext가 주어지면 가격 상황을 반복하지 말고 뉴스의 의미를 설명하는 데만 활용하라.',
-        '아침 성격이면 장중/프리마켓 해석에, 오후 성격이면 장 마감/세션 반응에 더 무게를 둬라.',
-        '과장 표현, 선정적 표현, 근거 없는 추측은 금지한다.',
-        '정보가 약하면 "뚜렷한 신규 재료는 제한적"에 준하는 표현으로 정리하되, 문단이 빈약해지지 않게 한다.',
-        '반드시 한국어로만 답하고 JSON만 반환하라.',
-        '응답 형식은 {"items":[{"id":"...","text":"..."}]} 여야 한다.',
-      ].join('\n')
-    : [
-        'You are an institutional financial terminal editor.',
-        'Turn each news item into a dense, explanation-first Terminal X-style note with Terminal X-level length.',
-        'Treat the batch as a compact evidence pack, not isolated clips; if several items point to the same catalyst, connect them into one storyline.',
-        'Do not repeat the headline verbatim. Use the headline and summary to explain why the item matters to the stock.',
-        'Each item should be 3 to 5 sentences, not a headline fragment.',
-        'Include one main catalyst, one or two secondary factors, a counterpoint or risk when possible, and one forward checkpoint.',
-        'Korean outputs should target 300 to 400 characters excluding spaces. English outputs should target around 600 characters excluding spaces.',
-        'If marketContext is provided, use it only to explain the news reaction; do not mechanically restate it.',
-        'Morning-like items should emphasize premarket/open implications.',
-        'Afternoon-like items should emphasize close/session reaction and the next checkpoint.',
-        'Avoid hype, sensational language, and unsupported speculation.',
-        'If evidence is thin, note that fresh material is limited without collapsing into a headline.',
-        'Return JSON only in this exact shape: {"items":[{"id":"...","text":"..."}]}',
-      ].join('\n')
 
 const buildItemBlocks = (batch: NewsInputItem[]): ItemBlock[] =>
   batch.map((item) => ({
@@ -904,18 +909,18 @@ const buildUserPrompt = (
 
   if (lang === 'ko') {
     return [
-      `종목: ${symbol}`,
-      `회사명: ${companyNameBlock}`,
-      `시장 맥락: ${marketContextBlock}`,
+      `醫낅ぉ: ${symbol}`,
+      `?뚯궗紐? ${companyNameBlock}`,
+      `?쒖옣 留λ씫: ${marketContextBlock}`,
       '',
-      '아래 뉴스 항목들을 각 항목별로 Terminal X 스타일의 짧지만 밀도 높은 설명형 메모로 바꿔라.',
+      '?꾨옒 ?댁뒪 ??ぉ?ㅼ쓣 媛???ぉ蹂꾨줈 Terminal X ?ㅽ??쇱쓽 吏㏃?留?諛???믪? ?ㅻ챸??硫붾え濡?諛붽퓭??',
       layerHint,
-      '이 batch는 같은 종목을 둘러싼 연구 패키지이므로, 비슷한 촉매는 서로 엮어서 하나의 스토리로 정리해도 된다.',
-      '각 항목은 3~4문장으로 쓰고, 뉴스 제목을 그대로 복사하지 말고, 핵심 촉매와 보조 요인, 리스크 또는 관전 포인트를 자연스럽게 엮어라.',
-      '시장 맥락이 있더라도 가격을 반복하지 말고, 그 뉴스가 현재 종목 흐름에 어떤 의미인지 설명하는 데만 활용하라.',
-      '아침 성격(session_hint=morning)이면 프리마켓/초반 세션 해석을, 오후 성격(session_hint=afternoon)이면 장중 반응과 다음 체크포인트를 더 분명히 드러내라.',
-      '출력은 JSON만 허용하며, 반드시 입력 순서를 유지하고 각 id를 그대로 써라.',
-      '형식: {"items":[{"id":"...","text":"..."}]}',
+      '??batch??媛숈? 醫낅ぉ???섎윭???곌뎄 ?⑦궎吏?대?濡? 鍮꾩듂??珥됰ℓ???쒕줈 ??뼱???섎굹???ㅽ넗由щ줈 ?뺣━?대룄 ?쒕떎.',
+      '媛???ぉ? 3~4臾몄옣?쇰줈 ?곌퀬, ?댁뒪 ?쒕ぉ??洹몃?濡?蹂듭궗?섏? 留먭퀬, ?듭떖 珥됰ℓ? 蹂댁“ ?붿씤, 由ъ뒪???먮뒗 愿???ъ씤?몃? ?먯뿰?ㅻ읇寃???뼱??',
+      '?쒖옣 留λ씫???덈뜑?쇰룄 媛寃⑹쓣 諛섎났?섏? 留먭퀬, 洹??댁뒪媛 ?꾩옱 醫낅ぉ ?먮쫫???대뼡 ?섎??몄? ?ㅻ챸?섎뒗 ?곕쭔 ?쒖슜?섎씪.',
+      '?꾩묠 ?깃꺽(session_hint=morning)?대㈃ ?꾨━留덉폆/珥덈컲 ?몄뀡 ?댁꽍?? ?ㅽ썑 ?깃꺽(session_hint=afternoon)?대㈃ ?μ쨷 諛섏쓳怨??ㅼ쓬 泥댄겕?ъ씤?몃? ??遺꾨챸???쒕윭?대씪.',
+      '異쒕젰? JSON留??덉슜?섎ŉ, 諛섎뱶???낅젰 ?쒖꽌瑜??좎??섍퀬 媛?id瑜?洹몃?濡??⑤씪.',
+      '?뺤떇: {"items":[{"id":"...","text":"..."}]}',
       '',
       'EVENT CARDS (Layer 1-2, scored evidence pack):',
       eventCardsBlock,
@@ -1010,12 +1015,14 @@ const validateResponseItems = (
   const reasons: string[] = []
   const minChars = lang === 'ko' ? 300 : 520
   const maxChars = lang === 'ko' ? 420 : 720
-  const causeKeywords = lang === 'ko'
-    ? ['영향', '반영', '힘입어', '지지', '부담', '촉매', '실적', '가이던스', '공급망', '계약', '규제']
-    : ['driven by', 'because', 'due to', 'support', 'pressure', 'catalyst', 'risk', 'guidance', 'contract', 'regulation']
-  const riskKeywords = lang === 'ko'
-    ? ['다만', '리스크', '주시', '관전', '포인트', '향후', '변수', '제한']
-    : ['however', 'risk', 'watch', 'checkpoint', 'next', 'variable', 'limited']
+  const causeKeywords =
+    lang === 'ko'
+      ? ['영향', '반영', '힘입어', '지지', '부담', '촉매', '원인', '드라이버', '가이던스', '계약', '규제']
+      : ['driven by', 'because', 'due to', 'support', 'pressure', 'catalyst', 'risk', 'guidance', 'contract', 'regulation']
+  const riskKeywords =
+    lang === 'ko'
+      ? ['다만', '리스크', '주의', '관전', '주목', '향후', '다음', '변수', '점검']
+      : ['however', 'risk', 'watch', 'checkpoint', 'next', 'variable', 'limited']
 
   if (!items.length) {
     return { passed: false, reasons: ['no_items_returned'] }
@@ -1054,7 +1061,7 @@ const buildRetryPrompt = (
 
   if (lang === 'ko') {
     return [
-      '이전 출력은 터미널 스타일 기준을 충족하지 못했다.',
+      '이전 출력은 Terminal X 스타일 기준을 충족하지 못했다.',
       `실패 사유: ${reasons}`,
       '',
       '다시 작성하라.',
@@ -1062,13 +1069,12 @@ const buildRetryPrompt = (
       '조건:',
       '- 한국어',
       '- JSON만 반환',
-      '- 각 항목은 3~4문장',
+      '- 3~5문장',
       '- 헤드라인처럼 짧게 쓰지 말 것',
-      '- 뉴스 나열 금지',
-      '- 핵심 원인, 보조 요인, 리스크 또는 관전 포인트를 모두 포함할 것',
-      '- 시장 맥락이 있으면 가격을 반복하지 말고 의미만 설명할 것',
+      '- 원인, 보조 요인, 리스크 또는 관전 포인트를 모두 포함할 것',
+      '- 설명형 문장으로 작성할 것',
       '',
-      '원본 지시를 유지하되, 설명형 문단으로 다시 써라.',
+      '기존 의도는 유지하되, 더 설명적이고 Terminal X 수준의 길이로 다시 써라.',
       '',
       originalPrompt,
     ].join('\n')
@@ -1102,21 +1108,21 @@ const buildFallbackText = (
   lang: 'ko' | 'en',
   sessionHint: 'morning' | 'afternoon',
 ): string => {
-  const headline = compactEventLabel(item.summary || item.headline || (lang === 'ko' ? '해당 뉴스' : 'This item'))
+  const headline = compactEventLabel(item.summary || item.headline || (lang === 'ko' ? '?대떦 ?댁뒪' : 'This item'))
   const summary = item.summary.trim()
 
   if (lang === 'ko') {
     const lead =
       sessionHint === 'morning'
-        ? `${headline}는 장 초반 흐름에서 해석할 필요가 있다.`
-        : `${headline}는 장 마감 이후 해석할 필요가 있다.`
+        ? `${headline}????珥덈컲 ?먮쫫?먯꽌 ?댁꽍???꾩슂媛 ?덈떎.`
+        : `${headline}????留덇컧 ?댄썑 ?댁꽍???꾩슂媛 ?덈떎.`
     const body = summary
-      ? `${summary} 뚜렷한 신규 재료는 제한적이며, 관련 시장 흐름과 수급 변화가 추가 해석의 기준이 된다.`
-      : '뚜렷한 신규 재료는 제한적이며, 관련 시장 흐름과 수급 변화가 추가 해석의 기준이 된다.'
+      ? `${summary} ?쒕졆???좉퇋 ?щ즺???쒗븳?곸씠硫? 愿???쒖옣 ?먮쫫怨??섍툒 蹂?붽? 異붽? ?댁꽍??湲곗????쒕떎.`
+      : '?쒕졆???좉퇋 ?щ즺???쒗븳?곸씠硫? 愿???쒖옣 ?먮쫫怨??섍툒 蹂?붽? 異붽? ?댁꽍??湲곗????쒕떎.'
     const watch =
       sessionHint === 'morning'
-        ? '시장은 이날 추가 뉴스와 초반 수급 반응을 주시하고 있다.'
-        : '시장은 다음 거래일 추가 뉴스와 업종 흐름을 확인할 전망이다.'
+        ? '?쒖옣? ?대궇 異붽? ?댁뒪? 珥덈컲 ?섍툒 諛섏쓳??二쇱떆?섍퀬 ?덈떎.'
+        : '?쒖옣? ?ㅼ쓬 嫄곕옒??異붽? ?댁뒪? ?낆쥌 ?먮쫫???뺤씤???꾨쭩?대떎.'
     return `${lead} ${body} ${watch}`
   }
 
@@ -1132,6 +1138,141 @@ const buildFallbackText = (
       ? 'The market will watch for follow-through in the session ahead.'
       : 'The next session will likely confirm whether the move has follow-through.'
   return `${lead} ${body} ${watch}`
+}
+
+async function synthesizeDigest(
+  symbol: string,
+  batch: NewsInputItem[],
+  lang: 'ko' | 'en',
+  marketContext: string | undefined,
+  companyName: string | undefined,
+  price?: number | null,
+  changePct?: number | null,
+  dateET?: string,
+  session?: NewsSynthSession,
+): Promise<DigestResult | null> {
+  const selectedBatch = selectRelevantItems(batch, symbol, companyName)
+  if (selectedBatch.length < 1) {
+    return null
+  }
+
+  const digestDateET = dateET?.trim() || getCurrentEtDate()
+  const clusters = clusterNewsItems(
+    symbol,
+    digestDateET,
+    selectedBatch.map((item) => ({
+      id: item.id,
+      timeET: item.timeET,
+      headline: item.headline,
+      summary: item.summary || item.headline,
+    })),
+  ).clusters
+
+  const thesis = buildSessionThesis(symbol, changePct ?? null, clusters)
+  const sessionHint = session === 'morning' || session === 'afternoon' ? session : 'auto'
+  const marketTape = await readCacheJsonOrNull<{ items?: MarketTapeItem[] | null }>('market_tape.json')
+  const timeline = buildTimelineFlow({
+    symbol,
+    items: selectedBatch.map((item) => ({
+      id: item.id,
+      timeET: item.timeET,
+      headline: item.headline,
+      summary: item.summary || item.headline,
+    })),
+    clusters,
+    priceChangePct: changePct ?? null,
+    session: sessionHint,
+  })
+  const relativeView = buildRelativeView({
+    symbol,
+    companyName,
+    priceChangePct: changePct ?? null,
+    marketTapeItems: marketTape?.items ?? [],
+    clusters,
+  })
+  const confidence = buildConfidenceProfile({
+    symbol,
+    priceChangePct: changePct ?? null,
+    clusters,
+    timeline,
+    relativeView,
+    rawCount: batch.length,
+    selectedCount: selectedBatch.length,
+  })
+  const priceAnchor = buildPriceAnchorLayer({
+    symbol,
+    price: price ?? null,
+    changePct: changePct ?? null,
+    timeline,
+    session: sessionHint,
+  })
+  const spine = buildNarrativeSpine({
+    symbol,
+    price: price ?? null,
+    changePct: changePct ?? null,
+    thesis: thesis.thesis,
+    clusters,
+    session: sessionHint,
+    timeline,
+    confidence,
+    relativeView,
+    priceAnchor,
+  })
+  const renderedDraft = renderNarrativeBrief({
+    priceAnchor,
+    spine,
+  })
+
+  if (selectedBatch.length <= LOW_DENSITY_ITEM_THRESHOLD) {
+    return { text: renderedDraft.text }
+  }
+
+  const systemPrompt = buildDigestSystemPrompt(lang)
+  const baseUserPrompt = buildDigestPrompt(
+    symbol,
+    lang,
+    marketContext,
+    companyName,
+    renderedDraft.text,
+    JSON.stringify(spine, null, 2),
+    price ?? null,
+    changePct ?? null,
+    digestDateET,
+  )
+
+  const providers: Array<() => Promise<string>> = [
+    () => callAnthropic(systemPrompt, baseUserPrompt),
+    () => callOpenAI(systemPrompt, baseUserPrompt),
+  ]
+
+  for (const [providerIndex, provider] of providers.entries()) {
+    try {
+      const raw = await provider()
+      const parsed = parseDigestResponse(raw)
+      if (!parsed) continue
+      const validation = validateDigestText(parsed, lang)
+      if (validation.passed) {
+        return { text: parsed }
+      }
+
+      const retryPrompt = buildDigestRetryPrompt(baseUserPrompt, validation.reasons, lang)
+      const retryRaw = providerIndex === 0
+        ? await callAnthropic(systemPrompt, retryPrompt)
+        : await callOpenAI(systemPrompt, retryPrompt)
+      const retryParsed = parseDigestResponse(retryRaw)
+      if (!retryParsed) continue
+      const retryValidation = validateDigestText(retryParsed, lang)
+      if (retryValidation.passed) {
+        return { text: retryParsed }
+      }
+    } catch (err) {
+      console.error('[news-synthesize][digest] provider failed:', err)
+      continue
+    }
+  }
+
+  const fallback = buildDigestFallbackText(symbol, lang, spine, renderedDraft.text, marketContext)
+  return { text: fallback }
 }
 
 async function callAnthropic(
@@ -1226,6 +1367,17 @@ async function synthesizeBatch(
   companyName?: string,
 ): Promise<SynthesizedItem[]> {
   const selectedBatch = selectRelevantItems(batch, symbol, companyName)
+  if (selectedBatch.length <= LOW_DENSITY_ITEM_THRESHOLD) {
+    return selectedBatch.map((item, index) => ({
+      id: item.id,
+      text: buildFallbackText(
+        item,
+        lang,
+        inferSessionHint(item.timeET || (index % 2 === 0 ? '09:30' : '16:30')),
+      ),
+    }))
+  }
+
   const items = buildItemBlocks(selectedBatch)
   const eventCards = buildEventCards(items, symbol, companyName)
   const narrativePlan = buildNarrativePlan(eventCards, symbol, companyName, marketContext)
@@ -1319,6 +1471,10 @@ export async function POST(req: Request) {
   const items = Array.isArray(body.items) ? body.items : []
   const lang = body.lang === 'en' ? 'en' : 'ko'
   const marketContext = typeof body.marketContext === 'string' ? body.marketContext.trim() : ''
+  const dateET = typeof body.dateET === 'string' ? body.dateET.trim() : ''
+  const session = body.session === 'morning' || body.session === 'afternoon' ? body.session : 'auto'
+  const price = typeof body.price === 'number' && Number.isFinite(body.price) ? body.price : null
+  const changePct = typeof body.changePct === 'number' && Number.isFinite(body.changePct) ? body.changePct : null
 
   if (!symbol) {
     return NextResponse.json({ error: 'Missing symbol.' }, { status: 400 })
@@ -1351,6 +1507,10 @@ export async function POST(req: Request) {
       lang,
       marketContext || undefined,
       companyName || undefined,
+      price,
+      changePct,
+      dateET || undefined,
+      session,
     )
     return NextResponse.json({
       results,

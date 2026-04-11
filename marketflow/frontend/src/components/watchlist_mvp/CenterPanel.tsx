@@ -48,6 +48,7 @@ type CenterPanelProps = {
   onExportEvidenceToSheet: (sessionId: string) => Promise<unknown>
   onCloseDetail: () => void
   onRefreshNews: () => void
+  isRefreshLocked?: boolean
   isNewsRefreshing: boolean
   newsLastFetchedAt: Date | null
   todayOpen: number | null
@@ -68,6 +69,21 @@ const formatCompactNumber = (value: number): string => {
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
   if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`
   return `${Math.round(value)}`
+}
+
+const parseLooseNumber = (value?: string | number | null): number | null => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+  if (typeof value !== 'string') return null
+
+  const normalized = value
+    .replace(/[%,$\s]/g, '')
+    .replace(/[^0-9.-]/g, '')
+
+  if (!normalized) return null
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 const normalizeNewsText = (value: string): string =>
@@ -390,6 +406,7 @@ export default function CenterPanel({
   onExportEvidenceToSheet,
   onCloseDetail,
   onRefreshNews,
+  isRefreshLocked = false,
   isNewsRefreshing,
   newsLastFetchedAt,
   todayOpen,
@@ -423,14 +440,23 @@ export default function CenterPanel({
   const currentEtMinutes = getCurrentEtMinutes()
   const groupedTimeline = useMemo(() => {
     const grouped = new Map<string, TickerNewsItem[]>()
-    timeline
-      .filter((item) => {
-        if (item.dateET !== dateET) return false
-        if (dateET !== currentEtDate) return true
-        const itemMinutes = parseClockMinutes(item.timeET)
-        if (itemMinutes == null) return true
-        return itemMinutes <= currentEtMinutes
-      })
+    const sameDayItems = timeline.filter((item) => item.dateET === dateET)
+    const baseItems = sameDayItems.length ? sameDayItems : timeline
+    const visibleItems =
+      dateET === currentEtDate
+        ? (() => {
+            const pastItems = baseItems.filter((item) => {
+              const itemMinutes = parseClockMinutes(item.timeET)
+              if (itemMinutes == null) return true
+              return itemMinutes <= currentEtMinutes
+            })
+            // If we are pre-open and nothing has elapsed yet, surface the day's items
+            // instead of showing a blank panel.
+            return pastItems.length ? pastItems : baseItems
+          })()
+        : baseItems
+
+    visibleItems
       .forEach((item) => {
         const dateKey = getNewsDateKey(item)
         const items = grouped.get(dateKey) ?? []
@@ -450,6 +476,9 @@ export default function CenterPanel({
   const [synthKO, setSynthKO] = useState<Map<string, string>>(new Map())
   const [isSynthesizingEN, setIsSynthesizingEN] = useState(false)
   const [isSynthesizingKO, setIsSynthesizingKO] = useState(false)
+  const [digestEN, setDigestEN] = useState<string>('')
+  const [digestKO, setDigestKO] = useState<string>('')
+  const digestGenerationRef = useRef(0)
   const synthENRequested = useRef<Set<string>>(new Set())
   const synthKORequested = useRef<Set<string>>(new Set())
 
@@ -458,6 +487,7 @@ export default function CenterPanel({
 
   // ?щ낵 蹂寃????⑹꽦 罹먯떆 珥덇린??
   useEffect(() => {
+    digestGenerationRef.current += 1
     setSynthEN(new Map())
     setSynthKO(new Map())
     synthENRequested.current = new Set()
@@ -465,7 +495,9 @@ export default function CenterPanel({
     setLangMode('EN')
     setIsSynthesizingEN(false)
     setIsSynthesizingKO(false)
-  }, [selectedSymbol])
+    setDigestEN('')
+    setDigestKO('')
+  }, [dateET, selectedSymbol])
 
   // EN ?먮룞 ?⑹꽦 (?щ낵/?댁뒪 濡쒕뱶 ??
   useEffect(() => {
@@ -479,23 +511,33 @@ export default function CenterPanel({
       selectedItem?.companyName,
     )
     if (!selectedPending.length) return
+    const requestGeneration = digestGenerationRef.current
+    const requestSymbol = selectedSymbol
+    const requestDateET = dateET
     setIsSynthesizingEN(true)
     const run = async () => {
       try {
         const payload = selectedPending.map(item => ({ id: item.id, timeET: item.timeET, headline: item.headline ?? '', summary: item.summary ?? '' }))
+        const digestPrice = todayClose ?? parseLooseNumber(selectedItem?.lastPrice)
+        const digestChangePct = parseLooseNumber(selectedItem?.changePercent)
         const res = await fetch('/api/terminal/news-synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            symbol: selectedSymbol,
+            symbol: requestSymbol,
             companyName: selectedItem?.companyName ?? '',
+            dateET: requestDateET,
+            price: digestPrice,
+            changePct: digestChangePct,
+            session: 'auto',
             items: payload,
             lang: 'en',
             marketContext: newsMarketContext,
           }),
         })
         if (!res.ok) return
-        const data = await res.json() as { results: Array<{ id: string; text: string }> }
+        const data = await res.json() as { results: Array<{ id: string; text: string }>; digest?: string | null }
+        if (digestGenerationRef.current !== requestGeneration) return
         setSynthEN(prev => {
           const next = new Map(prev)
           for (const r of data.results) {
@@ -503,10 +545,17 @@ export default function CenterPanel({
           }
           return next
         })
-      } catch { /* ignore */ } finally { setIsSynthesizingEN(false) }
+        if (typeof data.digest === 'string' && data.digest.trim()) {
+          setDigestEN(data.digest.trim())
+        }
+      } catch { /* ignore */ } finally {
+        if (digestGenerationRef.current === requestGeneration) {
+          setIsSynthesizingEN(false)
+        }
+      }
     }
     void run()
-  }, [groupedTimeline, selectedItem?.companyName, selectedSymbol])
+  }, [groupedTimeline, selectedItem?.companyName, selectedItem?.changePercent, selectedItem?.lastPrice, selectedSymbol, dateET, todayClose])
 
   // KR 踰꾪듉 ?대┃ ???쒓뎅???⑹꽦
   useEffect(() => {
@@ -521,23 +570,33 @@ export default function CenterPanel({
       selectedItem?.companyName,
     )
     if (!selectedPending.length) return
+    const requestGeneration = digestGenerationRef.current
+    const requestSymbol = selectedSymbol
+    const requestDateET = dateET
     setIsSynthesizingKO(true)
     const run = async () => {
       try {
         const payload = selectedPending.map(item => ({ id: item.id, timeET: item.timeET, headline: item.headline ?? '', summary: item.summary ?? '' }))
+        const digestPrice = todayClose ?? parseLooseNumber(selectedItem?.lastPrice)
+        const digestChangePct = parseLooseNumber(selectedItem?.changePercent)
         const res = await fetch('/api/terminal/news-synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            symbol: selectedSymbol,
+            symbol: requestSymbol,
             companyName: selectedItem?.companyName ?? '',
+            dateET: requestDateET,
+            price: digestPrice,
+            changePct: digestChangePct,
+            session: 'auto',
             items: payload,
             lang: 'ko',
             marketContext: newsMarketContext,
           }),
         })
         if (!res.ok) return
-        const data = await res.json() as { results: Array<{ id: string; text: string }> }
+        const data = await res.json() as { results: Array<{ id: string; text: string }>; digest?: string | null }
+        if (digestGenerationRef.current !== requestGeneration) return
         setSynthKO(prev => {
           const next = new Map(prev)
           for (const r of data.results) {
@@ -545,10 +604,24 @@ export default function CenterPanel({
           }
           return next
         })
-      } catch { /* ignore */ } finally { setIsSynthesizingKO(false) }
+        if (typeof data.digest === 'string' && data.digest.trim()) {
+          setDigestKO(data.digest.trim())
+        }
+      } catch { /* ignore */ } finally {
+        if (digestGenerationRef.current === requestGeneration) {
+          setIsSynthesizingKO(false)
+        }
+      }
     }
     void run()
-  }, [langMode, groupedTimeline, selectedItem?.companyName, selectedSymbol])
+  }, [langMode, groupedTimeline, selectedItem?.companyName, selectedItem?.changePercent, selectedItem?.lastPrice, selectedSymbol, dateET, todayClose])
+
+  const activeDigestText = useMemo(() => {
+    if (langMode === 'KR') {
+      return digestKO || digestEN || (isSynthesizingKO ? '...' : isSynthesizingEN ? '...' : '')
+    }
+    return digestEN || digestKO || (isSynthesizingEN ? '...' : isSynthesizingKO ? '...' : '')
+  }, [digestEN, digestKO, isSynthesizingEN, isSynthesizingKO, langMode])
 
   useEffect(() => {
     setExportStatus('idle')
@@ -604,23 +677,23 @@ export default function CenterPanel({
             </button>
             <button
               onClick={onRefreshNews}
-              disabled={isNewsRefreshing}
-              title="?댁뒪 ?덈줈怨좎묠"
+              disabled={isNewsRefreshing || isRefreshLocked}
+              title={isRefreshLocked ? 'Weekend / holiday refresh locked' : 'News refresh'}
               style={{
                 background: 'rgba(56,189,248,0.08)',
                 border: '1px solid rgba(56,189,248,0.25)',
                 borderRadius: 6,
-                color: isNewsRefreshing ? '#475569' : '#38bdf8',
-                cursor: isNewsRefreshing ? 'not-allowed' : 'pointer',
+                color: isNewsRefreshing || isRefreshLocked ? '#475569' : '#38bdf8',
+                cursor: isNewsRefreshing || isRefreshLocked ? 'not-allowed' : 'pointer',
                 fontSize: '0.72rem',
                 fontWeight: 700,
                 padding: '0.2rem 0.55rem',
                 letterSpacing: '0.04em',
                 transition: 'opacity 0.15s',
-                opacity: isNewsRefreshing ? 0.5 : 1,
+                opacity: isNewsRefreshing || isRefreshLocked ? 0.5 : 1,
               }}
             >
-              {isNewsRefreshing ? '...' : '??Refresh'}
+              {isRefreshLocked ? 'LOCKED' : isNewsRefreshing ? '...' : 'Refresh'}
             </button>
           </div>
         </div>
@@ -629,6 +702,22 @@ export default function CenterPanel({
       <div className={styles.centerFeed}>
         <div className={styles.stack}>
           <div>
+            {activeDigestText && (
+              <section
+                className={styles.panelStateBox}
+                style={{
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: 1.5,
+                  marginBottom: '1rem',
+                  borderColor: 'rgba(56,189,248,0.25)',
+                }}
+              >
+                <p style={{ margin: 0, marginBottom: '0.45rem', fontSize: '0.72rem', letterSpacing: '0.08em', color: '#38bdf8', textTransform: 'uppercase' }}>
+                  {langMode === 'KR' ? '일일 서사' : 'Daily Narrative'}
+                </p>
+                <div>{activeDigestText}</div>
+              </section>
+            )}
             {timelineStatus === 'loading' && (
               <div className={styles.panelStateBox}>Loading symbol news timeline from real API data...</div>
             )}

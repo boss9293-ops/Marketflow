@@ -69,7 +69,6 @@ const getEtClockParts = (now: Date = new Date()): {
 
 type NewsRefreshCheckpointState = {
   dateET: ETDateString
-  openTriggered: boolean
   closeTriggered: boolean
 }
 
@@ -79,7 +78,6 @@ const createNewsRefreshCheckpointState = (now: Date = new Date()): NewsRefreshCh
   const currentMinutes = hour * 60 + minute
   return {
     dateET,
-    openTriggered: currentMinutes >= MARKET_OPEN_MINUTES_ET,
     closeTriggered: currentMinutes >= MARKET_CLOSE_MINUTES_ET,
   }
 }
@@ -178,6 +176,26 @@ const isRegularSessionOpenET = (now: Date = new Date()): boolean => {
   return totalMinutes >= MARKET_OPEN_MINUTES_ET && totalMinutes < MARKET_CLOSE_MINUTES_ET
 }
 
+const isNewsRefreshAllowedET = (now: Date = new Date()): boolean => {
+  const { weekday } = getEtClockParts(now)
+  if (weekday === 'Sat' || weekday === 'Sun') return false
+  return !isUsMarketHolidayET(now)
+}
+
+const getLatestTradingDateET = (now: Date = new Date()): ETDateString => {
+  const cursor = new Date(now)
+  for (let i = 0; i < 10; i += 1) {
+    const { year, month, day, weekday } = getEtClockParts(cursor)
+    const candidate = toYmd(year, month, day)
+    if (weekday !== 'Sat' && weekday !== 'Sun' && !isUsMarketHolidayET(cursor)) {
+      return candidate
+    }
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  const { year, month, day } = getEtClockParts(now)
+  return toYmd(year, month, day)
+}
+
 type MarketHeadlineView = {
   id: string
   dateET: string
@@ -267,10 +285,23 @@ type SectionStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error'
 type AskStatus = 'idle' | 'submitting' | 'ready' | 'error'
 
 const WATCHLIST_QUOTE_REFRESH_MS = 20_000
+const SYMBOL_SNAPSHOT_CACHE_TTL_MS = 1000 * 60 * 5
+
+type SymbolSnapshotCacheEntry = {
+  briefs: TickerBrief[]
+  news: TickerNewsItem[]
+  todayOpen: number | null
+  todayHigh: number | null
+  todayLow: number | null
+  todayClose: number | null
+  todayVolume: number | null
+  fetchedAt: Date
+  refreshTick: number
+}
 
 export default function AppShell() {
   const service = useMemo(() => createDashboardService({ mode: 'hybrid' }), [])
-  const [selectedDateET, setSelectedDateET] = useState<ETDateString>(() => formatDateET(new Date()))
+  const [selectedDateET, setSelectedDateET] = useState<ETDateString>(() => getLatestTradingDateET(new Date()))
   const [watchlists, setWatchlists] = useState<Watchlist[]>([])
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<string | null>(null)
   const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([])
@@ -315,11 +346,11 @@ export default function AppShell() {
   const [evidenceRows, setEvidenceRows] = useState<EvidenceRow[]>([])
   const [evidenceStatus, setEvidenceStatus] = useState<SectionStatus>('idle')
   const [evidenceError, setEvidenceError] = useState<string | null>(null)
+  const symbolSnapshotCacheRef = useRef(new Map<string, SymbolSnapshotCacheEntry>())
 
   useEffect(() => {
     const syncSelectedDate = () => {
-      const { year, month, day } = getEtClockParts(new Date())
-      const nextDateET = toYmd(year, month, day)
+      const nextDateET = getLatestTradingDateET(new Date())
       setSelectedDateET((current) => (current === nextDateET ? current : nextDateET))
     }
 
@@ -451,14 +482,48 @@ export default function AppShell() {
     if (!selectedSymbol || initStatus === 'error' || initStatus === 'empty') return
 
     let cancelled = false
-    const loadSymbolData = async () => {
-      setTickerBriefs([])
-      setTickerNews([])
-      setBriefsStatus('loading')
+    const cacheKey = `${selectedDateET}|${selectedSymbol}`
+
+    const hydrateSnapshot = (snapshot: SymbolSnapshotCacheEntry) => {
+      setTickerBriefs(snapshot.briefs)
+      setBriefsStatus(snapshot.briefs.length ? 'ready' : 'empty')
       setBriefsError(null)
-      setTimelineStatus('loading')
+      setTickerNews(snapshot.news)
+      setTimelineStatus(snapshot.news.length ? 'ready' : 'empty')
       setTimelineError(null)
-      setIsNewsRefreshing(true)
+      setTodayOpen(snapshot.todayOpen)
+      setTodayHigh(snapshot.todayHigh)
+      setTodayLow(snapshot.todayLow)
+      setTodayClose(snapshot.todayClose)
+      setTodayVolume(snapshot.todayVolume)
+      setNewsLastFetchedAt(snapshot.fetchedAt)
+    }
+
+    const loadSymbolData = async () => {
+      const cachedSnapshot = symbolSnapshotCacheRef.current.get(cacheKey)
+      const cacheAgeMs = cachedSnapshot ? Date.now() - cachedSnapshot.fetchedAt.getTime() : Number.POSITIVE_INFINITY
+      const shouldRevalidate =
+        !cachedSnapshot ||
+        cachedSnapshot.refreshTick !== newsRefreshTick ||
+        cacheAgeMs > SYMBOL_SNAPSHOT_CACHE_TTL_MS
+
+      if (cachedSnapshot) {
+        hydrateSnapshot(cachedSnapshot)
+        setIsNewsRefreshing(shouldRevalidate)
+      } else {
+        setTickerBriefs([])
+        setTickerNews([])
+        setBriefsStatus('loading')
+        setBriefsError(null)
+        setTimelineStatus('loading')
+        setTimelineError(null)
+        setTodayOpen(null)
+        setTodayHigh(null)
+        setTodayLow(null)
+        setTodayClose(null)
+        setTodayVolume(null)
+        setIsNewsRefreshing(true)
+      }
 
       setSelectedNewsId(null)
       setNewsDetail(null)
@@ -474,11 +539,11 @@ export default function AppShell() {
       setEvidenceRows([])
       setEvidenceStatus('idle')
       setEvidenceError(null)
-      setTodayOpen(null)
-      setTodayHigh(null)
-      setTodayLow(null)
-      setTodayClose(null)
-      setTodayVolume(null)
+
+      if (!shouldRevalidate) {
+        setIsNewsRefreshing(false)
+        return
+      }
 
       const [briefsResult, newsResult, ohlcvResult] = await Promise.allSettled([
         service.getTickerBriefs(selectedSymbol, selectedDateET),
@@ -491,30 +556,46 @@ export default function AppShell() {
 
       if (briefsResult.status === 'fulfilled') {
         const items = briefsResult.value.data.briefs
+        const nextBriefsStatus: SectionStatus = items.length ? 'ready' : 'empty'
         setTickerBriefs(items)
-        setBriefsStatus(items.length ? 'ready' : 'empty')
+        setBriefsStatus(nextBriefsStatus)
+        setBriefsError(null)
       } else {
-        setTickerBriefs([])
-        setBriefsStatus('error')
-        setBriefsError(
-          briefsResult.reason instanceof Error
-            ? briefsResult.reason.message
-            : 'Failed to load brief cards.',
-        )
+        if (cachedSnapshot) {
+          setTickerBriefs(cachedSnapshot.briefs)
+          setBriefsStatus(cachedSnapshot.briefs.length ? 'ready' : 'empty')
+          setBriefsError(null)
+        } else {
+          setTickerBriefs([])
+          setBriefsStatus('error')
+          setBriefsError(
+            briefsResult.reason instanceof Error
+              ? briefsResult.reason.message
+              : 'Failed to load brief cards.',
+          )
+        }
       }
 
       if (newsResult.status === 'fulfilled') {
         const items = newsResult.value.data.news
+        const nextTimelineStatus: SectionStatus = items.length ? 'ready' : 'empty'
         setTickerNews(items)
-        setTimelineStatus(items.length ? 'ready' : 'empty')
+        setTimelineStatus(nextTimelineStatus)
+        setTimelineError(null)
       } else {
-        setTickerNews([])
-        setTimelineStatus('error')
-        setTimelineError(
-          newsResult.reason instanceof Error
-            ? newsResult.reason.message
-            : 'Failed to load news timeline.',
-        )
+        if (cachedSnapshot) {
+          setTickerNews(cachedSnapshot.news)
+          setTimelineStatus(cachedSnapshot.news.length ? 'ready' : 'empty')
+          setTimelineError(null)
+        } else {
+          setTickerNews([])
+          setTimelineStatus('error')
+          setTimelineError(
+            newsResult.reason instanceof Error
+              ? newsResult.reason.message
+              : 'Failed to load news timeline.',
+          )
+        }
       }
       // ?ㅻ뒛 ?쒓?/醫낃? 異붿텧
       if (ohlcvResult.status === 'fulfilled' && ohlcvResult.value?.bars?.length) {
@@ -525,6 +606,33 @@ export default function AppShell() {
         setTodayLow(todayBar?.l ?? null)
         setTodayClose(todayBar?.c ?? null)
         setTodayVolume(todayBar?.v ?? null)
+      }
+      if (
+        briefsResult.status === 'fulfilled' &&
+        newsResult.status === 'fulfilled' &&
+        ohlcvResult.status === 'fulfilled'
+      ) {
+        symbolSnapshotCacheRef.current.set(cacheKey, {
+          briefs: briefsResult.value.data.briefs,
+          news: newsResult.value.data.news,
+          todayOpen: ohlcvResult.value?.bars?.length
+            ? ohlcvResult.value.bars[ohlcvResult.value.bars.length - 1]?.o ?? null
+            : null,
+          todayHigh: ohlcvResult.value?.bars?.length
+            ? ohlcvResult.value.bars[ohlcvResult.value.bars.length - 1]?.h ?? null
+            : null,
+          todayLow: ohlcvResult.value?.bars?.length
+            ? ohlcvResult.value.bars[ohlcvResult.value.bars.length - 1]?.l ?? null
+            : null,
+          todayClose: ohlcvResult.value?.bars?.length
+            ? ohlcvResult.value.bars[ohlcvResult.value.bars.length - 1]?.c ?? null
+            : null,
+          todayVolume: ohlcvResult.value?.bars?.length
+            ? ohlcvResult.value.bars[ohlcvResult.value.bars.length - 1]?.v ?? null
+            : null,
+          fetchedAt: new Date(),
+          refreshTick: newsRefreshTick,
+        })
       }
       setIsNewsRefreshing(false)
       setNewsLastFetchedAt(new Date())
@@ -538,6 +646,7 @@ export default function AppShell() {
 
   useEffect(() => {
     if (!selectedSymbol || initStatus !== 'ready') return
+    if (!isNewsRefreshAllowedET()) return
 
     briefingRefreshStateRef.current = createNewsRefreshCheckpointState()
 
@@ -551,11 +660,6 @@ export default function AppShell() {
       if (state.dateET !== currentDateET) {
         briefingRefreshStateRef.current = createNewsRefreshCheckpointState(now)
         return
-      }
-
-      if (!state.openTriggered && currentMinutes >= MARKET_OPEN_MINUTES_ET) {
-        state.openTriggered = true
-        setNewsRefreshTick((tick) => tick + 1)
       }
 
       if (!state.closeTriggered && currentMinutes >= MARKET_CLOSE_MINUTES_ET) {
@@ -707,7 +811,11 @@ export default function AppShell() {
         selectedSymbol={selectedSymbol}
         selectedItem={selectedItem}
         dateET={selectedDateET}
-        onRefreshNews={() => setNewsRefreshTick((t) => t + 1)}
+        onRefreshNews={() => {
+          if (!isNewsRefreshAllowedET()) return
+          setNewsRefreshTick((t) => t + 1)
+        }}
+        isRefreshLocked={!isNewsRefreshAllowedET()}
         isNewsRefreshing={isNewsRefreshing}
         newsLastFetchedAt={newsLastFetchedAt}
         todayOpen={todayOpen}

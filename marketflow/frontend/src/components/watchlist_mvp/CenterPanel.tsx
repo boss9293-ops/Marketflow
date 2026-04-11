@@ -18,6 +18,7 @@ type CenterPanelProps = {
   selectedSymbol: string
   selectedItem: {
     symbol: string
+    companyName?: string
     lastPrice: string
     changePercent: string
     rangeLabel: string
@@ -67,6 +68,176 @@ const formatCompactNumber = (value: number): string => {
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
   if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`
   return `${Math.round(value)}`
+}
+
+const normalizeNewsText = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/[\u200B-\u200D\uFEFF]/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const NEWS_CATALYST_KEYWORDS = [
+  'earnings',
+  'guidance',
+  'analyst',
+  'target',
+  'rating',
+  'upgrade',
+  'downgrade',
+  'revenue',
+  'margin',
+  'delivery',
+  'deliveries',
+  'shipment',
+  'shipments',
+  'order',
+  'orders',
+  'contract',
+  'deal',
+  'approval',
+  'regulation',
+  'probe',
+  'tariff',
+  'export',
+  'supply chain',
+  'ai',
+  'artificial intelligence',
+  'chip',
+  'chips',
+  'semiconductor',
+  'semiconductors',
+  'gpu',
+  'data center',
+  'cloud',
+  'hyperscaler',
+  'blackwell',
+  'cuda',
+  'inference',
+  'server',
+  'power',
+  'oil',
+  'crude',
+  'rate',
+  'rates',
+  'inflation',
+  'fed',
+  'cpi',
+  'ppi',
+  'yield',
+  'treasury',
+  'geopolitical',
+  'china',
+  'iran',
+  'israel',
+  'cyber',
+  'hack',
+  'antitrust',
+]
+
+const NEWS_NOISE_KEYWORDS = [
+  'sneaker',
+  'fashion',
+  'movie',
+  'concert',
+  'recipe',
+  'celebrity',
+  'sports',
+  'wedding',
+  'gossip',
+  'travel',
+  'airline',
+  'hotel',
+  'restaurant',
+  'music',
+  'beauty',
+  'lifestyle',
+]
+
+const COMPANY_STOPWORDS = new Set([
+  'inc',
+  'incorporated',
+  'corporation',
+  'corp',
+  'company',
+  'co',
+  'ltd',
+  'limited',
+  'holdings',
+  'holding',
+  'class',
+  'common',
+  'shares',
+  'share',
+])
+
+const scoreNewsItem = (
+  item: TickerNewsItem,
+  symbol: string,
+  companyName?: string,
+): number => {
+  const text = normalizeNewsText(`${item.headline || ''} ${item.summary || ''}`)
+  const normalizedSymbol = normalizeNewsText(symbol)
+  let score = 0
+
+  if (normalizedSymbol && text.includes(normalizedSymbol)) {
+    score += 6
+  }
+
+  const companyTokens = normalizeNewsText(companyName ?? '')
+    .split(' ')
+    .filter((token) => token.length >= 4 && !COMPANY_STOPWORDS.has(token))
+
+  if (companyTokens.some((token) => text.includes(token))) {
+    score += 4
+  }
+
+  if (NEWS_CATALYST_KEYWORDS.some((keyword) => text.includes(keyword))) {
+    score += 3
+  }
+
+  if (NEWS_NOISE_KEYWORDS.some((keyword) => text.includes(keyword))) {
+    score -= 3
+  }
+
+  if (!normalizedSymbol && !companyTokens.length) {
+    score -= 1
+  }
+
+  return score
+}
+
+const selectRelevantNewsItems = (
+  items: TickerNewsItem[],
+  symbol: string,
+  companyName?: string,
+): TickerNewsItem[] => {
+  const scored = items.map((item, index) => ({
+    item,
+    index,
+    score: scoreNewsItem(item, symbol, companyName),
+  }))
+
+  const keepAtLeast = Math.min(5, scored.length)
+  let selected = scored.filter((entry) => entry.score >= 1)
+
+  if (selected.length < keepAtLeast) {
+    const ranked = [...scored]
+      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .filter((entry) => !selected.some((picked) => picked.item.id === entry.item.id))
+    selected = selected.concat(ranked.slice(0, keepAtLeast - selected.length))
+  }
+
+  if (selected.length > 12) {
+    selected = [...selected]
+      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .slice(0, 12)
+  }
+
+  return selected
+    .sort((a, b) => a.index - b.index)
+    .map((entry) => entry.item)
 }
 
 const buildMarketLead = (
@@ -240,6 +411,14 @@ export default function CenterPanel({
     ),
     [selectedSymbol, todayOpen, todayHigh, todayLow, todayClose, todayVolume, selectedItem],
   )
+  const newsMarketContext = useMemo(() => {
+    const parts: string[] = []
+    if (selectedItem?.lastPrice) parts.push(`${selectedSymbol} ${selectedItem.lastPrice}`)
+    if (selectedItem?.changePercent) parts.push(`change ${selectedItem.changePercent}`)
+    if (selectedItem?.rangeLabel) parts.push(selectedItem.rangeLabel)
+    const joined = parts.filter(Boolean).join(' | ').trim()
+    return joined || marketLead
+  }, [marketLead, selectedItem, selectedSymbol])
   const currentEtDate = getCurrentEtDate()
   const currentEtMinutes = getCurrentEtMinutes()
   const groupedTimeline = useMemo(() => {
@@ -294,14 +473,26 @@ export default function CenterPanel({
     const pending = allItems.filter(item => !synthENRequested.current.has(item.id))
     if (!pending.length) return
     pending.forEach(item => synthENRequested.current.add(item.id))
+    const selectedPending = selectRelevantNewsItems(
+      pending,
+      selectedSymbol,
+      selectedItem?.companyName,
+    )
+    if (!selectedPending.length) return
     setIsSynthesizingEN(true)
     const run = async () => {
       try {
-        const payload = pending.map(item => ({ id: item.id, timeET: item.timeET, headline: item.headline ?? '', summary: item.summary ?? '' }))
+        const payload = selectedPending.map(item => ({ id: item.id, timeET: item.timeET, headline: item.headline ?? '', summary: item.summary ?? '' }))
         const res = await fetch('/api/terminal/news-synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ symbol: selectedSymbol, items: payload, lang: 'en' }),
+          body: JSON.stringify({
+            symbol: selectedSymbol,
+            companyName: selectedItem?.companyName ?? '',
+            items: payload,
+            lang: 'en',
+            marketContext: newsMarketContext,
+          }),
         })
         if (!res.ok) return
         const data = await res.json() as { results: Array<{ id: string; text: string }> }
@@ -315,7 +506,7 @@ export default function CenterPanel({
       } catch { /* ignore */ } finally { setIsSynthesizingEN(false) }
     }
     void run()
-  }, [groupedTimeline, selectedSymbol])
+  }, [groupedTimeline, selectedItem?.companyName, selectedSymbol])
 
   // KR 踰꾪듉 ?대┃ ???쒓뎅???⑹꽦
   useEffect(() => {
@@ -324,14 +515,26 @@ export default function CenterPanel({
     const pending = allItems.filter(item => !synthKORequested.current.has(item.id))
     if (!pending.length) return
     pending.forEach(item => synthKORequested.current.add(item.id))
+    const selectedPending = selectRelevantNewsItems(
+      pending,
+      selectedSymbol,
+      selectedItem?.companyName,
+    )
+    if (!selectedPending.length) return
     setIsSynthesizingKO(true)
     const run = async () => {
       try {
-        const payload = pending.map(item => ({ id: item.id, timeET: item.timeET, headline: item.headline ?? '', summary: item.summary ?? '' }))
+        const payload = selectedPending.map(item => ({ id: item.id, timeET: item.timeET, headline: item.headline ?? '', summary: item.summary ?? '' }))
         const res = await fetch('/api/terminal/news-synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ symbol: selectedSymbol, items: payload, lang: 'ko' }),
+          body: JSON.stringify({
+            symbol: selectedSymbol,
+            companyName: selectedItem?.companyName ?? '',
+            items: payload,
+            lang: 'ko',
+            marketContext: newsMarketContext,
+          }),
         })
         if (!res.ok) return
         const data = await res.json() as { results: Array<{ id: string; text: string }> }
@@ -345,7 +548,7 @@ export default function CenterPanel({
       } catch { /* ignore */ } finally { setIsSynthesizingKO(false) }
     }
     void run()
-  }, [langMode, groupedTimeline, selectedSymbol])
+  }, [langMode, groupedTimeline, selectedItem?.companyName, selectedSymbol])
 
   useEffect(() => {
     setExportStatus('idle')

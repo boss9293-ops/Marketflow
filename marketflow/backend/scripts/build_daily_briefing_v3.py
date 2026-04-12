@@ -47,6 +47,13 @@ try:
     from backend.services.prompt_manager import PromptManager
 except Exception:
     PromptManager = None  # type: ignore[assignment]
+try:
+    from backend.news import build_context_news_cache
+except Exception:
+    try:
+        from news.context_news import build_context_news_cache
+    except Exception:
+        build_context_news_cache = None  # type: ignore[assignment]
 
 # ?? Paths ????????????????????????????????????????????????????????????????????
 SCRIPT_DIR  = Path(__file__).resolve().parent
@@ -812,7 +819,12 @@ def build_context(
 ) -> dict[str, str]:
     """Returns a dict keyed by section id -> data string."""
 
-    data_date = ms.get("data_date") or rv1.get("data_as_of") or "N/A"
+    data_date = (
+        news.get("date")
+        or ms.get("data_date")
+        or rv1.get("data_as_of")
+        or "N/A"
+    )
     front_headlines = load_frontend_headline_cache()
     headline_tape, mandatory_drivers, hook_driver, headline_rows = build_headline_focus(front_headlines)
 
@@ -1687,7 +1699,7 @@ def is_stale(max_minutes: int = 1440, slot: str | None = None) -> bool:
 # -- Shared data loader --------------------------------------------------
 def _load_inputs():
     ms       = load("market_state.json")
-    overview = load("overview.json",          [OUTPUT_DIR])
+    overview = load("overview.json",          [CACHE_DIR, OUTPUT_DIR])
     rv1      = load("risk_v1.json",                [OUTPUT_DIR])
     re_data  = load("risk_engine.json")
     sp       = load("sector_performance.json",     [OUTPUT_DIR, CACHE_DIR])
@@ -1696,6 +1708,24 @@ def _load_inputs():
     movers   = load("movers_snapshot_latest.json")
     news     = load("context_news.json")
     return ms, overview, rv1, re_data, sp, econ_cal, earnings, movers, news
+
+
+def _refresh_context_news(slot: str) -> dict[str, Any] | None:
+    if build_context_news_cache is None:
+        return None
+    try:
+        refreshed = build_context_news_cache(region="us", limit=5, slot=slot)
+        if isinstance(refreshed, dict):
+            print(
+                "[build_daily_briefing_v3] context news "
+                f"refreshed date={refreshed.get('date')} "
+                f"status={refreshed.get('news_status')}"
+            )
+            return refreshed
+        print("[build_daily_briefing_v3] WARN context news refresh returned non-dict payload")
+    except Exception as exc:
+        print(f"[build_daily_briefing_v3] WARN context news refresh failed: {exc}")
+    return None
 
 
 def _load_api_key() -> str:
@@ -1756,7 +1786,10 @@ def main() -> None:
         print("ERROR: ANTHROPIC_API_KEY not found", file=sys.stderr)
         sys.exit(1)
 
+    refreshed_news = _refresh_context_news(slot)
     ms, overview, rv1, re_data, sp, econ_cal, earnings, movers, news = _load_inputs()
+    if refreshed_news:
+        news = refreshed_news
     ctx = build_context(ms, rv1, re_data, sp, econ_cal, earnings, movers, news)
     risk_check = build_risk_check(rv1)
     freshness = build_freshness_meta(

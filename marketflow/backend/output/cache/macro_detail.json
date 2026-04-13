@@ -1,0 +1,350 @@
+{
+  "policy_version": "macro_policy_v1",
+  "asof_date": "2026-04-13",
+  "macro_pressure": {
+    "score": null,
+    "state": null,
+    "confidence": 0
+  },
+  "macro_pressure_explain": {
+    "state": null,
+    "score": null,
+    "asof": "2026-04-13",
+    "stale": false,
+    "source": [
+      "Macro Layer composites: LPI/RPI/VRI"
+    ],
+    "update_rule": "derived from Macro Layer composites; XCONF excluded from MPS.",
+    "formula": "0.4*LPI + 0.3*RPI + 0.3*VRI",
+    "bins": [
+      {
+        "state": "Calm",
+        "max": 25
+      },
+      {
+        "state": "Low",
+        "max": 45
+      },
+      {
+        "state": "Mixed",
+        "max": 65
+      },
+      {
+        "state": "High",
+        "max": 85
+      },
+      {
+        "state": "Extreme",
+        "max": 100
+      }
+    ],
+    "inputs": [
+      {
+        "name": "LPI",
+        "weight": 0.4,
+        "value": null,
+        "pct": null,
+        "quality": "Partial"
+      },
+      {
+        "name": "RPI",
+        "weight": 0.3,
+        "value": null,
+        "pct": null,
+        "quality": "Partial"
+      },
+      {
+        "name": "VRI",
+        "weight": 0.3,
+        "value": null,
+        "pct": null,
+        "quality": "Partial"
+      }
+    ]
+  },
+  "layers": {
+    "LPI": {
+      "label": "Liquidity Pressure Index",
+      "score": null,
+      "state": null,
+      "confidence": 0,
+      "drivers": [
+        {
+          "feature_id": "walcl_8w_change_pct",
+          "series_id": null,
+          "raw_value": null,
+          "raw_unit": null,
+          "transformed_value": null,
+          "transformed_unit": null,
+          "direction": null,
+          "winsorized": true,
+          "percentile_5y": null,
+          "percentile": null,
+          "static_band_key": null,
+          "static_band_label": null,
+          "note": "LPI driver (FRED4 scaffold)",
+          "last_value_date": null,
+          "last_updated": null,
+          "stale": false
+        },
+        {
+          "feature_id": "rrp_20d_abs_change_pct",
+          "series_id": null,
+          "raw_value": null,
+          "raw_unit": null,
+          "transformed_value": null,
+          "transformed_unit": null,
+          "direction": null,
+          "winsorized": true,
+          "percentile_5y": null,
+          "percentile": null,
+          "static_band_key": null,
+          "static_band_label": null,
+          "note": "LPI driver (FRED4 scaffold)",
+          "last_value_date": null,
+          "last_updated": null,
+          "stale": false
+        }
+      ],
+      "explain": {
+        "state": null,
+        "score": null,
+        "asof": "2026-04-13",
+        "stale": false,
+        "source": [
+          "FRED:RRPONTSYD",
+          "FRED:WALCL"
+        ],
+        "update_rule": "daily close; weekly series forward-filled (WALCL).",
+        "formula": "0.55*pct(walcl_8w_change_pct) + 0.45*pct(rrp_20d_abs_change_pct)",
+        "bins": [
+          {
+            "state": "Easy",
+            "max": 33
+          },
+          {
+            "state": "Neutral",
+            "max": 66
+          },
+          {
+            "state": "Tight",
+            "max": 100
+          }
+        ],
+        "inputs": [
+          {
+            "name": "walcl_8w_change_pct",
+            "series": "WALCL",
+            "weight": 0.55,
+            "formula": "walcl_8w_change_pct: rank percentile over rolling lookback of -1 * WALCL % change (8)",
+            "value": null,
+            "pct": null,
+            "quality": "Partial"
+          },
+          {
+            "name": "rrp_20d_abs_change_pct",
+            "series": "RRP",
+            "weight": 0.45,
+            "formula": "rrp_20d_abs_change_pct: rank percentile over rolling lookback of +1 * RRP % change (20)",
+            "value": null,
+            "pct": null,
+            "quality": "Partial"
+          }
+        ]
+      }
+    },
+    "RPI": {
+      "label": "Rates Pressure Index",
+      "score": null,
+      "state": null,
+      "confidence": 0,
+      "drivers": [
+        {
+          "feature_id": "effr_level",
+          "series_id": null,
+          "raw_value": null,
+          "raw_unit": null,
+          "transformed_value": null,
+          "transformed_unit": null,
+          "direction": null,
+          "winsorized": true,
+          "percentile_5y": null,
+          "percentile": null,
+          "static_band_key": null,
+          "static_band_label": null,
+          "note": "RPI driver (FRED4 scaffold)",
+          "last_value_date": null,
+          "last_updated": null,
+          "stale": false
+        },
+        {
+          "feature_id": "effr_1m_change_bp",
+          "series_id": null,
+          "raw_value": null,
+          "raw_unit": null,
+          "transformed_value": null,
+          "transformed_unit": null,
+          "direction": null,
+          "winsorized": true,
+          "percentile_5y": null,
+          "percentile": null,
+          "static_band_key": null,
+          "static_band_label": null,
+          "note": "RPI driver (FRED4 scaffold)",
+          "last_value_date": null,
+          "last_updated": null,
+          "stale": false
+        }
+      ],
+      "explain": {
+        "state": null,
+        "score": null,
+        "asof": "2026-04-13",
+        "stale": false,
+        "source": [
+          "FRED:EFFR"
+        ],
+        "update_rule": "daily close; weekly series forward-filled (WALCL).",
+        "formula": "0.6*pct(effr_level) + 0.4*pct(effr_1m_change_bp)",
+        "bins": [
+          {
+            "state": "Easing",
+            "max": 33
+          },
+          {
+            "state": "Stable",
+            "max": 66
+          },
+          {
+            "state": "Restrictive",
+            "max": 100
+          }
+        ],
+        "inputs": [
+          {
+            "name": "effr_level",
+            "series": "EFFR",
+            "weight": 0.6,
+            "formula": "effr_level: rank percentile over rolling lookback of +1 * EFFR level",
+            "value": null,
+            "pct": null,
+            "quality": "Partial"
+          },
+          {
+            "name": "effr_1m_change_bp",
+            "series": "EFFR",
+            "weight": 0.4,
+            "formula": "effr_1m_change_bp: rank percentile over rolling lookback of +1 * EFFR bp change (21)",
+            "value": null,
+            "pct": null,
+            "quality": "Partial"
+          }
+        ]
+      }
+    },
+    "VRI": {
+      "label": "Volatility Regime Index",
+      "score": null,
+      "state": null,
+      "confidence": 0,
+      "drivers": [
+        {
+          "feature_id": "vix_level",
+          "series_id": null,
+          "raw_value": null,
+          "raw_unit": null,
+          "transformed_value": null,
+          "transformed_unit": null,
+          "direction": null,
+          "winsorized": true,
+          "percentile_5y": null,
+          "percentile": null,
+          "static_band_key": null,
+          "static_band_label": null,
+          "note": "VRI driver (FRED4 scaffold)",
+          "last_value_date": null,
+          "last_updated": null,
+          "stale": false
+        },
+        {
+          "feature_id": "vix_5d_change_pct",
+          "series_id": null,
+          "raw_value": null,
+          "raw_unit": null,
+          "transformed_value": null,
+          "transformed_unit": null,
+          "direction": null,
+          "winsorized": true,
+          "percentile_5y": null,
+          "percentile": null,
+          "static_band_key": null,
+          "static_band_label": null,
+          "note": "VRI driver (FRED4 scaffold)",
+          "last_value_date": null,
+          "last_updated": null,
+          "stale": false
+        }
+      ],
+      "explain": {
+        "state": null,
+        "score": null,
+        "asof": "2026-04-13",
+        "stale": false,
+        "source": [
+          "FRED:VIXCLS / CBOE VIX (configured source)"
+        ],
+        "update_rule": "daily close; weekly series forward-filled (WALCL).",
+        "formula": "0.6*pct(vix_level) + 0.4*pct(vix_5d_change_pct)",
+        "bins": [
+          {
+            "state": "Compressed",
+            "max": 33
+          },
+          {
+            "state": "Normal",
+            "max": 66
+          },
+          {
+            "state": "Expanding",
+            "max": 100
+          }
+        ],
+        "inputs": [
+          {
+            "name": "vix_level",
+            "series": "VIX",
+            "weight": 0.6,
+            "formula": "vix_level: rank percentile over rolling lookback of +1 * VIX level",
+            "value": null,
+            "pct": null,
+            "quality": "Partial"
+          },
+          {
+            "name": "vix_5d_change_pct",
+            "series": "VIX",
+            "weight": 0.4,
+            "formula": "vix_5d_change_pct: rank percentile over rolling lookback of +1 * VIX % change (5)",
+            "value": null,
+            "pct": null,
+            "quality": "Partial"
+          }
+        ]
+      }
+    }
+  },
+  "explain_standard": {
+    "schema_version": "explain_v1",
+    "required_fields": [
+      "source",
+      "asof",
+      "stale",
+      "formula",
+      "bins",
+      "inputs"
+    ]
+  },
+  "confidence_debug": {
+    "noisy_flag": false,
+    "penalties_applied": []
+  }
+}

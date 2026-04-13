@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "last_run_at": "2026-04-09T22:43:24.551724+00:00",
+  "data_date": "2026-04-06",
+  "missing_files": [],
+  "schema_errors": [],
+  "warnings": [
+    "optional missing: overview_home.json",
+    "warning: missing key 'bullets' in daily_report.json"
+  ],
+  "critical_checked": 3,
+  "recommended_checked": 13
+}

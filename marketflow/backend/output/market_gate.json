@@ -1,0 +1,12 @@
+{
+  "score": 45,
+  "status": "YELLOW",
+  "signal": "SELECTIVE",
+  "components": {
+    "vix": 20,
+    "trend": 5,
+    "momentum": 5,
+    "regime": 15
+  },
+  "timestamp": "2026-04-11T07:00:11.554959"
+}

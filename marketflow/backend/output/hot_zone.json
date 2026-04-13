@@ -1,0 +1,928 @@
+{
+  "generated_at": "2026-04-09T17:33:27",
+  "leaders": [
+    {
+      "symbol": "PPL",
+      "name": "PPL Corporation",
+      "sector": "Electric Utilities",
+      "price": 39.81,
+      "change_pct": 1.69,
+      "volume": 9164698,
+      "vol_ratio": 1.66,
+      "rsi14": 70.4,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "RSI>70",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 70,
+      "streak": 3,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "AEP",
+      "name": "American Electric Power",
+      "sector": "Electric Utilities",
+      "price": 137.15,
+      "change_pct": 1.81,
+      "volume": 2562267,
+      "vol_ratio": 0.78,
+      "rsi14": 70.3,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "RSI>70",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 70,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "ATO",
+      "name": "Atmos Energy",
+      "sector": "Gas Utilities",
+      "price": 192.29,
+      "change_pct": 1.39,
+      "volume": 445834,
+      "vol_ratio": 0.5,
+      "rsi14": 70.8,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "RSI>70",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 70,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "BF.B",
+      "name": "Brown–Forman",
+      "sector": "Distillers & Vintners",
+      "price": 30.31,
+      "change_pct": 12.89,
+      "volume": 13426804,
+      "vol_ratio": 2.11,
+      "rsi14": 71.2,
+      "ai_score": 80,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "VOLUME_SPIKE",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "VOLUME_2X",
+        "RSI>70",
+        "NEW_HIGH_20D"
+      ],
+      "hot_score": 70,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "NFLX",
+      "name": "Netflix",
+      "sector": "Movies & Entertainment",
+      "price": 102.05,
+      "change_pct": 2.68,
+      "volume": 34025893,
+      "vol_ratio": 0.94,
+      "rsi14": 71.2,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "RSI>70",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 70,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "SNDK",
+      "name": "Sandisk",
+      "sector": "Technology Hardware, Storage & Peripherals",
+      "price": 851.57,
+      "change_pct": 9.05,
+      "volume": 16840913,
+      "vol_ratio": 0.92,
+      "rsi14": 68.3,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+",
+        "GAP_UP"
+      ],
+      "hot_score": 65,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "GLW",
+      "name": "Corning Inc.",
+      "sector": "Electronic Components",
+      "price": 169.8,
+      "change_pct": 2.85,
+      "volume": 11936471,
+      "vol_ratio": 1.03,
+      "rsi14": 69.0,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+",
+        "GAP_UP"
+      ],
+      "hot_score": 65,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "MRVL",
+      "name": "MRVL",
+      "sector": "Tech",
+      "price": 119.93,
+      "change_pct": 4.79,
+      "volume": 32309456,
+      "vol_ratio": 1.48,
+      "rsi14": 75.6,
+      "ai_score": 80,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "RSI>70",
+        "NEW_HIGH_20D",
+        "GAP_UP"
+      ],
+      "hot_score": 60,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "DLR",
+      "name": "Digital Realty",
+      "sector": "Data Center REITs",
+      "price": 188.15,
+      "change_pct": 1.36,
+      "volume": 2748210,
+      "vol_ratio": 1.6,
+      "rsi14": 69.7,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 5,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "STX",
+      "name": "Seagate Technology",
+      "sector": "Technology Hardware, Storage & Peripherals",
+      "price": 500.77,
+      "change_pct": 0.9,
+      "volume": 2974038,
+      "vol_ratio": 0.8,
+      "rsi14": 68.6,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 3,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "BNKU",
+      "name": "MicroSectors U.S. Big Banks Index 3X",
+      "sector": "ETF",
+      "price": 32.81,
+      "change_pct": 3.6,
+      "volume": 39560,
+      "vol_ratio": 2.21,
+      "rsi14": 68.1,
+      "ai_score": 80,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "VOLUME_SPIKE",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "VOLUME_2X",
+        "NEW_HIGH_20D"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "GEV",
+      "name": "GE Vernova",
+      "sector": "Heavy Electrical Equipment",
+      "price": 968.02,
+      "change_pct": 3.41,
+      "volume": 2055820,
+      "vol_ratio": 0.86,
+      "rsi14": 66.8,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "KLAC",
+      "name": "KLA Corporation",
+      "sector": "Semiconductor Materials & Equipment",
+      "price": 1727.26,
+      "change_pct": 3.28,
+      "volume": 920318,
+      "vol_ratio": 0.96,
+      "rsi14": 69.9,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "FIX",
+      "name": "Comfort Systems USA",
+      "sector": "Construction & Engineering",
+      "price": 1574.45,
+      "change_pct": 3.23,
+      "volume": 362835,
+      "vol_ratio": 1.01,
+      "rsi14": 64.3,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "AMAT",
+      "name": "Applied Materials",
+      "sector": "Semiconductor Materials & Equipment",
+      "price": 397.81,
+      "change_pct": 3.13,
+      "volume": 5369073,
+      "vol_ratio": 0.86,
+      "rsi14": 65.7,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    }
+  ],
+  "trending": [
+    {
+      "symbol": "FLEX",
+      "name": "FLEX",
+      "sector": "Tech",
+      "price": 75.01,
+      "change_pct": 2.49,
+      "volume": 3727525,
+      "vol_ratio": 1.09,
+      "rsi14": 64.9,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "JBL",
+      "name": "Jabil",
+      "sector": "Electronic Manufacturing Services",
+      "price": 293.02,
+      "change_pct": 2.05,
+      "volume": 1016866,
+      "vol_ratio": 0.85,
+      "rsi14": 63.6,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "TER",
+      "name": "Teradyne",
+      "sector": "Semiconductor Materials & Equipment",
+      "price": 364.21,
+      "change_pct": 1.65,
+      "volume": 4390179,
+      "vol_ratio": 1.49,
+      "rsi14": 68.2,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "GRMN",
+      "name": "Garmin",
+      "sector": "Consumer Electronics",
+      "price": 256.53,
+      "change_pct": 1.48,
+      "volume": 559393,
+      "vol_ratio": 0.92,
+      "rsi14": 66.5,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "KEYS",
+      "name": "Keysight Technologies",
+      "sector": "Electronic Equipment & Instruments",
+      "price": 322.94,
+      "change_pct": 1.45,
+      "volume": 820215,
+      "vol_ratio": 0.68,
+      "rsi14": 69.4,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "CMS",
+      "name": "CMS Energy",
+      "sector": "Multi-Utilities",
+      "price": 79.94,
+      "change_pct": 1.42,
+      "volume": 2757920,
+      "vol_ratio": 1.2,
+      "rsi14": 69.0,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "EVRG",
+      "name": "Evergy",
+      "sector": "Electric Utilities",
+      "price": 84.41,
+      "change_pct": 1.16,
+      "volume": 1578629,
+      "vol_ratio": 0.87,
+      "rsi14": 66.2,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "NI",
+      "name": "NiSource",
+      "sector": "Multi-Utilities",
+      "price": 48.47,
+      "change_pct": 0.77,
+      "volume": 3704061,
+      "vol_ratio": 1.37,
+      "rsi14": 66.6,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "Q",
+      "name": "Qnity Electronics",
+      "sector": "Semiconductor Materials & Equipment",
+      "price": 129.88,
+      "change_pct": 0.42,
+      "volume": 1574993,
+      "vol_ratio": 0.96,
+      "rsi14": 64.7,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "NEE",
+      "name": "NextEra Energy",
+      "sector": "Multi-Utilities",
+      "price": 94.48,
+      "change_pct": 0.33,
+      "volume": 7346333,
+      "vol_ratio": 0.87,
+      "rsi14": 62.9,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 2,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "PLUG",
+      "name": "PLUG",
+      "sector": "Finance",
+      "price": 2.74,
+      "change_pct": 3.4,
+      "volume": 76458033,
+      "vol_ratio": 1.12,
+      "rsi14": 65.7,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "TJX",
+      "name": "TJX Companies",
+      "sector": "Apparel Retail",
+      "price": 165.0,
+      "change_pct": 2.08,
+      "volume": 5592955,
+      "vol_ratio": 1.53,
+      "rsi14": 62.5,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "EIX",
+      "name": "Edison International",
+      "sector": "Electric Utilities",
+      "price": 75.82,
+      "change_pct": 1.98,
+      "volume": 2639529,
+      "vol_ratio": 0.84,
+      "rsi14": 66.6,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "IRM",
+      "name": "Iron Mountain",
+      "sector": "Other Specialized REITs",
+      "price": 108.69,
+      "change_pct": 1.61,
+      "volume": 793554,
+      "vol_ratio": 0.64,
+      "rsi14": 62.0,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "DTE",
+      "name": "DTE Energy",
+      "sector": "Multi-Utilities",
+      "price": 150.98,
+      "change_pct": 1.48,
+      "volume": 497024,
+      "vol_ratio": 0.53,
+      "rsi14": 67.3,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "PCG",
+      "name": "PG&E Corporation",
+      "sector": "Multi-Utilities",
+      "price": 18.63,
+      "change_pct": 1.31,
+      "volume": 15028682,
+      "vol_ratio": 0.7,
+      "rsi14": 65.6,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "AEE",
+      "name": "Ameren",
+      "sector": "Multi-Utilities",
+      "price": 114.32,
+      "change_pct": 1.29,
+      "volume": 1263940,
+      "vol_ratio": 0.94,
+      "rsi14": 67.3,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "PNW",
+      "name": "Pinnacle West Capital",
+      "sector": "Multi-Utilities",
+      "price": 104.45,
+      "change_pct": 1.29,
+      "volume": 512775,
+      "vol_ratio": 0.52,
+      "rsi14": 68.5,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "WEC",
+      "name": "WEC Energy Group",
+      "sector": "Electric Utilities",
+      "price": 118.78,
+      "change_pct": 1.28,
+      "volume": 1485382,
+      "vol_ratio": 0.92,
+      "rsi14": 65.2,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    },
+    {
+      "symbol": "PWR",
+      "name": "Quanta Services",
+      "sector": "Construction & Engineering",
+      "price": 582.06,
+      "change_pct": 1.01,
+      "volume": 702153,
+      "vol_ratio": 0.65,
+      "rsi14": 60.2,
+      "ai_score": 100,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "triggers": [
+        "3D_UP",
+        "NEW_HIGH_20D",
+        "AI_SCORE_90+"
+      ],
+      "hot_score": 55,
+      "streak": 1,
+      "is_hot": true,
+      "date": "2026-04-09"
+    }
+  ],
+  "summary": {
+    "data_date": "2026-04-09",
+    "total_symbols": 714,
+    "hot_symbols": 55,
+    "streak_3plus": 4,
+    "avg_hot_score": 18.35,
+    "leaders_count": 15,
+    "trending_count": 20,
+    "trigger_counts": {
+      "3D_UP": 385,
+      "VOLUME_2X": 18,
+      "RSI>70": 19,
+      "NEW_HIGH_20D": 272,
+      "AI_SCORE_90+": 56,
+      "GAP_UP": 12
+    }
+  }
+}

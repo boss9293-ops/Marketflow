@@ -1,0 +1,113 @@
+{
+  "generated_at": "2026-04-09T20:41:34",
+  "as_of_date": "2026-04-06",
+  "data_date": "2026-04-06",
+  "lang": [
+    "ko",
+    "en"
+  ],
+  "headline": {
+    "ko": "추세는 유지되나, 리스크 여건은 혼조세입니다.",
+    "en": "Trend intact; risk conditions are mixed."
+  },
+  "paragraphs": {
+    "ko": [
+      {
+        "id": "price_action",
+        "title": "가격 흐름",
+        "text": "전일 대비 QQQ는 소폭 상승하였습니다(+0.68%), SPY는 소폭 상승하였습니다(+0.58%), DIA는 소폭 상승하였습니다(+0.57%). VIX는 +7.37% 하락, 단기 변동성 프리미엄이 완화되었습니다."
+      },
+      {
+        "id": "risk_regime",
+        "title": "리스크 구간",
+        "text": "리스크 구간은 현재 MED로 분류되며, 포트폴리오 변동성은 역사적 중간 범위에 위치하고 있습니다. 연환산 포트폴리오 변동성은 14.6%입니다. 일일 꼬리 리스크 지표는 VaR95 -1.67%, CVaR95 -3.11%로, 수익률 분포의 95퍼센타일에서의 예상 손실 한계치를 나타냅니다. 변동성 비율 1.15는 최근 평균과 유사한 수준으로, 구간 전환의 신호는 관찰되지 않습니다."
+      },
+      {
+        "id": "trend_context",
+        "title": "추세·폭",
+        "text": "1차 추세 구조는 유지되고 있습니다: QQQ는 200일 이동평균 대비 2.59% 상위에 위치합니다 (603.07 vs SMA200 587.84). 이 수준은 장기 추세 지지 기준선으로 기능합니다. 브레드스 게이트 점수 60.0는 최근 5일간 +5.00% 개선되었습니다. 레짐 분류: BULL."
+      },
+      {
+        "id": "positioning",
+        "title": "포지셔닝 맥락",
+        "text": "가격이 장기 추세 기준선 위를 유지하는 것은 리스크 지표가 중간 수준을 반영하는 상황에서도 구조적 지지 환경을 제공합니다. 이 레짐에 대한 모델 기반 노출도 범위는 60–90%로, 유사한 과거 조건의 리스크/수익 분포를 반영한 수치입니다(방향성 콜이 아님). 이 구성에서 구조적 조건은 기존 포지션을 유지하거나 개별 리스크 파라미터에 따라 선택적으로 추가하는 방향과 일치합니다. 참고 맥락: QQQ > SMA200 by 2.33%"
+      }
+    ],
+    "en": [
+      {
+        "id": "price_action",
+        "title": "Price Action",
+        "text": "QQQ moved higher by +0.68%; SPY moved higher by +0.58%; DIA moved higher by +0.57% on the session. VIX declined +7.37%, consistent with easing in near-term volatility pricing."
+      },
+      {
+        "id": "risk_regime",
+        "title": "Risk Regime",
+        "text": "The risk regime is classified as MED, with portfolio volatility within a moderate, historically mid-range band. Annualized portfolio volatility sits at 14.6%. One-day tail risk metrics show VaR95 at -1.67% and CVaR95 at -3.11%, representing the estimated loss threshold at the 95th percentile of the return distribution. Volatility ratio at 1.15 is near parity with recent averages, indicating no significant regime shift."
+      },
+      {
+        "id": "trend_context",
+        "title": "Trend & Breadth",
+        "text": "The primary trend structure remains intact: QQQ holds 2.59% above its 200-day moving average (603.07 vs SMA200 587.84), which is the key long-term support reference. The breadth gate score at 60.0 is improving, with a 5-day change of +5.00%. Regime classification: BULL."
+      },
+      {
+        "id": "positioning",
+        "title": "Positioning Context",
+        "text": "Price holding above the long-term trend anchor provides a supportive structural backdrop, even as risk metrics reflect a moderate environment. The model-derived exposure band for this regime is 60–90%, reflecting the historical risk/return distribution of comparable conditions — not a directional call. In this configuration, the structural conditions are consistent with maintaining or selectively adding to existing positions, subject to individual risk parameters. Supporting context: QQQ > SMA200 by 2.33%"
+      }
+    ]
+  },
+  "bullets": {
+    "ko": [
+      {
+        "label": "지수",
+        "text": "QQQ +0.68%, SPY +0.58%, VIX -7.37%"
+      },
+      {
+        "label": "리스크",
+        "text": "리스크 중간; CVaR95 -3.11%; VolRatio 1.15."
+      },
+      {
+        "label": "브레드스",
+        "text": "브레드스 탐욕; 탐욕 87.10/100."
+      }
+    ],
+    "en": [
+      {
+        "label": "Index",
+        "text": "QQQ +0.68%, SPY +0.58%, VIX -7.37%"
+      },
+      {
+        "label": "Risk",
+        "text": "Risk MED; CVaR95 -3.11%; VolRatio 1.15."
+      },
+      {
+        "label": "Breadth",
+        "text": "Breadth Greed; Greed 87.10/100."
+      }
+    ]
+  },
+  "stance": {
+    "label": {
+      "en": "Measured",
+      "ko": "신중한 조정"
+    },
+    "action": {
+      "en": "Increase",
+      "ko": "선택적 추가"
+    },
+    "exposure_band": "60–90%",
+    "why": "QQQ > SMA200 by 2.33%"
+  },
+  "tone_check": {
+    "ko": {
+      "tone_ok": true,
+      "violations": [],
+      "rewritten": false
+    },
+    "en": {
+      "tone_ok": true,
+      "violations": [],
+      "rewritten": false
+    }
+  }
+}

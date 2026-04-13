@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-04-12T19:29:05",
+  "data_date": "2026-04-06",
+  "cache_policy": "daily_close",
+  "phase": {
+    "value": "BULL",
+    "label": "BULL",
+    "color": "#22c55e",
+    "detail": "Regime: Bull | Appetite: Risk Off | Conf: High",
+    "source": "regime_classifier"
+  },
+  "gate": {
+    "value": 60.0,
+    "label": "60.0",
+    "avg10d": 44.285714285714285,
+    "delta5d": 5.0,
+    "color": "#22c55e",
+    "detail": "YELLOW | 10d avg 44.3 | delta5d +5.0",
+    "source": "overview_v2"
+  },
+  "risk": {
+    "value": "MEDIUM",
+    "label": "MED",
+    "vol_pct": 14.56,
+    "var95": -1.67,
+    "color": "#f59e0b",
+    "detail": "Port.Vol 14.6% | SPY VaR95 -1.67% | QQQ VaR95 -2.03% | Level MEDIUM",
+    "source": "overview_v2"
+  },
+  "trend": {
+    "value": "ABOVE",
+    "label": "SMA200+",
+    "qqq_close": 603.07,
+    "qqq_sma200": 587.84,
+    "pct_from_sma200": 2.59,
+    "data_date": "2026-03-05",
+    "color": "#22c55e",
+    "detail": "QQQ 603.07 > SMA200 587.84 (+2.59%) [2026-03-05]",
+    "source": "overview_v2"
+  },
+  "vr": {
+    "value": "OFF",
+    "label": "VR OFF",
+    "color": "#6b7280",
+    "detail": "Stub. Run build_vr_cache.py for live VR energy data.",
+    "source": "stub"
+  }
+}

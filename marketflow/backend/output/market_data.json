@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-04-11T07:00:08.923410",
+  "indices": {
+    "SPY": {
+      "name": "S&P 500",
+      "price": 679.46,
+      "change_pct": -0.07
+    },
+    "QQQ": {
+      "name": "NASDAQ 100",
+      "price": 611.07,
+      "change_pct": 0.14
+    },
+    "DIA": {
+      "name": "Dow Jones",
+      "price": 479.25,
+      "change_pct": -0.55
+    },
+    "IWM": {
+      "name": "Russell 2000",
+      "price": 261.3,
+      "change_pct": -0.25
+    }
+  },
+  "volatility": {
+    "^VIX": {
+      "name": "VIX",
+      "price": 19.23,
+      "change_pct": -1.33
+    }
+  },
+  "bonds": {
+    "^IRX": {
+      "name": "3M T-Bill",
+      "price": 3.59,
+      "change_pct": 0.14
+    },
+    "^FVX": {
+      "name": "5Y Treasury",
+      "price": 3.94,
+      "change_pct": 0.61
+    },
+    "^TNX": {
+      "name": "10Y Treasury",
+      "price": 4.32,
+      "change_pct": 0.56
+    }
+  },
+  "currencies": {
+    "DX-Y.NYB": {
+      "name": "Dollar Index",
+      "price": 98.65,
+      "change_pct": -0.17
+    },
+    "EURUSD=X": {
+      "name": "EUR/USD",
+      "price": 1.17,
+      "change_pct": 0.6
+    },
+    "USDJPY=X": {
+      "name": "USD/JPY",
+      "price": 159.24,
+      "change_pct": 0.38
+    },
+    "KRW=X": {
+      "name": "USD/KRW",
+      "price": 1482.7,
+      "change_pct": 0.64
+    }
+  },
+  "commodities": {
+    "GC=F": {
+      "name": "Gold",
+      "price": 4761.9,
+      "change_pct": -0.63
+    },
+    "CL=F": {
+      "name": "Crude Oil",
+      "price": 96.57,
+      "change_pct": -1.33
+    },
+    "BTC-USD": {
+      "name": "Bitcoin",
+      "price": 72923.17,
+      "change_pct": -0.08
+    }
+  }
+}

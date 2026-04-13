@@ -1,0 +1,13 @@
+{
+  "status": "GREEN",
+  "gate_score": 100,
+  "recommendation": "Risk-on environment. Favor stronger KR leaders.",
+  "kospi": {
+    "change_pct": 6.87
+  },
+  "kosdaq": {
+    "change_pct": 5.12
+  },
+  "usd_krw": 1474.17,
+  "generated_at": "2026-04-09T17:30:14.941187"
+}

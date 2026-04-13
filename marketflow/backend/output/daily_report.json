@@ -1,0 +1,292 @@
+{
+  "generated_at": "2026-04-09T17:35:53",
+  "data_coverage": {
+    "sources": {
+      "market_data": true,
+      "market_gate": true,
+      "hot_zone": true,
+      "sector_rotation": true,
+      "risk_metrics": true,
+      "market_regime": true,
+      "smart_money": true,
+      "vcp_signals": true
+    },
+    "available": 8,
+    "total": 8,
+    "pct": 100.0,
+    "missing_inputs": [],
+    "missing_details": [],
+    "rerun_hint": null
+  },
+  "market_summary": {
+    "lines": [
+      "주요 지수: S&P 500 +0.58%, Nasdaq 100 +0.68%, Russell 2000 +0.57%",
+      "미국 10Y 국채금리 4.29% (보합 +0.05%)",
+      "달러인덱스(DXY) 98.79 — 달러 약세",
+      "VIX 19.5 — 시장 변동성 안정 구간",
+      "금 $4,790, WTI원유 $98.2",
+      "Market Gate Score 75/100 (투자 적극) — BUY",
+      "시장 국면: Bull / Risk Off / Elevated Vol. 전략: Balanced: Diversified portfolio, Sector rotation"
+    ],
+    "bullets": [
+      "① 지수: S&P500 +0.58%, Nasdaq100 +0.68%, Russell2000 +0.57%",
+      "② 금리: 미국 10Y 4.29% (보합 +0.05%)",
+      "③ 심리: 달러(DXY) 98.8 약세 / VIX 19.5 안정 구간",
+      "④ 원자재: 금 $4,790 / WTI원유 $98.2",
+      "⑤ 게이트: Score 75/100 🟢 투자 적극",
+      "⑥ 국면: Bull / Risk Off / Elevated Vol",
+      "⑦ 전략: Balanced: Diversified portfolio, Sector rotation"
+    ],
+    "action_hint": "Balanced: Diversified portfolio, Sector rotation",
+    "overall_tone": "neutral",
+    "overall_tone_label": "혼조",
+    "tone_reason_codes": [
+      "REGIME_RISK_OFF",
+      "GATE_GREEN"
+    ],
+    "gate_score": 75,
+    "gate_signal": "BUY",
+    "regime_label": "Bull / Risk Off / Elevated Vol",
+    "signals": [
+      "GATE_GREEN",
+      "REGIME_RISK_OFF"
+    ],
+    "raw_signals": [
+      "GATE_GREEN",
+      "REGIME_RISK_OFF"
+    ]
+  },
+  "hot_stocks_brief": [
+    {
+      "symbol": "NFLX",
+      "price": 102.05,
+      "change_pct": 2.68,
+      "vol_ratio": 0.94,
+      "ai_score": 100,
+      "rsi": 71.2,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "상승 +2.7% · AI Score 100+ · RSI 과매수(71) · HOT"
+    },
+    {
+      "symbol": "AEP",
+      "price": 137.15,
+      "change_pct": 1.81,
+      "vol_ratio": 0.78,
+      "ai_score": 100,
+      "rsi": 70.3,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "상승 +1.8% · AI Score 100+ · RSI 과매수(70) · HOT"
+    },
+    {
+      "symbol": "PPL",
+      "price": 39.81,
+      "change_pct": 1.69,
+      "vol_ratio": 1.66,
+      "ai_score": 100,
+      "rsi": 70.4,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "상승 +1.7% · 거래량 1.7x ↑ · AI Score 100+ · RSI 과매수(70) · HOT"
+    },
+    {
+      "symbol": "ATO",
+      "price": 192.29,
+      "change_pct": 1.39,
+      "vol_ratio": 0.5,
+      "ai_score": 100,
+      "rsi": 70.8,
+      "tags": [
+        "HOT",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "AI Score 100+ · RSI 과매수(71) · HOT"
+    },
+    {
+      "symbol": "BF.B",
+      "price": 30.31,
+      "change_pct": 12.89,
+      "vol_ratio": 2.11,
+      "ai_score": 80,
+      "rsi": 71.2,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "VOLUME_SPIKE",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "급등 +12.9% · 거래량 2.1x ↑ · AI Score 80+ · RSI 과매수(71) · HOT"
+    },
+    {
+      "symbol": "SNDK",
+      "price": 851.57,
+      "change_pct": 9.05,
+      "vol_ratio": 0.92,
+      "ai_score": 100,
+      "rsi": 68.3,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "급등 +9.1% · AI Score 100+ · HOT"
+    },
+    {
+      "symbol": "GLW",
+      "price": 169.8,
+      "change_pct": 2.85,
+      "vol_ratio": 1.03,
+      "ai_score": 100,
+      "rsi": 69.0,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "상승 +2.9% · AI Score 100+ · HOT"
+    },
+    {
+      "symbol": "MRVL",
+      "price": 119.93,
+      "change_pct": 4.79,
+      "vol_ratio": 1.48,
+      "ai_score": 80,
+      "rsi": 75.6,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "급등 +4.8% · AI Score 80+ · RSI 과매수(76) · HOT"
+    },
+    {
+      "symbol": "GEV",
+      "price": 968.02,
+      "change_pct": 3.41,
+      "vol_ratio": 0.86,
+      "ai_score": 100,
+      "rsi": 66.8,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "급등 +3.4% · AI Score 100+ · HOT"
+    },
+    {
+      "symbol": "PLUG",
+      "price": 2.74,
+      "change_pct": 3.4,
+      "vol_ratio": 1.12,
+      "ai_score": 100,
+      "rsi": 65.7,
+      "tags": [
+        "HOT",
+        "GAIN",
+        "AI",
+        "BREAKOUT"
+      ],
+      "comment": "급등 +3.4% · AI Score 100+ · HOT"
+    }
+  ],
+  "sector_brief": {
+    "phase": "expansion",
+    "phase_label": "Expansion",
+    "phase_color": "#00D9FF",
+    "interp": "경기 확장 국면 — 기술/산업재/임의소비재 강세 예상",
+    "leaders": [
+      {
+        "symbol": "XLE",
+        "name": "Energy",
+        "change_1d": -1.24,
+        "change_3m": 27.03
+      },
+      {
+        "symbol": "XLU",
+        "name": "Utilities",
+        "change_1d": 0.79,
+        "change_3m": 12.61
+      },
+      {
+        "symbol": "XLB",
+        "name": "Materials",
+        "change_1d": -0.15,
+        "change_3m": 10.69
+      }
+    ],
+    "laggers": [
+      {
+        "symbol": "XLF",
+        "name": "Financials",
+        "change_1d": 0.25,
+        "change_3m": -7.7
+      },
+      {
+        "symbol": "XLY",
+        "name": "Consumer Discret.",
+        "change_1d": 1.73,
+        "change_3m": -6.75
+      },
+      {
+        "symbol": "XLV",
+        "name": "Healthcare",
+        "change_1d": -0.23,
+        "change_3m": -6.47
+      }
+    ],
+    "lines": [
+      "현재 경기 국면: Expansion — 경기 확장 국면 — 기술/산업재/임의소비재 강세 예상",
+      "리더 섹터: Energy, Utilities, Materials",
+      "약세 섹터: Financials, Consumer Discret., Healthcare",
+      "DB 커버리지 97% (717/742 종목)"
+    ]
+  },
+  "risk_brief": {
+    "risk_level": "low",
+    "risk_label": "낮음 (투자 적합)",
+    "gate_score": 75,
+    "lines": [
+      "Gate Score 75 — 적극 투자 신호",
+      "SPY VaR(95%) -1.67% / 최대낙폭 -13.72%",
+      "시장 국면 Risk Off — 방어적 포지션 권장"
+    ],
+    "alerts": [
+      {
+        "type": "VCP",
+        "symbol": "GOOGL",
+        "message": "VCP 패턴 A등급, 피벗까지 9.1%"
+      },
+      {
+        "type": "SMART_MONEY",
+        "symbol": "STZ",
+        "message": "기관 Moderate Buying (Score 47.58, Vol 2.5x)"
+      }
+    ],
+    "alerts_hidden_count": 6,
+    "raw_alert_count": 8
+  },
+  "narratives": {
+    "market": "미국 주식은 S&P500 +0.58%, 나스닥100 +0.68% 흐름으로 중립 톤을 보였습니다. 변동성과 금리/달러 지표는 VIX 19.5, 미국 10년물 4.29%, 달러지수 98.79 수준입니다. Gate 점수 75, 위험 추세 Stable 기준 행동 힌트는 '선별'입니다.",
+    "sector": "섹터 로테이션 국면은 'Expansion'로 집계되며, 상대 강세는 XLE, XLU, XLB, 약세는 XLF, XLY, XLV로 나타났습니다. 당일 기준 상단 섹터는 Consumer Cyclical, Industrials이며, 추세 지속 여부를 거래대금과 함께 확인하는 구간입니다. 행동 힌트는 '선별'이며, 주도 섹터 내에서도 실적/수급이 확인된 종목 위주로 접근하는 편이 안전합니다.",
+    "risk": "리스크 레벨은 low, Gate 75로 확인됩니다. 중기 추세는 10일 평균 44.3이며 risk_trend는 Stable입니다. 최근 SNAPSHOT_ALERT 3건 중 HIGH 3건이어서 행동 힌트는 '방어'입니다."
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "policy_version": "macro_policy_v1",
+  "asof_date": "2026-04-13",
+  "macro_pressure": {
+    "score": null,
+    "state": null,
+    "confidence": 0,
+    "bar": {
+      "min": 0,
+      "max": 100
+    }
+  },
+  "indexes": {
+    "LPI": {
+      "score": null,
+      "state": null,
+      "confidence": 0
+    },
+    "RPI": {
+      "score": null,
+      "state": null,
+      "confidence": 0
+    },
+    "VRI": {
+      "score": null,
+      "state": null,
+      "confidence": 0
+    }
+  },
+  "exposure_modifier": {
+    "upper_cap_delta_pct": 0,
+    "reasons": [],
+    "rule_flags": {
+      "mps_ge_70": false,
+      "mps_ge_85": false,
+      "lpi_tight_and_vri_expanding": false
+    }
+  },
+  "series_status": {
+    "WALCL": {
+      "last_value_date": null,
+      "last_updated_at": null,
+      "stale": false,
+      "frequency": "weekly"
+    },
+    "RRP": {
+      "last_value_date": null,
+      "last_updated_at": null,
+      "stale": false,
+      "frequency": "daily"
+    },
+    "EFFR": {
+      "last_value_date": null,
+      "last_updated_at": null,
+      "stale": false,
+      "frequency": "daily"
+    },
+    "VIX": {
+      "last_value_date": null,
+      "last_updated_at": null,
+      "stale": false,
+      "frequency": "daily"
+    }
+  },
+  "governance": {
+    "schema_version": "explain_v1",
+    "series": {
+      "VIX": {
+        "source": "FRED:VIXCLS / CBOE VIX (configured source)",
+        "frequency": "daily",
+        "stale_days": 2,
+        "min_samples": 252,
+        "update_rule": "daily close"
+      },
+      "EFFR": {
+        "source": "FRED:EFFR",
+        "frequency": "daily",
+        "stale_days": 2,
+        "min_samples": 252,
+        "update_rule": "daily close"
+      },
+      "WALCL": {
+        "source": "FRED:WALCL",
+        "frequency": "weekly",
+        "stale_days": 10,
+        "min_samples": 52,
+        "update_rule": "weekly release; forward-fill to business days"
+      },
+      "RRP": {
+        "source": "FRED:RRPONTSYD",
+        "frequency": "daily",
+        "stale_days": 2,
+        "min_samples": 252,
+        "update_rule": "daily close"
+      },
+      "BTC": {
+        "source": "Internal market data source (configured)",
+        "frequency": "daily",
+        "stale_days": 2,
+        "min_samples": 252,
+        "update_rule": "daily close"
+      },
+      "GOLD": {
+        "source": "Internal market data source (configured)",
+        "frequency": "daily",
+        "stale_days": 2,
+        "min_samples": 252,
+        "update_rule": "daily close"
+      },
+      "QQQ": {
+        "source": "YahooFinance:QQQ",
+        "frequency": "daily",
+        "stale_days": 2,
+        "min_samples": 252,
+        "update_rule": "daily close"
+      },
+      "M2SL": {
+        "source": "Configured:M2SL",
+        "frequency": "weekly",
+        "stale_days": 10,
+        "min_samples": 104,
+        "update_rule": "weekly release; forward-fill to business days"
+      },
+      "CPIAUCSL": {
+        "source": "Configured:CPIAUCSL",
+        "frequency": "monthly",
+        "stale_days": 45,
+        "min_samples": 36,
+        "update_rule": "weekly release; forward-fill to business days"
+      }
+    }
+  }
+}

@@ -1,7 +1,4 @@
-﻿import Link from 'next/link'
-import fs from 'fs/promises'
-import path from 'path'
-import Database from 'better-sqlite3'
+import Link from 'next/link'
 import { readCacheJson } from '@/lib/readCacheJson'
 import {
   adjustExposureBandUpper,
@@ -146,99 +143,168 @@ function shiftIsoDate(date: string, days: number) {
   return base.toISOString().slice(0, 10)
 }
 
-function openReadonlyDb(candidates: string[]) {
-  for (const candidate of candidates) {
-    try {
-      return new Database(candidate, { readonly: true, fileMustExist: true })
-    } catch {
-      // Try next candidate path.
-    }
-  }
-  return null
-}
-
 async function readLiveMpsSnapshots(): Promise<{ byDate: Map<string, number>; lastDate: string | null }> {
-  const dirs = [
-    path.resolve(process.cwd(), '..', 'backend', 'storage', 'macro_snapshots'),
-    path.resolve(process.cwd(), 'backend', 'storage', 'macro_snapshots'),
-  ]
-  for (const dir of dirs) {
-    try {
-      const names = await fs.readdir(dir)
-      const files = names.filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name)).sort()
-      const byDate = new Map<string, number>()
-      for (const name of files) {
-        try {
-          const raw = await fs.readFile(path.join(dir, name), 'utf-8')
-          const parsed = JSON.parse(raw) as MacroSnapshotFile
-          const date = typeof parsed.snapshot_date === 'string' ? parsed.snapshot_date : name.replace(/\.json$/, '')
-          const value = parsed.computed?.MPS?.value
-          if (typeof value === 'number' && Number.isFinite(value)) {
-            byDate.set(date, value)
+  // 1차: 로컬 파일 시스템 (로컬 개발 환경)
+  try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    const dirs = [
+      path.resolve(process.cwd(), '..', 'backend', 'storage', 'macro_snapshots'),
+      path.resolve(process.cwd(), 'backend', 'storage', 'macro_snapshots'),
+    ]
+    for (const dir of dirs) {
+      try {
+        const names = await fs.readdir(dir)
+        const files = names.filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name)).sort()
+        if (files.length === 0) continue
+        const byDate = new Map<string, number>()
+        for (const name of files) {
+          try {
+            const raw = await fs.readFile(path.join(dir, name), 'utf-8')
+            const parsed = JSON.parse(raw) as MacroSnapshotFile
+            const date = typeof parsed.snapshot_date === 'string' ? parsed.snapshot_date : name.replace(/\.json$/, '')
+            const value = parsed.computed?.MPS?.value
+            if (typeof value === 'number' && Number.isFinite(value)) {
+              byDate.set(date, value)
+            }
+          } catch {
+            // Skip malformed snapshot files.
           }
-        } catch {
-          // Skip malformed snapshot files.
+        }
+        if (byDate.size > 0) {
+          const lastDate = Array.from(byDate.keys()).sort().at(-1) ?? null
+          return { byDate, lastDate }
+        }
+      } catch {
+        // Try next candidate directory.
+      }
+    }
+  } catch {
+    // fs not available (e.g., edge runtime)
+  }
+
+  // 2차: Railway 백엔드 API (프로덕션 Vercel)
+  try {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_API ||
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      'https://marketflow-production-09df.up.railway.app'
+    const res = await fetch(`${backendUrl}/api/macro/snapshots?limit=400`, {
+      cache: 'no-store',
+      next: { revalidate: 0 },
+    })
+    if (res.ok) {
+      const data = await res.json() as Array<{ snapshot_date?: string; mps?: number | null }>
+      const byDate = new Map<string, number>()
+      for (const item of data) {
+        const date = item.snapshot_date
+        const value = item.mps
+        if (typeof date === 'string' && typeof value === 'number' && Number.isFinite(value)) {
+          byDate.set(date, value)
         }
       }
       const lastDate = byDate.size ? Array.from(byDate.keys()).sort().at(-1) ?? null : null
       return { byDate, lastDate }
-    } catch {
-      // Try next candidate directory.
     }
+  } catch {
+    // Railway API unavailable, return empty
   }
+
   return { byDate: new Map<string, number>(), lastDate: null }
 }
 
-function readLiveMarketSeries(): { rows: MarketHistoryRow[]; lastDate: string | null } {
-  const marketDb = openReadonlyDb([
-    path.resolve(process.cwd(), '..', 'data', 'marketflow.db'),
-    path.resolve(process.cwd(), 'data', 'marketflow.db'),
-  ])
-  if (!marketDb) return { rows: [], lastDate: null }
-
+async function readLiveMarketSeries(): Promise<{ rows: MarketHistoryRow[]; lastDate: string | null }> {
+  // 1차: 로컬 SQLite DB (로컬 개발 환경)
   try {
-    const latestQqq = marketDb
-      .prepare("SELECT MAX(date) AS lastDate FROM ohlcv_daily WHERE symbol = 'QQQ'")
-      .get() as { lastDate?: string | null }
-    const lastDate = typeof latestQqq?.lastDate === 'string' ? latestQqq.lastDate : null
-    if (!lastDate) return { rows: [], lastDate: null }
+    const path = await import('path')
+    const { default: Database } = await import('better-sqlite3')
+    const candidates = [
+      path.resolve(process.cwd(), '..', 'data', 'marketflow.db'),
+      path.resolve(process.cwd(), 'data', 'marketflow.db'),
+    ]
+    for (const candidate of candidates) {
+      try {
+        const marketDb = new Database(candidate, { readonly: true, fileMustExist: true })
+        try {
+          const latestQqq = marketDb
+            .prepare("SELECT MAX(date) AS lastDate FROM ohlcv_daily WHERE symbol = 'QQQ'")
+            .get() as { lastDate?: string | null }
+          const lastDate = typeof latestQqq?.lastDate === 'string' ? latestQqq.lastDate : null
+          if (!lastDate) continue
 
-    const startDate = shiftIsoDate(lastDate, -400)
-    const qqqRows = marketDb
-      .prepare("SELECT date, close FROM ohlcv_daily WHERE symbol = ? AND date >= ? ORDER BY date")
-      .all('QQQ', startDate) as Array<{ date: string; close: number }>
-    const tqqqRows = marketDb
-      .prepare("SELECT date, close FROM ohlcv_daily WHERE symbol = ? AND date >= ? ORDER BY date")
-      .all('TQQQ', startDate) as Array<{ date: string; close: number }>
-    const vixRows = marketDb
-      .prepare("SELECT date, vix FROM market_daily WHERE date >= ? AND vix IS NOT NULL ORDER BY date")
-      .all(startDate) as Array<{ date: string; vix: number }>
+          const startDate = shiftIsoDate(lastDate, -400)
+          const qqqRows = marketDb
+            .prepare("SELECT date, close FROM ohlcv_daily WHERE symbol = ? AND date >= ? ORDER BY date")
+            .all('QQQ', startDate) as Array<{ date: string; close: number }>
+          const tqqqRows = marketDb
+            .prepare("SELECT date, close FROM ohlcv_daily WHERE symbol = ? AND date >= ? ORDER BY date")
+            .all('TQQQ', startDate) as Array<{ date: string; close: number }>
+          const vixRows = marketDb
+            .prepare("SELECT date, vix FROM market_daily WHERE date >= ? AND vix IS NOT NULL ORDER BY date")
+            .all(startDate) as Array<{ date: string; vix: number }>
 
-    const tqqqByDate = new Map(
-      tqqqRows
-        .filter((row) => typeof row?.date === 'string' && typeof row?.close === 'number')
-        .map((row) => [row.date, row.close])
-    )
-    const vixByDate = new Map(
-      vixRows
-        .filter((row) => typeof row?.date === 'string' && typeof row?.vix === 'number')
-        .map((row) => [row.date, row.vix])
-    )
+          const tqqqByDate = new Map(
+            tqqqRows
+              .filter((row) => typeof row?.date === 'string' && typeof row?.close === 'number')
+              .map((row) => [row.date, row.close])
+          )
+          const vixByDate = new Map(
+            vixRows
+              .filter((row) => typeof row?.date === 'string' && typeof row?.vix === 'number')
+              .map((row) => [row.date, row.vix])
+          )
 
-    return {
-      lastDate,
-      rows: qqqRows
-        .filter((row) => typeof row?.date === 'string' && typeof row?.close === 'number')
-        .map((row) => ({
-          date: row.date,
-          qqq_n: row.close,
-          tqqq_n: tqqqByDate.get(row.date) ?? null,
-          vix: vixByDate.get(row.date) ?? null,
-        })),
+          const rows = qqqRows
+            .filter((row) => typeof row?.date === 'string' && typeof row?.close === 'number')
+            .map((row) => ({
+              date: row.date,
+              qqq_n: row.close,
+              tqqq_n: tqqqByDate.get(row.date) ?? null,
+              vix: vixByDate.get(row.date) ?? null,
+            }))
+
+          if (rows.length > 0) return { rows, lastDate }
+        } finally {
+          marketDb.close()
+        }
+      } catch {
+        // Try next candidate DB.
+      }
     }
-  } finally {
-    marketDb.close()
+  } catch {
+    // better-sqlite3 not available in this environment
   }
+
+  // 2차: Railway 백엔드 API (프로덕션 Vercel)
+  try {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_API ||
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      'https://marketflow-production-09df.up.railway.app'
+    const res = await fetch(`${backendUrl}/api/market/series?days=400`, {
+      cache: 'no-store',
+      next: { revalidate: 0 },
+    })
+    if (res.ok) {
+      const data = await res.json() as Array<{ date?: string; qqq_close?: number | null; tqqq_close?: number | null; vix?: number | null }>
+      const rows: MarketHistoryRow[] = data
+        .filter((r) => typeof r.date === 'string')
+        .map((r) => ({
+          date: r.date as string,
+          qqq_n: typeof r.qqq_close === 'number' ? r.qqq_close : null,
+          tqqq_n: typeof r.tqqq_close === 'number' ? r.tqqq_close : null,
+          vix: typeof r.vix === 'number' ? r.vix : null,
+        }))
+      const lastDate = rows.length ? rows[rows.length - 1].date : null
+      return { rows, lastDate }
+    }
+  } catch {
+    // Railway API unavailable
+  }
+
+  return { rows: [], lastDate: null }
 }
 
 export default async function MacroPage({ searchParams }: { searchParams: { tab?: string } }) {
@@ -340,9 +406,18 @@ export default async function MacroPage({ searchParams }: { searchParams: { tab?
   const apiExposureReasons = Array.isArray(macroSummary.exposure_modifier?.reasons) ? macroSummary.exposure_modifier!.reasons! : []
   const shownExposureMod = typeof apiExposureMod === 'number' ? apiExposureMod : macroPressure.exposureUpperModifierPct
 
-  const liveMarketSeries = readLiveMarketSeries()
+  const liveMarketSeries = await readLiveMarketSeries()
+
+  // MPS 스냅샷에서 날짜 기반 fallback 시리즈 생성 (가격 데이터 없을 때)
+  const baseRows: MarketHistoryRow[] =
+    liveMarketSeries.rows.length > 0
+      ? liveMarketSeries.rows
+      : Array.from(liveMpsSnapshots.byDate.keys())
+          .sort()
+          .map((date) => ({ date, qqq_n: null, tqqq_n: null, vix: null }))
+
   let lastKnownMps: number | null = null
-  const liveSeriesRaw = liveMarketSeries.rows.map((row) => {
+  const liveSeriesRaw = baseRows.map((row) => {
       const date = row.date
       const snapshotMps = liveMpsSnapshots.byDate.get(date)
       if (typeof snapshotMps === 'number') {
@@ -362,6 +437,7 @@ export default async function MacroPage({ searchParams }: { searchParams: { tab?
         tqqq_n: typeof row.tqqq_n === 'number' && Number.isFinite(row.tqqq_n) ? row.tqqq_n : null,
       }
     })
+
 
   const lastStoredVixDate =
     liveSeriesRaw

@@ -2196,7 +2196,7 @@ def load_macro_snapshots(limit=30):
     rows = _with_drift_metrics(rows)
 
 
-    return rows[-limit:]
+    return rows[:limit]
 
 
 

@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { resolveBackendBaseUrl } from '@/lib/backendApi'
 import {
   LineChart,
   Line,
@@ -60,7 +61,7 @@ type ValidationTimeseries = {
   is_tqqq_dd_le_neg30: boolean[] | null
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5001'
+const API_BASE = resolveBackendBaseUrl()
 
 export default function ValidationRoom({ conditionStudy }: { conditionStudy?: ConditionStudyCache | null }) {
   const [selectedWindow, setSelectedWindow] = useState('2020')

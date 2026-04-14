@@ -20,6 +20,7 @@ except ModuleNotFoundError:
 BACKEND_DIR = Path(__file__).resolve().parent
 CONFIG_DIR = BACKEND_DIR / "config"
 DB_PATH = BACKEND_DIR.parent / "data" / "marketflow.db"
+CACHE_DB_PATH = BACKEND_DIR.parent / "data" / "cache.db"
 
 class ValidationEngine:
     WINDOWS = {
@@ -163,6 +164,14 @@ class ValidationEngine:
         }
         df_fred = self.fred.get_multiple_series(fred_map, fetch_start, fetch_end)
 
+        # --- cache.db fallback: patch any missing/empty FRED columns ---
+        cache_series_map = {"WALCL": "WALCL", "RRP": "RRP", "EFFR": "EFFR", "VIX": "VIX"}
+        for col, cache_sym in cache_series_map.items():
+            if col not in df_fred.columns or df_fred[col].dropna().empty:
+                fallback = self._load_series_from_cache_db(cache_sym, fetch_start, fetch_end)
+                if not fallback.empty:
+                    df_fred = df_fred.join(fallback.rename(col), how="outer") if col not in df_fred.columns else df_fred.assign(**{col: df_fred.get(col, pd.Series(dtype=float)).combine_first(fallback)})
+
         # --- Build market proxy column (DB-first: QQQ from local DB) ---
         db_series = self._load_market_proxy_from_db(market_proxy, fetch_start, fetch_end)
 
@@ -238,6 +247,46 @@ class ValidationEngine:
     def fetch_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         bundle = self._fetch_data_bundle(start_date, end_date)
         return bundle["df"]
+
+    def _load_series_from_cache_db(self, symbol: str, start_date: str, end_date: str) -> pd.Series:
+        """Load a macro series from cache.db as FRED fallback, then JSON seed as last resort."""
+        # 1. Try cache.db (populated by collect_fred.py / build_cache_series.py)
+        candidates = [CACHE_DB_PATH, BACKEND_DIR / "data" / "cache.db"]
+        for db_path in candidates:
+            if not db_path.exists():
+                continue
+            try:
+                conn = sqlite3.connect(str(db_path))
+                rows = conn.execute(
+                    "SELECT date, value FROM series_data WHERE symbol=? AND date>=? AND date<=? ORDER BY date",
+                    (symbol, start_date, end_date),
+                ).fetchall()
+                conn.close()
+                if rows:
+                    idx = pd.to_datetime([r[0] for r in rows])
+                    vals = [r[1] for r in rows]
+                    return pd.Series(vals, index=idx, name=symbol, dtype=float)
+            except Exception:
+                continue
+
+        # 2. JSON seed file (committed fallback for Railway where cache.db may be empty)
+        seed_path = BACKEND_DIR / "data" / "macro_series_seed.json"
+        if seed_path.exists():
+            try:
+                with seed_path.open("r", encoding="utf-8") as f:
+                    seed = json.load(f)
+                sym_data = seed.get(symbol, {})
+                if sym_data:
+                    pairs = [(d, v) for d, v in sym_data.items() if d >= start_date and d <= end_date]
+                    if pairs:
+                        pairs.sort()
+                        idx = pd.to_datetime([p[0] for p in pairs])
+                        vals = [p[1] for p in pairs]
+                        return pd.Series(vals, index=idx, name=symbol, dtype=float)
+            except Exception:
+                pass
+
+        return pd.Series(dtype=float, name=symbol)
 
     def _last_valid_date_str(self, series: Optional[pd.Series]) -> Optional[str]:
         if series is None:

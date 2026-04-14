@@ -85,6 +85,9 @@ FRED_SERIES = {
     "IG_OAS": "BAMLC0A0CM",
     "FSI":    "STLFSI4",
     "VIX":    "VIXCLS",
+    "WALCL":  "WALCL",
+    "RRP":    "RRPONTSYD",
+    "EFFR":   "EFFR",
 }
 
 try:

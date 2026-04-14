@@ -55,6 +55,11 @@ class ValidationEngine:
 
     def _load_policy(self, path: Optional[Path]) -> Dict[str, Any]:
         p = path or (CONFIG_DIR / "macro_policy_v1.json")
+        # Fallback: try path relative to THIS file if CONFIG_DIR resolves incorrectly
+        if not p.exists():
+            alt = Path(__file__).resolve().parent / "config" / "macro_policy_v1.json"
+            if alt.exists():
+                p = alt
         with p.open("r", encoding="utf-8") as f:
             return json.load(f)
 

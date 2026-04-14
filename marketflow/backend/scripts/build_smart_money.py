@@ -54,14 +54,14 @@ def output_path() -> str:
 
 
 def backend_output_path() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "output", "smart_money.json"))
+    return os.path.join(repo_root(), "output", "smart_money.json")
 
 def output_cache_path() -> str:
     return os.path.join(repo_root(), "output", "cache", "smart_money.json")
 
 
 def backend_output_cache_path() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "output", "cache", "smart_money.json"))
+    return os.path.join(repo_root(), "output", "cache", "smart_money.json")
 
 
 def now_iso() -> str:

@@ -6,7 +6,10 @@ from pathlib import Path
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+try:
+    PROJECT_ROOT = Path(__file__).resolve().parents[3]
+except IndexError:
+    PROJECT_ROOT = BACKEND_DIR
 
 STRUCTURED_DIR = BACKEND_DIR / "output" / "structured_briefing"
 NEWS_VALIDATION_DIR = BACKEND_DIR / "output" / "validation"

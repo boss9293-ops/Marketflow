@@ -18,11 +18,11 @@ from build_daily_snapshot import build_snapshot_for_date, db_path, validate_requ
 
 
 def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def log_path() -> str:
-    return os.path.join(repo_root(), "backend", "logs", "build_daily_snapshots_range.log")
+    return os.path.join(repo_root(), "logs", "build_daily_snapshots_range.log")
 
 
 def ensure_log_dir() -> None:

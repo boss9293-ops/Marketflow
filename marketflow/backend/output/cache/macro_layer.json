@@ -1,7 +1,7 @@
 {
-  "data_date": "2026-04-13",
-  "macro_pressure_score": null,
-  "status": "stub",
-  "mode": "fred4_first",
+  "data_date": "2026-04-14",
+  "macro_pressure_score": 34.28,
+  "status": "ok",
+  "mode": "live",
   "version": "macro_policy_v1"
 }

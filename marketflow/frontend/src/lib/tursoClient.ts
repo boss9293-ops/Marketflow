@@ -4,9 +4,11 @@
  * - 환경변수: TURSO_DATABASE_URL, TURSO_AUTH_TOKEN
  */
 
-let _client: import('@libsql/client').Client | null = null
+import { createClient, type Client } from '@libsql/client'
 
-export function getTursoClient(): import('@libsql/client').Client | null {
+let _client: Client | null = null
+
+export function getTursoClient(): Client | null {
   if (_client) return _client
 
   const url = (
@@ -27,8 +29,6 @@ export function getTursoClient(): import('@libsql/client').Client | null {
   }
 
   try {
-    // Dynamic import to avoid bundling in client components
-    const { createClient } = require('@libsql/client')
     _client = createClient({ url, authToken })
     return _client
   } catch (err) {

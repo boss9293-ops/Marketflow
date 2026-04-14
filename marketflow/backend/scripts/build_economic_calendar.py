@@ -16,11 +16,11 @@ from typing import Any, Dict, List, Optional
 
 
 def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def output_dir() -> str:
-    return os.path.join(repo_root(), "backend", "output")
+    return os.path.join(repo_root(), "output")
 
 
 def now_iso() -> str:

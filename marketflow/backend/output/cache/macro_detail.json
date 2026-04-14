@@ -2,14 +2,14 @@
   "policy_version": "macro_policy_v1",
   "asof_date": "2026-04-13",
   "macro_pressure": {
-    "score": null,
-    "state": null,
-    "confidence": 0
+    "score": 34.28,
+    "state": "Normal",
+    "confidence": 50
   },
   "macro_pressure_explain": {
     "state": null,
     "score": null,
-    "asof": "2026-04-13",
+    "asof": "2026-04-14",
     "stale": false,
     "source": [
       "Macro Layer composites: LPI/RPI/VRI"
@@ -65,9 +65,9 @@
   "layers": {
     "LPI": {
       "label": "Liquidity Pressure Index",
-      "score": null,
-      "state": null,
-      "confidence": 0,
+      "score": 20.37,
+      "state": "Normal",
+      "confidence": 50,
       "drivers": [
         {
           "feature_id": "walcl_8w_change_pct",
@@ -82,7 +82,7 @@
           "percentile": null,
           "static_band_key": null,
           "static_band_label": null,
-          "note": "LPI driver (FRED4 scaffold)",
+          "note": "LPI driver (from live snapshot)",
           "last_value_date": null,
           "last_updated": null,
           "stale": false
@@ -100,7 +100,7 @@
           "percentile": null,
           "static_band_key": null,
           "static_band_label": null,
-          "note": "LPI driver (FRED4 scaffold)",
+          "note": "LPI driver (from live snapshot)",
           "last_value_date": null,
           "last_updated": null,
           "stale": false
@@ -109,7 +109,7 @@
       "explain": {
         "state": null,
         "score": null,
-        "asof": "2026-04-13",
+        "asof": "2026-04-14",
         "stale": false,
         "source": [
           "FRED:RRPONTSYD",
@@ -155,9 +155,9 @@
     },
     "RPI": {
       "label": "Rates Pressure Index",
-      "score": null,
-      "state": null,
-      "confidence": 0,
+      "score": 29.82,
+      "state": "Normal",
+      "confidence": 50,
       "drivers": [
         {
           "feature_id": "effr_level",
@@ -172,7 +172,7 @@
           "percentile": null,
           "static_band_key": null,
           "static_band_label": null,
-          "note": "RPI driver (FRED4 scaffold)",
+          "note": "RPI driver (from live snapshot)",
           "last_value_date": null,
           "last_updated": null,
           "stale": false
@@ -190,7 +190,7 @@
           "percentile": null,
           "static_band_key": null,
           "static_band_label": null,
-          "note": "RPI driver (FRED4 scaffold)",
+          "note": "RPI driver (from live snapshot)",
           "last_value_date": null,
           "last_updated": null,
           "stale": false
@@ -199,7 +199,7 @@
       "explain": {
         "state": null,
         "score": null,
-        "asof": "2026-04-13",
+        "asof": "2026-04-14",
         "stale": false,
         "source": [
           "FRED:EFFR"
@@ -244,9 +244,9 @@
     },
     "VRI": {
       "label": "Volatility Regime Index",
-      "score": null,
-      "state": null,
-      "confidence": 0,
+      "score": 58.64,
+      "state": "Normal",
+      "confidence": 50,
       "drivers": [
         {
           "feature_id": "vix_level",
@@ -261,7 +261,7 @@
           "percentile": null,
           "static_band_key": null,
           "static_band_label": null,
-          "note": "VRI driver (FRED4 scaffold)",
+          "note": "VRI driver (from live snapshot)",
           "last_value_date": null,
           "last_updated": null,
           "stale": false
@@ -279,7 +279,7 @@
           "percentile": null,
           "static_band_key": null,
           "static_band_label": null,
-          "note": "VRI driver (FRED4 scaffold)",
+          "note": "VRI driver (from live snapshot)",
           "last_value_date": null,
           "last_updated": null,
           "stale": false
@@ -288,7 +288,7 @@
       "explain": {
         "state": null,
         "score": null,
-        "asof": "2026-04-13",
+        "asof": "2026-04-14",
         "stale": false,
         "source": [
           "FRED:VIXCLS / CBOE VIX (configured source)"

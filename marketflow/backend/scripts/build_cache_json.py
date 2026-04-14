@@ -31,15 +31,19 @@ ML_HORIZON_DAYS = 5
 
 
 def repo_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def db_path() -> str:
-    return os.path.join(repo_root(), "data", "marketflow.db")
+    try:
+        from db_utils import resolve_marketflow_db
+        return resolve_marketflow_db(required_tables=("ohlcv_daily",), data_plane="live")
+    except Exception:
+        return os.path.join(repo_root(), "data", "marketflow.db")
 
 
 def cache_dir() -> str:
-    return os.path.join(repo_root(), "backend", "output", "cache")
+    return os.path.join(repo_root(), "output", "cache")
 
 
 def now_iso() -> str:

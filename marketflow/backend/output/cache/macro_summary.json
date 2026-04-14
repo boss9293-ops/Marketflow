@@ -2,9 +2,9 @@
   "policy_version": "macro_policy_v1",
   "asof_date": "2026-04-13",
   "macro_pressure": {
-    "score": null,
-    "state": null,
-    "confidence": 0,
+    "score": 34.28,
+    "state": "Normal",
+    "confidence": 50,
     "bar": {
       "min": 0,
       "max": 100
@@ -12,19 +12,19 @@
   },
   "indexes": {
     "LPI": {
-      "score": null,
-      "state": null,
-      "confidence": 0
+      "score": 20.37,
+      "state": "Normal",
+      "confidence": 50
     },
     "RPI": {
-      "score": null,
-      "state": null,
-      "confidence": 0
+      "score": 29.82,
+      "state": "Normal",
+      "confidence": 50
     },
     "VRI": {
-      "score": null,
-      "state": null,
-      "confidence": 0
+      "score": 58.64,
+      "state": "Normal",
+      "confidence": 50
     }
   },
   "exposure_modifier": {

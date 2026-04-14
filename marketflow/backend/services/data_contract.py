@@ -70,12 +70,15 @@ def _env_value(*names: str) -> str:
     return ""
 
 
-def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
-
-
 def backend_dir() -> Path:
-    return repo_root() / "backend"
+    # __file__ = .../backend/services/data_contract.py  (local)
+    # __file__ = /app/services/data_contract.py          (Railway Docker)
+    # parents[1] correctly resolves to the backend root in both environments.
+    return Path(__file__).resolve().parents[1]
+
+
+def repo_root() -> Path:
+    return backend_dir().parent
 
 
 def data_root() -> Path:

@@ -358,6 +358,21 @@ def _build_explain_bundle(policy: Dict[str, Any], now_date: str) -> Dict[str, An
     }
 
 
+def _get_live_snapshot() -> Dict[str, Any]:
+    """Read the actual computed macro values from the latest snapshot."""
+    for p in [
+        BACKEND_DIR / "data" / "snapshots" / "macro_snapshot_latest.json",
+        BACKEND_DIR / "storage" / "macro_snapshots" / "macro_snapshot_latest.json"
+    ]:
+        if p.exists():
+            try:
+                with p.open("r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return {}
+
+
 def build_contract_stub(policy: Dict[str, Any]) -> Dict[str, Any]:
     """
     Stable macro contract skeleton for UI/API integration before full FRED ingestion.
@@ -369,40 +384,56 @@ def build_contract_stub(policy: Dict[str, Any]) -> Dict[str, Any]:
     layer_keys = ["LPI", "RPI", "VRI"]
     explain_bundle = _build_explain_bundle(policy, now[:10])
 
-    mps_score = None
-    mps_state = state_from_bins(mps_score, mps_bins)
-    confidence = 0
-    base_layer = {"score": None, "state": None, "confidence": 0}
-    layers_summary = {
-        k: {
-            **base_layer,
-            "state": None,
-        } for k in layer_keys
-    }
+    live_snap = _get_live_snapshot()
+    comp = live_snap.get("computed", {})
+    
+    mps_data = comp.get("MPS", {})
+    mps_score = mps_data.get("value")
+    if isinstance(mps_score, float):
+        mps_score = round(mps_score, 2)
+        
+    mps_state = mps_data.get("state") or state_from_bins(mps_score, mps_bins)
+    quality_overall = comp.get("quality_overall") or mps_data.get("quality") or "Partial"
+    confidence = 80 if quality_overall == "OK" else 50
+
+    layers_summary = {}
     layers_detail = {}
     for k in layer_keys:
+        k_data = comp.get(k, {})
+        k_score = k_data.get("value")
+        if isinstance(k_score, float):
+            k_score = round(k_score, 2)
+            
+        layers_summary[k] = {
+            "score": k_score,
+            "state": k_data.get("state"),
+            "confidence": confidence
+        }
+
         comps = ((idx_cfg.get(k) or {}).get("components") or [])
         drivers = [
-            _empty_driver(str(c.get("feature")), note=f"{k} driver (FRED4 scaffold)")
+            _empty_driver(str(c.get("feature")), note=f"{k} driver (from live snapshot)")
             for c in comps
         ]
         layers_detail[k] = {
             "label": (idx_cfg.get(k) or {}).get("label", k),
-            "score": None,
-            "state": None,
-            "confidence": 0,
+            "score": k_score,
+            "state": k_data.get("state"),
+            "confidence": confidence,
             "drivers": drivers,
             "explain": explain_bundle["layers"].get(k),
         }
 
+    data_date = live_snap.get("snapshot_date") or now[:10]
+
     return {
         "version": policy.get("version", "macro_policy_v1"),
-        "mode": "fred4_first",
-        "status": "stub",
+        "mode": "live" if mps_score is not None else "fred4_first",
+        "status": "ok" if mps_score is not None else "stub",
         "generated_at": now,
         "summary": {
             "policy_version": policy.get("version", "macro_policy_v1"),
-            "asof_date": now[:10],
+            "asof_date": data_date,
             "macro_pressure": {
                 "score": mps_score,
                 "state": mps_state,
@@ -414,8 +445,8 @@ def build_contract_stub(policy: Dict[str, Any]) -> Dict[str, Any]:
                 "upper_cap_delta_pct": 0,
                 "reasons": [],
                 "rule_flags": {
-                    "mps_ge_70": False,
-                    "mps_ge_85": False,
+                    "mps_ge_70": mps_score is not None and mps_score >= 70,
+                    "mps_ge_85": mps_score is not None and mps_score >= 85,
                     "lpi_tight_and_vri_expanding": False,
                 },
             },
@@ -432,11 +463,11 @@ def build_contract_stub(policy: Dict[str, Any]) -> Dict[str, Any]:
         },
         "detail": {
             "policy_version": policy.get("version", "macro_policy_v1"),
-            "asof_date": now[:10],
+            "asof_date": data_date,
             "macro_pressure": {
-                "score": None,
-                "state": None,
-                "confidence": 0,
+                "score": mps_score,
+                "state": mps_state,
+                "confidence": confidence,
             },
             "macro_pressure_explain": explain_bundle["mps"],
             "layers": layers_detail,

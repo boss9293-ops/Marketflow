@@ -730,14 +730,14 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "title": LAYER_TITLES[layer],
             "summary": {
-                "ko": f"{phase_label} ???? Gate {gate_value}, {risk_label}, {trend_label}? ?? ???? ??? ??????.",
+                "ko": f"{phase_label} 국면에서 Gate {gate_value}, {risk_label}, {trend_label} 중심의 방어적 브리핑.",
                 "en": f"Defensive brief watching Gate {gate_value}, {risk_label}, and {trend_label} in the current phase.",
             },
             "paragraphs": {
                 "ko": [
-                    f"?? ??? {phase_label}?? Gate {gate_value}, ??? {risk_level}, ?? {trend_label}? ?? ????.",
-                    "???? breadth? ?? ???? ??, ?? ???? ??/?? ??? ?? ?? ???.",
-                    f"??? {action_band} ??? ????, {action_reason}? ???? ??? ????? ??? ???.",
+                    f"현재 상태는 {phase_label}으로 Gate {gate_value}, 위험 {risk_level}, 추세 {trend_label}을 주시 중.",
+                    "변동성과 breadth가 혼재하여 단기 방향은 추세보다 압력 해소에 더 민감하다.",
+                    f"노출도 {action_band} 수준 유지, {action_reason}을 근거로 Gate와 위험 지표가 함께 개선될 때까지 선별적으로.",
                 ],
                 "en": [
                     f"The current state is {phase_label} with Gate {gate_value}, risk {risk_level}, and trend {trend_label} still in view.",
@@ -747,9 +747,9 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
             },
             "warnings": {
                 "ko": [
-                    "Gate? 50 ??? ???? ?? ??? ?????.",
-                    "VIX? ? ???? breadth? ???? ????? ? ?? ??? ? ????.",
-                    f"200?? ??? ??? {action_label}?? ? ???? ??? ??? ? ????.",
+                    "Gate가 50 아래로 하락하면 현재 균형이 약해진다.",
+                    "VIX 급등 또는 breadth 악화는 추세선보다 빠르게 영향을 줄 수 있다.",
+                    f"200일선 이탈 시 현재 {action_label} 포지션보다 더 방어적 전환이 필요할 수 있다.",
                 ],
                 "en": [
                     "A drop of Gate below 50 would weaken the current balance.",
@@ -768,14 +768,14 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "title": LAYER_TITLES[layer],
             "summary": {
-                "ko": f"??? ??? {macro_state} ????, ??/???/??? ??? ?? ??? ???? ?????.",
+                "ko": f"매크로 압력은 {macro_state} 상태이며, 정책/유동성/변동성 지표가 아직 불완전하다.",
                 "en": f"Macro pressure sits in a {macro_state} state, and the policy/liquidity/volatility blend is still incomplete.",
             },
             "paragraphs": {
                 "ko": [
-                    f"??? ??? {macro_state}?? ?? {macro_score}, ??? {macro_conf}? ?????.",
-                    f"??? {macro_formula}??, ?? ??? {', '.join(inputs[:3]) if inputs else 'partial inputs'} ?????.",
-                    "??/???/??? ??? ??? ??? ??? ???? ????? ?????.",
+                    f"매크로 압력은 {macro_state}으로 점수 {macro_score}, 신뢰도 {macro_conf}를 나타낸다.",
+                    f"작동 공식은 {macro_formula}이며, 현재 입력값은 {', '.join(inputs[:3]) if inputs else 'partial inputs'} 상태다.",
+                    "정책/유동성/변동성 입력이 안정될 때까지 매크로 레이어를 보수적으로 해석한다.",
                 ],
                 "en": [
                     f"Macro pressure is reading as {macro_state} with score {macro_score} and confidence {macro_conf}.",
@@ -785,9 +785,9 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
             },
             "warnings": {
                 "ko": [
-                    "??? ?? ??? ?? ???? ?? ??? ????.",
-                    "?? ??? ???? ?? ?? ??? ??? ? ????.",
-                    "??? ???? ?? ???? ???? ? ??? ???? ???? ? ????.",
+                    "점수가 불완전하거나 누락된 경우 매크로 해석의 신뢰도를 낮춘다.",
+                    "지속적인 불완전 입력은 다음 노출도 조정을 지연시킬 수 있다.",
+                    "정책과 변동성이 함께 움직이면 추세보다 빠르게 리스크를 재평가할 수 있다.",
                 ],
                 "en": [
                     "If the score is partial or missing, lower the confidence in the macro read.",
@@ -809,15 +809,15 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "title": LAYER_TITLES[layer],
         "summary": {
-            "ko": daily_headline or f"{phase_label}? {macro_state}? ???? ?? ?? ??????.",
+            "ko": daily_headline or f"{phase_label}과 {macro_state}을 통해 오늘 시장 흐름을 읽는 통합 브리핑.",
             "en": daily_headline or f"Integrated brief reading today's market tone through {phase_label} and {macro_state}.",
         },
         "paragraphs": {
             "ko": [
-                daily_headline or f"??? ???? {phase_label}? {macro_state}? ???? ?? ???? ?????.",
+                daily_headline or f"오늘 브리핑은 {phase_label}과 {macro_state}를 통해 시장 흐름을 재점검한다.",
                 briefing_lines[0],
-                briefing_lines[1] if len(briefing_lines) > 1 else f"??? {action_band} ??? ?????.",
-                "Risk overlay? standard risk brief?? ??? ?????.",
+                briefing_lines[1] if len(briefing_lines) > 1 else f"노출도 {action_band} 수준을 유지한다.",
+                "Risk overlay는 standard risk brief를 통해 확인한다.",
             ],
             "en": [
                 daily_headline or f"Today's brief rechecks the market tone through {phase_label} and {macro_state}.",
@@ -828,8 +828,8 @@ def _section_defaults(layer: str, context: Dict[str, Any]) -> Dict[str, Any]:
         },
         "warnings": {
             "ko": [
-                "?? ???? ???? ???? ??, explicit risk overlay? standard risk brief?? ?????.",
-                "Breadth? ?? ???? ?? ???? ? ????? ????.",
+                "통합 브리핑은 헤드라인 중심으로 유지하고, explicit risk overlay는 standard risk brief에서 확인한다.",
+                "Breadth가 먼저 악화되면 통합 브리핑은 더 방어적으로 전환해야 한다.",
             ],
             "en": [
                 "The integrated brief should stay headline-led; check the standard risk brief for the explicit risk overlay.",

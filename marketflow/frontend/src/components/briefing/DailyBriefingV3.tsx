@@ -268,10 +268,10 @@ function SectionCard({
           color: '#94a3b8', letterSpacing: '0.14em', textTransform: 'uppercase',
           marginBottom: 6, fontWeight: 600, fontStyle: 'italic',
         }}>
-          {pick(BRIEF_UI_TEXT.structural.en, BRIEF_UI_TEXT.structural.ko, contentLang)}
+          {pickUiLang(uiLang, BRIEF_UI_TEXT.structural.ko, BRIEF_UI_TEXT.structural.en)}
         </div>
         <p style={{ margin: 0, color: '#cbd5e1', fontSize: bodyFontSize, lineHeight: bodyLineHeight }}>
-          {structural || <span style={{ color: '#475569' }}>{pick(BRIEF_UI_TEXT.noStructural.en, BRIEF_UI_TEXT.noStructural.ko, contentLang)}</span>}
+          {structural || <span style={{ color: '#475569' }}>{pickUiLang(uiLang, BRIEF_UI_TEXT.noStructural.ko, BRIEF_UI_TEXT.noStructural.en)}</span>}
         </p>
       </div>
 
@@ -282,10 +282,10 @@ function SectionCard({
           color: section.color, letterSpacing: '0.14em', textTransform: 'uppercase',
           marginBottom: 6, fontWeight: 600, fontStyle: 'italic',
         }}>
-          {pick(BRIEF_UI_TEXT.implication.en, BRIEF_UI_TEXT.implication.ko, contentLang)}
+          {pickUiLang(uiLang, BRIEF_UI_TEXT.implication.ko, BRIEF_UI_TEXT.implication.en)}
         </div>
         <p style={{ margin: 0, color: '#94a3b8', fontSize: bodyFontSize, lineHeight: bodyLineHeight }}>
-          {implication || <span style={{ color: '#475569' }}>{pick(BRIEF_UI_TEXT.noImplication.en, BRIEF_UI_TEXT.noImplication.ko, contentLang)}</span>}
+          {implication || <span style={{ color: '#475569' }}>{pickUiLang(uiLang, BRIEF_UI_TEXT.noImplication.ko, BRIEF_UI_TEXT.noImplication.en)}</span>}
         </p>
       </div>
     </div>

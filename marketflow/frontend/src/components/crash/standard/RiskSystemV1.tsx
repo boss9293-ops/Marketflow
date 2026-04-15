@@ -1023,7 +1023,7 @@ function OverviewTab({
   // Auto-fetch on mount
   useEffect(() => {
     setCur90Loading(true)
-    fetch(`${API_BASE}/api/current-90d`)
+    fetch('/api/current-90d')
       .then(r => r.json())
       .then(d => { setCur90Pts(d.risk_v1?.playback ?? []) })
       .catch(() => {})
@@ -1034,7 +1034,7 @@ function OverviewTab({
   useEffect(() => {
     if (chartMode !== 'long-term' || ltPts.length > 0) return
     setLtLoading(true)
-    fetch(`${API_BASE}/api/mss-history`)
+    fetch('/api/mss-history')
       .then(r => r.json())
       .then(d => { setLtPts(d.data ?? []) })
       .catch(() => {})

@@ -539,12 +539,16 @@ export default function MyPage() {
     } catch {}
   }
 
+  const FALLBACK_SA_EMAIL = 'boss9293@gmail.com'
+
   async function fetchSaEmail() {
     try {
       const res = await fetch(`${API_BASE}/api/my/holdings/sa-email`, { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
-      if (res.ok && json.email) setSaEmail(json.email)
-    } catch {}
+      setSaEmail(json.email || FALLBACK_SA_EMAIL)
+    } catch {
+      setSaEmail(FALLBACK_SA_EMAIL)
+    }
   }
 
   async function saveCreds() {

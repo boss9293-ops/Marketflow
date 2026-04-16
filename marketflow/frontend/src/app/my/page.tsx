@@ -438,7 +438,10 @@ export default function MyPage() {
   const [data, setData] = useState<HoldingsPayload>({ positions: [] })
   const [tabsMeta, setTabsMeta] = useState<SheetTabsPayload | null>(null)
   const [tsData, setTsData] = useState<HoldingsTsPayload | null>(null)
-  const [sheetUrl, setSheetUrl] = useState('')
+  const [sheetUrl, setSheetUrl] = useState<string>(() => {
+    try { return localStorage.getItem('holdings_sheet_url') || '' } catch { return '' }
+  })
+  const [saEmail, setSaEmail] = useState<string | null>(null)
   const [selectedTabs, setSelectedTabs] = useState<string[]>([])
   const [activePositionsTab, setActivePositionsTab] = useState<string>('')
   const [visibleMap, setVisibleMap] = useState<Record<ColumnKey, boolean>>(defaultVisibleMap())
@@ -533,6 +536,14 @@ export default function MyPage() {
       const res = await fetch(`${API_BASE}/api/my/holdings/credentials`, { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
       if (res.ok) setCredsStatus(json)
+    } catch {}
+  }
+
+  async function fetchSaEmail() {
+    try {
+      const res = await fetch(`${API_BASE}/api/my/holdings/sa-email`, { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && json.email) setSaEmail(json.email)
     } catch {}
   }
 
@@ -634,9 +645,19 @@ export default function MyPage() {
     }
   }
 
+  // localStorage에 sheetUrl 저장
+  useEffect(() => {
+    if (sheetUrl) try { localStorage.setItem('holdings_sheet_url', sheetUrl) } catch {}
+  }, [sheetUrl])
+
   useEffect(() => {
     fetchHoldings()
-    refreshTabs()
+    fetchSaEmail()
+    refreshTabs().then(() => {
+      // localStorage에 저장된 URL이 있고 탭 메타가 없으면 자동 로드
+      const saved = (() => { try { return localStorage.getItem('holdings_sheet_url') || '' } catch { return '' } })()
+      if (saved && !tabsMeta) handleLoadTabs()
+    })
     refreshTs()
     fetchCredsStatus()
   }, [])
@@ -1551,7 +1572,7 @@ export default function MyPage() {
               <input
                 value={sheetUrl}
                 onChange={(e) => setSheetUrl(e.target.value)}
-                placeholder="Paste Google Sheets link or spreadsheet ID"
+                placeholder="https://docs.google.com/spreadsheets/d/..."
                 style={{
                   padding: '0.25rem 0.4rem',
                   background: 'rgba(31,41,55,0.8)',
@@ -1626,52 +1647,69 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* Google Credentials Panel */}
-        <div style={{ marginBottom: 10, padding: '0.6rem 0.75rem', borderRadius: 8, border: credsStatus?.configured ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(234,179,8,0.3)', background: credsStatus?.configured ? 'rgba(34,197,94,0.06)' : 'rgba(234,179,8,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: credsStatus?.configured ? '#86efac' : '#fbbf24' }}>
-              {credsStatus === null ? '...' : credsStatus.configured ? `Google auth: configured (${credsStatus.source})` : 'Google auth: not configured'}
-            </span>
-            {!credsStatus?.configured && (
-              <span style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Paste Service Account JSON to configure</span>
-            )}
-            <button
-              onClick={() => setCredsOpen((v) => !v)}
-              style={{ marginLeft: 'auto', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.06)', color: '#d1d5db', borderRadius: 6, padding: '0.2rem 0.45rem', fontSize: '0.7rem', cursor: 'pointer' }}
-            >
-              {credsOpen ? 'Collapse' : credsStatus?.configured ? 'Change' : 'Setup'}
-            </button>
-            {credsStatus?.configured && (
-              <button
-                onClick={clearCreds}
-                disabled={credsLoading}
-                style={{ border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.1)', color: '#fca5a5', borderRadius: 6, padding: '0.2rem 0.45rem', fontSize: '0.7rem', cursor: 'pointer' }}
-              >
-                Delete
-              </button>
-            )}
+        {/* Google Sheet Setup Guide — 구독자용 */}
+        <div style={{ marginBottom: 10, padding: '0.65rem 0.85rem', borderRadius: 8, border: '1px solid rgba(14,165,233,0.2)', background: 'rgba(14,165,233,0.05)' }}>
+          <div style={{ color: '#7dd3fc', fontWeight: 700, fontSize: '0.78rem', marginBottom: 6 }}>
+            Google Sheet 연결 방법
           </div>
-          {credsOpen && (
-            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ color: '#9ca3af', fontSize: '0.7rem' }}>
-                Paste full Service Account JSON from Google Cloud Console
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div style={{ color: '#cbd5e1', fontSize: '0.73rem' }}>
+              <span style={{ color: '#7dd3fc', fontWeight: 700 }}>Step 1.</span>{' '}
+              아래 이메일에 내 Google Sheet 공유 (편집자 또는 뷰어 권한)
+            </div>
+            {saEmail ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <code style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(14,165,233,0.3)', color: '#38bdf8', borderRadius: 5, padding: '0.18rem 0.5rem', fontSize: '0.72rem', userSelect: 'all' }}>
+                  {saEmail}
+                </code>
+                <button
+                  onClick={() => { try { navigator.clipboard.writeText(saEmail) } catch {} }}
+                  style={{ border: '1px solid rgba(14,165,233,0.3)', background: 'rgba(14,165,233,0.1)', color: '#7dd3fc', borderRadius: 5, padding: '0.15rem 0.4rem', fontSize: '0.65rem', cursor: 'pointer' }}
+                >
+                  Copy
+                </button>
               </div>
+            ) : (
+              <div style={{ color: '#6b7280', fontSize: '0.72rem' }}>이메일 로딩 중...</div>
+            )}
+            <div style={{ color: '#cbd5e1', fontSize: '0.73rem', marginTop: 2 }}>
+              <span style={{ color: '#7dd3fc', fontWeight: 700 }}>Step 2.</span>{' '}
+              위 URL 입력란에 내 Google Sheet 주소 붙여넣기 → Load → Import
+            </div>
+          </div>
+          {/* 관리자 전용: SA JSON 설정 (접기/펼치기) */}
+          <details style={{ marginTop: 8 }}>
+            <summary style={{ color: '#6b7280', fontSize: '0.68rem', cursor: 'pointer' }}>
+              Admin: Service Account 설정 ({credsStatus === null ? '...' : credsStatus?.configured ? `configured (${credsStatus.source})` : 'not configured'})
+            </summary>
+            <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
               <textarea
                 value={saJsonInput}
                 onChange={(e) => setSaJsonInput(e.target.value)}
-                placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n..."}'
-                rows={5}
-                style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', color: '#e5e7eb', borderRadius: 6, padding: '0.4rem 0.5rem', fontSize: '0.7rem', fontFamily: 'monospace', resize: 'vertical' }}
+                placeholder='{"type":"service_account","project_id":"...","private_key":"..."}'
+                rows={4}
+                style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af', borderRadius: 6, padding: '0.35rem 0.45rem', fontSize: '0.65rem', fontFamily: 'monospace', resize: 'vertical' }}
               />
-              <button
-                onClick={saveCreds}
-                disabled={credsLoading || !saJsonInput.trim()}
-                style={{ alignSelf: 'flex-start', border: '1px solid rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.15)', color: '#86efac', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.72rem', cursor: 'pointer' }}
-              >
-                  {credsLoading ? 'Saving...' : 'Save'}
-              </button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={saveCreds}
+                  disabled={credsLoading || !saJsonInput.trim()}
+                  style={{ border: '1px solid rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.15)', color: '#86efac', borderRadius: 6, padding: '0.2rem 0.5rem', fontSize: '0.68rem', cursor: 'pointer' }}
+                >
+                  {credsLoading ? 'Saving...' : 'Save SA JSON'}
+                </button>
+                {credsStatus?.configured && (
+                  <button
+                    onClick={clearCreds}
+                    disabled={credsLoading}
+                    style={{ border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.1)', color: '#fca5a5', borderRadius: 6, padding: '0.2rem 0.5rem', fontSize: '0.68rem', cursor: 'pointer' }}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
-          )}
+          </details>
         </div>
 
         {tabsMeta?.tabs ? (

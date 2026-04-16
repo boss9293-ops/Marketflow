@@ -8624,6 +8624,18 @@ def my_holdings_credentials_delete():
     return jsonify({'ok': True, 'message': 'Credentials removed.'})
 
 
+@app.route('/api/my/holdings/sa-email')
+def my_holdings_sa_email():
+    """SA 이메일 주소만 노출 (구독자가 시트 공유 시 사용)."""
+    sa_raw = _get_sa_json()
+    if not sa_raw:
+        return jsonify({'email': None, 'configured': False})
+    try:
+        data = json.loads(sa_raw)
+        email = data.get('client_email', '')
+        return jsonify({'email': email or None, 'configured': bool(email)})
+    except Exception:
+        return jsonify({'email': None, 'configured': False})
 
 
 

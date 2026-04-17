@@ -1254,6 +1254,7 @@ export default function MyPage() {
           portfolio_data: activeTabPortfolioData,
           engine_data: {
             tab_name: activePositionsTab || null,
+            today: new Date().toISOString().slice(0, 10),
             as_of_date: activeTabSummary.as_of_date,
             total_equity: activeTabSummary.total_equity,
             total_cost: activeTabSummary.total_cost,

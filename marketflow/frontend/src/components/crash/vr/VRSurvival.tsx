@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 
 
@@ -8078,14 +8078,16 @@ function MethodologyPanel() {
 function LiveTab({
   data,
   current90d,
+  lang = 'en',
   compact = false,
 }: {
   data: VRSurvivalData
   current90d?: Current90dCache | null
+  lang?: 'en' | 'ko'
   compact?: boolean
 }) {
   const [basis, setBasis] = useState<LiveDrawdownBasis>('peak90')
-  const live = useMemo<LiveMotionModel>(() => buildLiveMotionModel(current90d, basis), [current90d, basis])
+  const live = useMemo<LiveMotionModel>(() => buildLiveMotionModel(current90d, basis, lang), [current90d, basis, lang])
   const basisMeta = LIVE_DRAWDOWN_BASIS_OPTIONS.find((option) => option.value === basis) ?? LIVE_DRAWDOWN_BASIS_OPTIONS[0]
   const current = data.current
   const postureLabel = `${current.level_label} · ${current.state}`
@@ -8390,28 +8392,28 @@ function LiveTab({
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: 10 }}>
               <PlaceholderCard
-                label="Direction"
+                label={lang === 'ko' ? '방향' : 'Direction'}
                 text={live.directionLabel}
                 detail={`1D ${latestChange1dLabel} · 3D ${latestChange3dLabel} · 5D ${latestChange5dLabel}`}
                 tone={liveToneColor(live.signals.crash.tone)}
                 compact
               />
               <PlaceholderCard
-                label="Trend"
+                label={lang === 'ko' ? '추세' : 'Trend'}
                 text={latestPriceLabel}
                 detail={`MA20 ${latestMa20Label} · MA50 ${latestMa50Label} · MA200 ${latestMa200Label}`}
                 tone={summaryTone}
                 compact
               />
               <PlaceholderCard
-                label="Trough / Rebound"
+                label={lang === 'ko' ? '저점 / 반등' : 'Trough / Rebound'}
                 text={troughLabel}
                 detail={`Trough ${live.trough ? formatLiveDateLabel(live.trough.date) : 'n/a'} · Rebound ${reboundLabel} · ${live.daysSinceTrough == null ? 'n/a' : `${live.daysSinceTrough}d`}`}
                 tone={liveToneColor(live.signals.bottom.tone)}
                 compact
               />
               <PlaceholderCard
-                label="Window"
+                label={lang === 'ko' ? '기간' : 'Window'}
                 text={windowLabel}
                 detail={`Generated ${generatedLabel} · ${tradingDaysLabel}`}
                 tone="#94a3b8"
@@ -8451,7 +8453,7 @@ function LiveTab({
             />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(146px, 1fr))', gap: 10 }}>
               <TrendSparklineCard
-                label="RSI14 Trend"
+                label={lang === 'ko' ? 'RSI14 추세' : 'RSI14 Trend'}
                 value={latestRsiLabel}
                 detail={`20 sessions · ${latestRsiDeltaLabel} vs 5D`}
                 tone={latestRsiTone}
@@ -8459,7 +8461,7 @@ function LiveTab({
                 compact
               />
               <TrendSparklineCard
-                label="RV20 Trend"
+                label={lang === 'ko' ? 'RV20 추세' : 'RV20 Trend'}
                 value={latestRvLabel}
                 detail={`20 sessions · ${latestRvDeltaLabel} vs 5D`}
                 tone={latestRvTone}
@@ -8479,10 +8481,10 @@ function LiveTab({
               }}
             >
               <div style={{ fontSize: '0.68rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-                Live interpretation
+                {lang === 'ko' ? 'Live 해석' : 'Live interpretation'}
               </div>
               <div>
-                The tape tracks actual TQQQ price, moving averages, RSI, and realized volatility first, then uses the selected DD basis to warn about crash pressure, bottom formation, safety, and escape attempts.
+                {lang === 'ko' ? 'TQQQ 실제 가격, 이동평균, RSI, 실현변동성을 먼저 확인한 후, 선택된 DD 기준으로 충돌 압력·바닥 형성·안전·탈출 시도를 경고합니다.' : 'The tape tracks actual TQQQ price, moving averages, RSI, and realized volatility first, then uses the selected DD basis to warn about crash pressure, bottom formation, safety, and escape attempts.'}
               </div>
               <div style={{ marginTop: 10, color: '#94a3b8', fontSize: '0.82rem' }}>
                 Basis {basisMeta.label} · Current VR posture: {postureLabel}
@@ -14510,6 +14512,8 @@ export default function VRSurvival({
 
   simParams,
 
+  contentLang,
+
 }: {
 
   data: VRSurvivalData
@@ -14527,6 +14531,8 @@ export default function VRSurvival({
   vrTimeline?: VrTimelineRow[] | null
 
   simParams?: { event_id?: string; sim_start?: string; sim_capital?: string; sim_stock_pct?: string }
+
+  contentLang?: 'en' | 'ko'
 
 }) {
 
@@ -14665,7 +14671,7 @@ export default function VRSurvival({
 
       {tab === 'Live' ? (
 
-        <LiveTab data={data} current90d={current90d} />
+        <LiveTab data={data} current90d={current90d} lang={contentLang ?? 'en'} />
 
       ) : null}
 

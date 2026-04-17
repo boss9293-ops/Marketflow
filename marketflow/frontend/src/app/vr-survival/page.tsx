@@ -483,6 +483,7 @@ export default async function VRSurvivalPage({
               initialTab={initialTab}
               initialPlaybackEventId={initialPlaybackEventId}
               simParams={simParams}
+              contentLang={contentLang}
             />
 
             <div style={{ fontSize: '0.75rem', color: '#475569', textAlign: 'center', paddingTop: '0.4rem' }}>

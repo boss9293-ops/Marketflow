@@ -334,7 +334,7 @@ function buildLiveSignalDetail(
   return parts.join(' · ')
 }
 
-export function buildLiveMotionModel(current90d?: Current90dCache | null, basis: LiveDrawdownBasis = 'peak90'): LiveMotionModel {
+export function buildLiveMotionModel(current90d?: Current90dCache | null, basis: LiveDrawdownBasis = 'peak90', lang: 'en' | 'ko' = 'en'): LiveMotionModel {
   const basisConfig = LIVE_DRAWDOWN_BASIS_OPTIONS.find((option) => option.value === basis) ?? LIVE_DRAWDOWN_BASIS_OPTIONS[0]
   const rawRows = current90d?.risk_v1?.playback ?? []
   const rowsBase = rawRows
@@ -447,7 +447,12 @@ export function buildLiveMotionModel(current90d?: Current90dCache | null, basis:
   const dd1 = selectedDrawdownPct
   const dd3 = pickDaysAgo(rows, 3)?.selectedDrawdownPct ?? null
   const dd5 = pickDaysAgo(rows, 5)?.selectedDrawdownPct ?? null
-  const directionLabel = describeDirection(dd1, dd3, dd5)
+  const directionLabelEn = describeDirection(dd1, dd3, dd5)
+  const DIR_KO: Record<string, string> = {
+    'Warm-up': '준비', 'Falling': '하락 중', 'Rebounding': '반등 중',
+    'Lower low pressure': '저점 압박', 'Base building': '저점 다지기', 'Choppy': '혼조',
+  }
+  const directionLabel = lang === 'ko' ? (DIR_KO[directionLabelEn] ?? directionLabelEn) : directionLabelEn
 
   const priceBelowMa50 = latestClose != null && latestMa50 != null ? latestClose < latestMa50 : null
   const priceBelowMa200 = latestClose != null && latestMa200 != null ? latestClose < latestMa200 : null
@@ -496,70 +501,72 @@ export function buildLiveMotionModel(current90d?: Current90dCache | null, basis:
   )
 
   const riskDetail = buildLiveSignalDetail(
-    'Crash pressure is measured from the selected drawdown basis.',
+    lang === 'ko' ? '선택된 DD 기준으로 충돌 압력을 측정합니다.' : 'Crash pressure is measured from the selected drawdown basis.',
     selectedDrawdownPct,
     latestRsi14,
     latestRv20,
     latestPriceVsMa50Pct,
     latestPriceVsMa200Pct,
     priceBelowMa50 === true
-      ? 'Price is still below MA50.'
+      ? (lang === 'ko' ? '가격이 MA50 아래입니다.' : 'Price is still below MA50.')
       : priceBelowMa200 === true
-        ? 'Price remains below MA200.'
-        : 'Momentum is not yet fully repaired.',
+        ? (lang === 'ko' ? '가격이 MA200 아래입니다.' : 'Price remains below MA200.')
+        : (lang === 'ko' ? '모멘텀이 아직 완전히 회복되지 않았습니다.' : 'Momentum is not yet fully repaired.'),
   )
   const bottomDetail = buildLiveSignalDetail(
-    'Bottoming improves when DD stops worsening and RSI turns up.',
+    lang === 'ko' ? 'DD 악화가 멈추고 RSI가 반등하면 바닥이 형성됩니다.' : 'Bottoming improves when DD stops worsening and RSI turns up.',
     selectedDrawdownPct,
     latestRsi14,
     latestRv20,
     latestPriceVsMa50Pct,
     latestPriceVsMa200Pct,
     selectedDrawdownDelta5dPct != null && selectedDrawdownDelta5dPct > 0
-      ? `DD improved by ${formatSignedPercent(selectedDrawdownDelta5dPct)} over 5 sessions.`
-      : 'DD has not clearly improved yet.',
+      ? (lang === 'ko' ? `5세션 동안 DD ${formatSignedPercent(selectedDrawdownDelta5dPct)} 개선.` : `DD improved by ${formatSignedPercent(selectedDrawdownDelta5dPct)} over 5 sessions.`)
+      : (lang === 'ko' ? 'DD가 아직 명확히 개선되지 않았습니다.' : 'DD has not clearly improved yet.'),
   )
   const safeDetail = buildLiveSignalDetail(
-    'Safety means price has rebuilt above trend and volatility is cooling.',
+    lang === 'ko' ? '가격이 추세 위로 회복되고 변동성이 낮아지면 안전 구간입니다.' : 'Safety means price has rebuilt above trend and volatility is cooling.',
     selectedDrawdownPct,
     latestRsi14,
     latestRv20,
     latestPriceVsMa50Pct,
     latestPriceVsMa200Pct,
     priceAboveMa50 === true
-      ? 'Price is above MA50.'
-      : 'Need a stronger MA50 reclaim.',
+      ? (lang === 'ko' ? '가격이 MA50 위에 있습니다.' : 'Price is above MA50.')
+      : (lang === 'ko' ? 'MA50 회복이 더 필요합니다.' : 'Need a stronger MA50 reclaim.'),
   )
   const escapeDetail = buildLiveSignalDetail(
-    'Escape wants a confirmed reclaim of the larger trend.',
+    lang === 'ko' ? '더 큰 추세의 확실한 회복이 탈출의 조건입니다.' : 'Escape wants a confirmed reclaim of the larger trend.',
     selectedDrawdownPct,
     latestRsi14,
     latestRv20,
     latestPriceVsMa50Pct,
     latestPriceVsMa200Pct,
     priceAboveMa200 === true
-      ? 'Price has reclaimed MA200.'
-      : 'MA200 reclaim is still missing.',
+      ? (lang === 'ko' ? '가격이 MA200을 회복했습니다.' : 'Price has reclaimed MA200.')
+      : (lang === 'ko' ? 'MA200 회복이 아직 없습니다.' : 'MA200 reclaim is still missing.'),
   )
 
-  let phaseLabel = 'Monitor'
+  let phaseLabel = lang === 'ko' ? '모니터링' : 'Monitor'
   let phaseTone: LiveSignalTone = 'neutral'
-  let phaseDetail = 'The live tape is being observed for crash pressure, bottom formation, safety, and escape confirmation.'
+  let phaseDetail = lang === 'ko'
+    ? '충돌 압력, 바닥 형성, 안전, 탈출 신호를 Live 테이프에서 관찰 중입니다.'
+    : 'The live tape is being observed for crash pressure, bottom formation, safety, and escape confirmation.'
 
   if (escapeScore >= 70) {
-    phaseLabel = 'Escape'
+    phaseLabel = lang === 'ko' ? '탈출' : 'Escape'
     phaseTone = 'escape'
     phaseDetail = escapeDetail
   } else if (safeScore >= 60) {
-    phaseLabel = 'Safe'
+    phaseLabel = lang === 'ko' ? '안전' : 'Safe'
     phaseTone = 'safe'
     phaseDetail = safeDetail
   } else if (bottomScore >= 55) {
-    phaseLabel = 'Bottoming'
+    phaseLabel = lang === 'ko' ? '바닥 형성' : 'Bottoming'
     phaseTone = 'recovery'
     phaseDetail = bottomDetail
   } else if (riskScore >= 60) {
-    phaseLabel = 'Crash Risk'
+    phaseLabel = lang === 'ko' ? '충돌 위험' : 'Crash Risk'
     phaseTone = 'danger'
     phaseDetail = riskDetail
   }
@@ -605,25 +612,25 @@ export function buildLiveMotionModel(current90d?: Current90dCache | null, basis:
     phaseTone,
     signals: {
       crash: {
-        label: 'Crash Risk',
+        label: lang === 'ko' ? '충돌 위험' : 'Crash Risk',
         value: signalValue(riskScore),
         detail: riskDetail,
         tone: signalToneFromRiskScore(riskScore),
       },
       bottom: {
-        label: 'Bottoming',
+        label: lang === 'ko' ? '바닥 형성' : 'Bottoming',
         value: signalValue(bottomScore),
         detail: bottomDetail,
         tone: bottomScore >= 70 ? 'recovery' : bottomScore >= 45 ? 'watch' : 'neutral',
       },
       safe: {
-        label: 'Safety',
+        label: lang === 'ko' ? '안전' : 'Safety',
         value: signalValue(safeScore),
         detail: safeDetail,
         tone: signalToneFromPositiveScore(safeScore, 'safe'),
       },
       escape: {
-        label: 'Escape',
+        label: lang === 'ko' ? '탈출' : 'Escape',
         value: signalValue(escapeScore),
         detail: escapeDetail,
         tone: signalToneFromPositiveScore(escapeScore, 'escape'),

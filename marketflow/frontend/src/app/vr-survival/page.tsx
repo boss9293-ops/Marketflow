@@ -330,12 +330,9 @@ export default async function VRSurvivalPage({
             <div style={{ fontSize: '0.78rem', color: '#94a3b8', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
               {isSoxl ? 'MARKETFLOW - SEMICONDUCTOR RESEARCH' : 'MARKETFLOW - SURVIVAL LAB'}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: '0.35rem' }}>
-              <h1 style={{ fontSize: '2.3rem', fontWeight: 900, color: '#f8fafc', margin: 0 }}>
-                {isSoxl ? 'Semiconductor Regime Monitor' : 'VR Survival Lab'}
-              </h1>
-              <ContentLangToggle value={contentLang} />
-            </div>
+            <h1 style={{ fontSize: '2.3rem', fontWeight: 900, color: '#f8fafc', margin: '0.35rem 0 0' }}>
+              {isSoxl ? 'Semiconductor Regime Monitor' : 'VR Survival Lab'}
+            </h1>
             <div style={{ fontSize: '0.92rem', color: '#94a3b8', marginTop: 8, lineHeight: 1.6, maxWidth: 760 }}>
               {heroSubtitle}
             </div>
@@ -349,7 +346,8 @@ export default async function VRSurvivalPage({
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <ContentLangToggle value={contentLang} />
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.href}

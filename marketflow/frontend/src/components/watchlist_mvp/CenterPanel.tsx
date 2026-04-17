@@ -626,17 +626,50 @@ export default function CenterPanel({
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
-            <button
-              onClick={() => setLangMode(m => m === 'EN' ? 'KR' : 'EN')}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: langMode === 'KR' ? '#38bdf8' : '#64748b',
-                fontSize: '0.78rem', fontWeight: 600, padding: 0,
-                letterSpacing: '0.02em',
-              }}
-            >
-              {(langMode === 'EN' ? isSynthesizingEN : isSynthesizingKO) ? '...' : langMode === 'KR' ? '영어로 보기 →' : '한글로 보기 →'}
-            </button>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center',
+              border: '1px solid rgba(56,189,248,0.22)',
+              borderRadius: 6, overflow: 'hidden',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+              boxShadow: '0 0 6px rgba(56,189,248,0.06)',
+            }}>
+              {(['EN', 'KR'] as const).map((m, idx) => {
+                const active = langMode === m
+                const isBusy = m === 'EN' ? isSynthesizingEN : isSynthesizingKO
+                const flag = m === 'EN' ? '🇺🇸' : '🇰🇷'
+                return (
+                  <button
+                    key={m}
+                    onClick={() => { if (langMode !== m) setLangMode(m) }}
+                    style={{
+                      background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
+                      color: active ? '#38bdf8' : '#475569',
+                      border: 'none',
+                      borderRight: idx === 0 ? '1px solid rgba(56,189,248,0.15)' : 'none',
+                      padding: '3px 10px',
+                      fontSize: '0.72rem', fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      minWidth: 44, justifyContent: 'center',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                      outline: 'none',
+                      transition: 'background 0.12s, color 0.12s',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.9em', lineHeight: 1 }}>{flag}</span>
+                    <span>{isBusy && active ? '…' : m}</span>
+                    {active && (
+                      <span style={{
+                        width: 3, height: 3, borderRadius: '50%',
+                        background: '#38bdf8', flexShrink: 0,
+                        boxShadow: '0 0 3px #38bdf8',
+                      }} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
             <button
               onClick={onRefreshNews}
               disabled={isNewsRefreshing || isRefreshLocked}

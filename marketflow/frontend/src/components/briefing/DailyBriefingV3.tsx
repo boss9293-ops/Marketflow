@@ -189,31 +189,55 @@ function SignalBadge({ signal, uiLang }: { signal: BriefingV3Section['signal']; 
 }
 
 function LangToggle({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
-  const btn = (l: Lang, label: string) => (
-    <button
-      key={l}
-      onClick={() => onChange(l)}
-      style={{
-        background: lang === l ? '#d7ff3f' : 'transparent',
-        color: lang === l ? '#111827' : '#64748b',
-        border: `1px solid ${lang === l ? '#d7ff3f' : 'rgba(148,163,184,0.2)'}`,
-        borderRadius: l === 'en' ? '5px 0 0 5px' : '0 5px 5px 0',
-        padding: '6px 12px',
-        fontSize: rem(0.8),
-        fontFamily: MONO_FONT,
-        fontWeight: 700,
-        letterSpacing: '0.08em',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-      }}
-    >
-      {label}
-    </button>
-  )
+  const items: { l: Lang; flag: string; label: string }[] = [
+    { l: 'en', flag: '🇺🇸', label: 'EN' },
+    { l: 'ko', flag: '🇰🇷', label: 'KR' },
+  ]
   return (
-    <div style={{ display: 'flex' }}>
-      {btn('en', 'EN')}
-      {btn('ko', 'KR')}
+    <div style={{
+      display: 'inline-flex', alignItems: 'center',
+      background: 'rgba(8,12,22,0.85)',
+      border: '1px solid rgba(215,255,63,0.22)',
+      borderRadius: 7,
+      overflow: 'hidden',
+      fontFamily: MONO_FONT,
+      boxShadow: '0 0 8px rgba(215,255,63,0.06)',
+    }}>
+      {items.map(({ l, flag, label }, idx) => {
+        const active = lang === l
+        return (
+          <button
+            key={l}
+            onClick={() => onChange(l)}
+            style={{
+              background: active ? 'rgba(215,255,63,0.13)' : 'transparent',
+              color: active ? '#d7ff3f' : '#475569',
+              border: 'none',
+              borderRight: idx === 0 ? '1px solid rgba(215,255,63,0.14)' : 'none',
+              padding: '5px 13px',
+              fontSize: rem(0.75),
+              fontFamily: MONO_FONT,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'background 0.12s, color 0.12s',
+              minWidth: 54, justifyContent: 'center',
+              outline: 'none',
+            }}
+          >
+            <span style={{ fontSize: '1em', lineHeight: 1 }}>{flag}</span>
+            <span>{label}</span>
+            {active && (
+              <span style={{
+                width: 4, height: 4, borderRadius: '50%',
+                background: '#d7ff3f', flexShrink: 0,
+                boxShadow: '0 0 4px #d7ff3f',
+              }} />
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

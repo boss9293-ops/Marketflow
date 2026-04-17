@@ -1,4 +1,7 @@
 ﻿import type { CSSProperties } from 'react'
+import { cookies } from 'next/headers'
+import { CONTENT_LANG_COOKIE, normalizeContentLang } from '@/lib/uiLang'
+import ContentLangToggle from '@/components/ContentLangToggle'
 import { readCacheJson } from '@/lib/readCacheJson'
 import { type Current90dCache } from '@/lib/vrLive'
 import VRSurvival, {
@@ -246,6 +249,7 @@ export default async function VRSurvivalPage({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined }
 }) {
+  const contentLang = normalizeContentLang(cookies().get(CONTENT_LANG_COOKIE)?.value)
   const assetParam = toSingleValue(searchParams?.asset)
   const asset = assetParam === 'soxl' ? 'soxl' : 'tqqq'
   const isSoxl = asset === 'soxl'
@@ -326,9 +330,12 @@ export default async function VRSurvivalPage({
             <div style={{ fontSize: '0.78rem', color: '#94a3b8', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
               {isSoxl ? 'MARKETFLOW - SEMICONDUCTOR RESEARCH' : 'MARKETFLOW - SURVIVAL LAB'}
             </div>
-            <h1 style={{ fontSize: '2.3rem', fontWeight: 900, color: '#f8fafc', margin: '0.35rem 0 0' }}>
-              {isSoxl ? 'Semiconductor Regime Monitor' : 'VR Survival Lab'}
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: '0.35rem' }}>
+              <h1 style={{ fontSize: '2.3rem', fontWeight: 900, color: '#f8fafc', margin: 0 }}>
+                {isSoxl ? 'Semiconductor Regime Monitor' : 'VR Survival Lab'}
+              </h1>
+              <ContentLangToggle value={contentLang} />
+            </div>
             <div style={{ fontSize: '0.92rem', color: '#94a3b8', marginTop: 8, lineHeight: 1.6, maxWidth: 760 }}>
               {heroSubtitle}
             </div>

@@ -5,7 +5,8 @@ import styles from '@/app/dashboard/dashboardTerminal.module.css'
 import type { DailyBriefingV3Data, BriefingV3Section } from '@/components/briefing/DailyBriefingV3'
 import { renderEngineText, selectLocalizedText, type LocalizedText } from '@/lib/i18n/contentContract'
 import { readCacheJson } from '@/lib/readCacheJson'
-import { UI_LANG_COOKIE, normalizeUiLang, pickLang, type UiLang } from '@/lib/uiLang'
+import { UI_LANG_COOKIE, CONTENT_LANG_COOKIE, normalizeUiLang, normalizeContentLang, pickLang, type UiLang } from '@/lib/uiLang'
+import ContentLangToggle from '@/components/ContentLangToggle'
 
 export const dynamic = 'force-dynamic'
 
@@ -561,7 +562,7 @@ const buildLadderRow = (
 
 export default async function DashboardPage() {
   const uiLang = normalizeUiLang(cookies().get(UI_LANG_COOKIE)?.value)
-  const contentLang: UiLang = uiLang
+  const contentLang: UiLang = normalizeContentLang(cookies().get(CONTENT_LANG_COOKIE)?.value)
 
   const [marketTape, dailyBriefing, snapshots, riskV1, vrPattern, current90d] = await Promise.all([
     readCacheJson<MarketTapeCache>('market_tape.json', { items: [] }),
@@ -870,9 +871,12 @@ export default async function DashboardPage() {
               <h1 className={styles.title}>{uiText(uiLang, DASHBOARD_UI.pageTitle)}</h1>
               <p className={styles.subtitle}>{uiText(uiLang, DASHBOARD_UI.pageSubtitle)}</p>
             </div>
-            <span className={styles.statusChip}>
-              {uiText(uiLang, DASHBOARD_UI.asOf)} {asOf}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <ContentLangToggle value={contentLang} />
+              <span className={styles.statusChip}>
+                {uiText(uiLang, DASHBOARD_UI.asOf)} {asOf}
+              </span>
+            </div>
           </header>
 
           <div className={styles.cards}>

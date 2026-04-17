@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { readStoredContentLang, persistContentLang, type UiLang } from '@/lib/uiLang'
+import ContentLangToggle from '@/components/ContentLangToggle'
 import {
   ResponsiveContainer,
-  LineChart,
   Line,
   BarChart,
   Bar,
@@ -51,17 +52,20 @@ type HoldingPosition = {
   ma120?: number | null
   ma200?: number | null
   note?: string
-  sparkline_30?: number[]
 }
 
 type HoldingsSummary = {
   total_equity?: number | null
+  total_value?: number | null
   total_cost?: number | null
+  total_invested?: number | null
   total_pnl?: number | null
   total_pnl_pct?: number | null
   today_pnl?: number | null
+  today_pnl_pct?: number | null
   mdd_portfolio_pct?: number | null
   cash?: number | null
+  cash_ratio_pct?: number | null
   position_count?: number | null
   as_of_date?: string | null
 }
@@ -108,11 +112,13 @@ type HoldingsTsPayload = {
     positions?: Array<Record<string, any>>
     positions_columns?: string[]
     history?: HoldingPosition[]
+    snapshot_summary?: any
   }>
   goal?: {
     positions?: Array<Record<string, any>>
     positions_columns?: string[]
     history?: HoldingPosition[]
+    snapshot_summary?: any
   }
   rerun_hint?: string
   summary?: { point_count?: number; date_min?: string | null; date_max?: string | null }
@@ -120,65 +126,17 @@ type HoldingsTsPayload = {
   sheet_id?: string
 }
 
-type ColumnKey =
-  | 'symbol'
-  | 'yesterday_close'
-  | 'today_close'
-  | 'change_pct'
-  | 'pnl_today'
-  | 'avg_cost'
-  | 'equity'
-  | 'cost_basis'
-  | 'buy_total'
-  | 'rsi'
-  | 'position_pct'
-  | 'shares'
-  | 'cum_return_pct'
-  | 'cum_pnl_usd'
-  | 'mdd_pct'
-  | 'volume_k'
-  | 'high_52w'
-  | 'low_52w'
-  | 'ma5'
-  | 'ma120'
-  | 'ma200'
-  | 'note'
-  | 'sparkline_30'
-
-type ColumnDef = {
-  key: ColumnKey
-  label: string
-  kind: 'text' | 'money' | 'pct' | 'num' | 'sparkline'
-  defaultVisible: boolean
+type MarketIndicesPayload = {
+  timestamp?: string
+  indices?: Record<string, { name?: string; price?: number; change_pct?: number }>
+  volatility?: Record<string, { name?: string; price?: number; change_pct?: number }>
+  bonds?: Record<string, { name?: string; price?: number; change_pct?: number }>
+  currencies?: Record<string, { name?: string; price?: number; change_pct?: number }>
+  commodities?: Record<string, { name?: string; price?: number; change_pct?: number }>
+  error?: string
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5001'
-
-const COLUMNS: ColumnDef[] = [
-  { key: 'symbol', label: 'Symbol', kind: 'text', defaultVisible: true },
-  { key: 'sparkline_30', label: 'Sparkline', kind: 'sparkline', defaultVisible: true },
-  { key: 'shares', label: 'Shares', kind: 'num', defaultVisible: true },
-  { key: 'position_pct', label: 'Position %', kind: 'pct', defaultVisible: true },
-  { key: 'today_close', label: 'Today Close', kind: 'money', defaultVisible: true },
-  { key: 'yesterday_close', label: 'Yesterday Close', kind: 'money', defaultVisible: false },
-  { key: 'change_pct', label: 'Change %', kind: 'pct', defaultVisible: true },
-  { key: 'pnl_today', label: 'PnL Today', kind: 'money', defaultVisible: true },
-  { key: 'avg_cost', label: 'Avg Cost', kind: 'money', defaultVisible: true },
-  { key: 'equity', label: 'Equity', kind: 'money', defaultVisible: true },
-  { key: 'cost_basis', label: 'Cost Basis', kind: 'money', defaultVisible: true },
-  { key: 'buy_total', label: 'Buy Total', kind: 'money', defaultVisible: false },
-  { key: 'cum_pnl_usd', label: 'Cum PnL USD', kind: 'money', defaultVisible: true },
-  { key: 'cum_return_pct', label: 'Cum Return %', kind: 'pct', defaultVisible: true },
-  { key: 'mdd_pct', label: 'MDD %', kind: 'pct', defaultVisible: false },
-  { key: 'rsi', label: 'RSI', kind: 'num', defaultVisible: true },
-  { key: 'volume_k', label: 'Volume (K)', kind: 'num', defaultVisible: true },
-  { key: 'high_52w', label: '52W High', kind: 'money', defaultVisible: false },
-  { key: 'low_52w', label: '52W Low', kind: 'money', defaultVisible: false },
-  { key: 'ma5', label: 'MA5', kind: 'money', defaultVisible: false },
-  { key: 'ma120', label: 'MA120', kind: 'money', defaultVisible: false },
-  { key: 'ma200', label: 'MA200', kind: 'money', defaultVisible: false },
-  { key: 'note', label: 'Note', kind: 'text', defaultVisible: true },
-]
 
 function panelStyle() {
   return {
@@ -266,57 +224,25 @@ function getFirstNumber(row: Record<string, any>, keys: string[]): number | null
   return null
 }
 
-function Sparkline({ values }: { values?: number[] }) {
-  const series = Array.isArray(values) ? values.filter((v) => typeof v === 'number' && !Number.isNaN(v)) : []
-  if (series.length < 2) {
-    return <span style={{ color: '#6b7280', fontSize: '0.72rem' }}>-</span>
-  }
-  const w = 88
-  const h = 24
-  const min = Math.min(...series)
-  const max = Math.max(...series)
-  const span = Math.max(max - min, 1e-9)
-  const step = w / (series.length - 1)
-  const points = series
-    .map((v, i) => {
-      const x = i * step
-      const y = h - ((v - min) / span) * (h - 2) - 1
-      return `${x},${y}`
-    })
-    .join(' ')
-  const up = series[series.length - 1] >= series[0]
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: 88, height: 24 }}>
-      <polyline fill="none" stroke={up ? '#22c55e' : '#ef4444'} strokeWidth="1.6" points={points} />
-    </svg>
-  )
-}
-
 const DONUT_COLORS = ['#22c55e', '#60a5fa', '#f59e0b', '#ef4444', '#14b8a6', '#a78bfa', '#eab308', '#f43f5e', '#38bdf8', '#4ade80']
 const DONUT_MAX_SLICES = 10
-const DONUT_LABEL_MIN_PCT = 2
 
 function renderPieLabel(props: any) {
   const { cx, cy, midAngle, outerRadius, percent, name } = props
-  if (typeof percent === 'number' && percent * 100 < DONUT_LABEL_MIN_PCT) return null
   const labelName = asText(name)
+  if (!labelName) return null
   const RADIAN = Math.PI / 180
-  const radius = outerRadius + 16
-  const x = cx + radius * Math.cos(-midAngle * RADIAN)
-  const y = cy + radius * Math.sin(-midAngle * RADIAN)
-  const anchor = x > cx ? 'start' : 'end'
-  const pct = typeof percent === 'number' ? `${(percent * 100).toFixed(1)}%` : ''
+  const distance = outerRadius + 18
+  const x = cx + distance * Math.cos(-midAngle * RADIAN)
+  const y = cy + distance * Math.sin(-midAngle * RADIAN)
+  const textAnchor = x > cx ? 'start' : 'end'
+  const pct = typeof percent === 'number' ? ` ${Math.round(percent * 1000) / 10}%` : ''
   return (
-    <text x={x} y={y} fill="#cbd5e1" textAnchor={anchor} dominantBaseline="central" fontSize={11}>
-      {labelName} {pct}
+    <text x={x} y={y} fill="#cbd5e1" textAnchor={textAnchor} dominantBaseline="central" fontSize={11}>
+      {labelName}
+      {pct}
     </text>
   )
-}
-
-function defaultVisibleMap(): Record<ColumnKey, boolean> {
-  const map = {} as Record<ColumnKey, boolean>
-  for (const c of COLUMNS) map[c.key] = c.defaultVisible
-  return map
 }
 
 function extractSheetId(input: string): string | null {
@@ -344,6 +270,71 @@ function deriveColumnsFromRows(rows: Array<Record<string, any>>): string[] {
   }
   return columns
 }
+
+function isKoreanTabName(tabName: string): boolean {
+  return /한국/.test(tabName || '')
+}
+
+function renderSheetCellValue(value: any, column: string) {
+  const text = asText(value).trim()
+  if (!text) return <span style={{ color: '#6b7280' }}>-</span>
+  if (text === '-') return <span style={{ color: '#6b7280' }}>-</span>
+
+  const isUp = /^[▲△+]/.test(text)
+  const isDown = /^[▼▽-]/.test(text)
+  const color = isUp ? '#22c55e' : isDown ? '#ef4444' : '#d1d5db'
+
+  if (column === '순서') {
+    return <span style={{ color: '#f3f4f6', fontWeight: 700 }}>{text}</span>
+  }
+
+  return <span style={{ color }}>{text}</span>
+}
+
+function normalizeTabColumns(tabName: string, rawColumns: string[]): string[] {
+  const isKorean = isKoreanTabName(tabName)
+  const filtered: string[] = []
+  const seen = new Set<string>()
+
+  for (const raw of rawColumns || []) {
+    const col = asText(raw)
+    if (!col) continue
+
+    if (!isKorean && (col === 'Sparkline' || col === '__sparkline' || col === '10 일선' || col === '50 일선')) {
+      continue
+    }
+
+    const normalized = !isKorean && col === 'col_1' ? '순서' : col
+    if (seen.has(normalized)) continue
+    seen.add(normalized)
+    filtered.push(normalized)
+  }
+
+  if (isKorean) return filtered
+
+  if (!filtered.includes('순서')) {
+    filtered.unshift('순서')
+  }
+
+  const orderIdx = filtered.indexOf('순서')
+  if (orderIdx > 0) {
+    filtered.splice(orderIdx, 1)
+    filtered.unshift('순서')
+  }
+
+  const symbolIdx = filtered.indexOf('종목')
+  if (symbolIdx > 1) {
+    filtered.splice(symbolIdx, 1)
+    filtered.splice(1, 0, '종목')
+  } else if (symbolIdx === 0 && filtered.length > 1) {
+    const [symbol] = filtered.splice(0, 1)
+    filtered.splice(1, 0, symbol)
+  }
+
+  return filtered
+}
+
+import { ComposedChart } from 'recharts';
 
 function AccountHistoryChart({ history }: { history: HoldingPosition[] }) {
   const [yLMin, setYLMin] = useState('')
@@ -408,20 +399,21 @@ function AccountHistoryChart({ history }: { history: HoldingPosition[] }) {
         </button>
         <span style={{ color: '#6b7280', fontSize: '0.66rem', marginLeft: 4 }}>{filtered.length} / {history.length} pts</span>
       </div>
-      <div style={{ width: '100%', height: 300 }}>
+      <div style={{ width: '100%', height: 360 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={filtered} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+          <ComposedChart data={filtered} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
             <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 11 }} />
             <YAxis yAxisId="left" domain={leftDomain} tick={{ fill: '#94a3b8', fontSize: 11 }} />
             <YAxis yAxisId="right" orientation="right" domain={rightDomain} tick={{ fill: '#f59e0b', fontSize: 11 }} />
-            <Tooltip />
+            <Tooltip contentStyle={{ backgroundColor: 'rgba(17,24,39,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.8rem' }} />
             <Legend />
-            <Line yAxisId="left" type="monotone" dataKey="total" stroke="#22c55e" dot={false} name="Total" />
-            <Line yAxisId="left" type="monotone" dataKey="in" stroke="#60a5fa" dot={false} name="In" />
-            <Line yAxisId="left" type="monotone" dataKey="pl" stroke="#f97316" dot={false} name="P/L" />
-            <Line yAxisId="right" type="monotone" dataKey="pl_pct" stroke="#eab308" dot={false} name="P/L(%)" />
-          </LineChart>
+            <Bar yAxisId="left" dataKey="delta" fill="#93c5fd" opacity={0.4} name="Delta" />
+            <Line yAxisId="left" type="monotone" dataKey="total" stroke="#f8fafc" strokeWidth={2} dot={false} name="총액 (Total)" />
+            <Line yAxisId="left" type="monotone" dataKey="in" stroke="#ef4444" strokeWidth={2} dot={false} name="투자금 (In)" />
+            <Line yAxisId="left" type="monotone" dataKey="pl" stroke="#f59e0b" strokeWidth={2} dot={false} name="수익금 (PnL)" />
+            <Line yAxisId="right" type="monotone" dataKey="pl_pct" stroke="#34d399" strokeWidth={2} dot={false} name="수익률 % (PnL%)" />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>
@@ -430,6 +422,7 @@ function AccountHistoryChart({ history }: { history: HoldingPosition[] }) {
 
 export default function MyPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [contentLang, setContentLang] = useState<UiLang>('ko')
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
   const [tsLoading, setTsLoading] = useState(true)
@@ -444,17 +437,12 @@ export default function MyPage() {
   const [saEmail, setSaEmail] = useState<string | null>(null)
   const [selectedTabs, setSelectedTabs] = useState<string[]>([])
   const [activePositionsTab, setActivePositionsTab] = useState<string>('')
-  const [visibleMap, setVisibleMap] = useState<Record<ColumnKey, boolean>>(defaultVisibleMap())
-  const [sortKey, setSortKey] = useState<ColumnKey>('change_pct')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [rsiFilter, setRsiFilter] = useState<'all' | 'overbought' | 'oversold'>('all')
-  const [sparklineMap, setSparklineMap] = useState<Record<string, number[]>>({})
-  const sparklinePending = useRef<Set<string>>(new Set())
   const [credsStatus, setCredsStatus] = useState<{ configured: boolean; source: string } | null>(null)
   const [saJsonInput, setSaJsonInput] = useState('')
   const [credsLoading, setCredsLoading] = useState(false)
   const [credsOpen, setCredsOpen] = useState(false)
   const [portfolioNarrative, setPortfolioNarrative] = useState<StructuredNarrative | null>(null)
+  const [marketIndices, setMarketIndices] = useState<MarketIndicesPayload | null>(null)
 
   async function fetchHoldings() {
     setLoading(true)
@@ -539,7 +527,15 @@ export default function MyPage() {
     } catch {}
   }
 
-  const FALLBACK_SA_EMAIL = 'boss9293@gmail.com'
+  async function fetchMarketIndices() {
+    try {
+      const res = await fetch(`${API_BASE}/api/market/indices`, { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok) setMarketIndices(json)
+    } catch {}
+  }
+
+  const FALLBACK_SA_EMAIL = '서비스 계정 JSON을 설정해주세요 (우측 상단 관리 버튼)'
 
   async function fetchSaEmail() {
     try {
@@ -657,6 +653,7 @@ export default function MyPage() {
   useEffect(() => {
     fetchHoldings()
     fetchSaEmail()
+    fetchMarketIndices()
     refreshTabs().then(() => {
       // localStorage에 저장된 URL이 있고 탭 메타가 없으면 자동 로드
       const saved = (() => { try { return localStorage.getItem('holdings_sheet_url') || '' } catch { return '' } })()
@@ -692,42 +689,6 @@ export default function MyPage() {
     }
   }
 
-  const filteredSortedRows = useMemo(() => {
-    let rows = [...(data.positions || [])]
-    if (rsiFilter === 'overbought') {
-      rows = rows.filter((r) => typeof r.rsi === 'number' && r.rsi >= 70)
-    } else if (rsiFilter === 'oversold') {
-      rows = rows.filter((r) => typeof r.rsi === 'number' && r.rsi <= 30)
-    }
-
-    const getVal = (row: HoldingPosition, key: ColumnKey): number | string => {
-      if (key === 'symbol') return String(row.symbol || '')
-      if (key === 'note') return String(row.note || '')
-      if (key === 'sparkline_30') return Array.isArray(row.sparkline_30) ? row.sparkline_30.length : 0
-      const num = row[key] as number | null | undefined
-      return typeof num === 'number' ? num : Number.NEGATIVE_INFINITY
-    }
-
-    rows.sort((a, b) => {
-      const av = getVal(a, sortKey)
-      const bv = getVal(b, sortKey)
-      let cmp = 0
-      if (typeof av === 'string' || typeof bv === 'string') {
-        cmp = String(av).localeCompare(String(bv))
-      } else {
-        cmp = av === bv ? 0 : av > bv ? 1 : -1
-      }
-      return sortDir === 'asc' ? cmp : -cmp
-    })
-    return rows
-  }, [data.positions, rsiFilter, sortDir, sortKey])
-
-  const summary = data.summary || {}
-  const totalEquity = typeof summary.total_equity === 'number' ? summary.total_equity : 0
-
-  const tsGoalHistory = tsData?.goal?.history || []
-  const tsRerun = tsData?.rerun_hint
-
   const positionsByTab = data.positions_by_tab || {}
   const positionTabs = Object.keys(positionsByTab)
   useEffect(() => {
@@ -735,6 +696,20 @@ export default function MyPage() {
       setActivePositionsTab(positionTabs[0])
     }
   }, [positionTabs.join('|'), activePositionsTab])
+
+  const tsActiveHistory = useMemo(() => {
+    const activeTabObj = tsData?.tabs?.find((t) => t.name === activePositionsTab)
+    if (activeTabObj?.history && activeTabObj.history.length > 0) {
+      return activeTabObj.history
+    }
+    if (activePositionsTab === 'Goal') {
+      return tsData?.goal?.history || []
+    }
+    return []
+  }, [tsData, activePositionsTab])
+
+  const tsRerun = tsData?.rerun_hint
+
   const activePositionsRows = positionsByTab[activePositionsTab] || []
   const activePositionsColumns = useMemo(() => {
     const raw =
@@ -742,56 +717,92 @@ export default function MyPage() {
     return (raw || []).map((c) => asText(c)).filter((c) => c)
   }, [data.positions_columns_by_tab, activePositionsTab, activePositionsRows])
 
-  const symbolColumnKey = useMemo(() => {
-    const candidates = ['\uC885\uBAA9', 'symbol', 'Symbol', '\uD2F0\uCEE4', 'Ticker']
-    for (const c of candidates) {
-      if (activePositionsColumns.includes(c)) return c
-    }
-    for (const row of activePositionsRows) {
-      for (const c of candidates) {
-        if (row?.[c]) return c
-      }
-    }
-    return ''
-  }, [activePositionsColumns, activePositionsRows])
-
   const positionsColumnsView = useMemo(() => {
-    const cols = [...activePositionsColumns]
-    if (!symbolColumnKey) return cols
-    if (cols.includes('__sparkline')) return cols
-    const idx = cols.indexOf(symbolColumnKey)
-    if (idx >= 0) {
-      cols.splice(idx, 0, '__sparkline')
-    } else {
-      cols.unshift('__sparkline')
-    }
-    return cols
-  }, [activePositionsColumns, symbolColumnKey])
+    return normalizeTabColumns(activePositionsTab, activePositionsColumns)
+  }, [activePositionsColumns, activePositionsTab])
 
-  useEffect(() => {
-    if (!symbolColumnKey || activePositionsRows.length === 0) return
-    const symbols = activePositionsRows
-      .map((row) => String(row?.[symbolColumnKey] || '').trim())
-      .filter((s) => s)
-    const unique = Array.from(new Set(symbols)).slice(0, 12)
-    unique.forEach((sym) => {
-      if (sparklineMap[sym] || sparklinePending.current.has(sym)) return
-      sparklinePending.current.add(sym)
-      fetch(`${API_BASE}/api/chart/${encodeURIComponent(sym)}?days=30`, { cache: 'no-store' })
-        .then((r) => r.json())
-        .then((json) => {
-          const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : []
-          const values = rows
-            .map((row: any) => (typeof row?.close === 'number' ? row.close : parseLooseNumber(row?.close)))
-            .filter((v: number | null): v is number => typeof v === 'number' && !Number.isNaN(v))
-          setSparklineMap((prev) => ({ ...prev, [sym]: values }))
-        })
-        .catch(() => {})
-        .finally(() => {
-          sparklinePending.current.delete(sym)
-        })
-    })
-  }, [activePositionsRows, symbolColumnKey])
+  const activeTabSnapshotEntry = useMemo(() => {
+    const tabEntry = tsData?.tabs?.find((t) => t.name === activePositionsTab)
+    if (tabEntry?.snapshot_summary) return tabEntry.snapshot_summary
+    if (activePositionsTab === 'Goal') return tsData?.goal?.snapshot_summary || null
+    return null
+  }, [tsData, activePositionsTab])
+
+  const activeTabSnapshotNormalized = (
+    activeTabSnapshotEntry && typeof activeTabSnapshotEntry === 'object' ? activeTabSnapshotEntry.normalized : null
+  ) as Record<string, number | string | null | undefined> | null
+
+  const activeTabSnapshotRawRows = (
+    activeTabSnapshotEntry && typeof activeTabSnapshotEntry === 'object' && Array.isArray(activeTabSnapshotEntry.raw)
+      ? activeTabSnapshotEntry.raw
+      : []
+  ) as Array<{ label?: string; value?: string }>
+
+  const activeTabSnapshotNum = (key: string): number | null => {
+    if (!activeTabSnapshotNormalized) return null
+    const v = activeTabSnapshotNormalized[key]
+    if (typeof v === 'number' && Number.isFinite(v)) return v
+    if (typeof v === 'string') {
+      const n = Number(String(v).replace(/[,%$,\s]/g, ''))
+      return Number.isFinite(n) ? n : null
+    }
+    return null
+  }
+
+  const activeTabAsOfDate = asText(tsActiveHistory[tsActiveHistory.length - 1]?.date || data.as_of_date) || data.as_of_date || null
+
+  const activeTabTotalEquity =
+    activeTabSnapshotNum('account_total') ??
+    activeTabSnapshotNum('total_equity') ??
+    activeTabSnapshotNum('total_value') ??
+    activePositionsRows.reduce((sum, row) => sum + (typeof row.equity === 'number' ? row.equity : 0), 0)
+
+  const activeTabTotalCost =
+    activeTabSnapshotNum('buy_total') ??
+    activeTabSnapshotNum('total_invested') ??
+    activeTabSnapshotNum('total_cost') ??
+    activePositionsRows.reduce(
+      (sum, row) => sum + (typeof row.buy_total === 'number' ? row.buy_total : typeof row.cost_basis === 'number' ? row.cost_basis : 0),
+      0,
+    )
+
+  const activeTabTotalPnl =
+    activeTabSnapshotNum('total_pnl') ??
+    activeTabSnapshotNum('cum_pnl_usd') ??
+    activeTabSnapshotNum('today_pnl') ??
+    activePositionsRows.reduce(
+      (sum, row) => sum + (typeof row.cum_pnl_usd === 'number' ? row.cum_pnl_usd : typeof row.pnl_today === 'number' ? row.pnl_today : 0),
+      0,
+    )
+
+  const activeTabReturnPct =
+    activeTabSnapshotNum('total_pnl_pct') ??
+    activeTabSnapshotNum('account_return_pct') ??
+    (typeof activeTabTotalCost === 'number' && activeTabTotalCost !== 0 ? (activeTabTotalPnl / activeTabTotalCost) * 100 : null)
+
+  const activeTabCash = activeTabSnapshotNum('cash') ?? activeTabSnapshotNum('cash_balance')
+  const activeTabCashRatioPct =
+    typeof activeTabCash === 'number' && typeof activeTabTotalEquity === 'number' && activeTabTotalEquity > 0
+      ? (activeTabCash / activeTabTotalEquity) * 100
+      : null
+
+  const activeTabTodayPnlValue =
+    activeTabSnapshotNum('today_pnl') ??
+    activeTabSnapshotNum('day_pnl') ??
+    activePositionsRows.reduce((sum, row) => sum + (typeof row.pnl_today === 'number' ? row.pnl_today : 0), 0)
+
+  const activeTabTodayPnlPct =
+    activeTabSnapshotNum('today_pnl_pct') ??
+    activeTabSnapshotNum('daily_pnl_pct') ??
+    activeTabSnapshotNum('day_pnl_pct') ??
+    (typeof activeTabTodayPnlValue === 'number' &&
+    typeof activeTabTotalEquity === 'number' &&
+    activeTabTotalEquity - activeTabTodayPnlValue > 0
+      ? (activeTabTodayPnlValue / (activeTabTotalEquity - activeTabTodayPnlValue)) * 100
+      : null)
+
+  const activeTabPnlTone = typeof activeTabReturnPct === 'number' ? (activeTabReturnPct >= 0 ? 'plus' : 'minus') : 'na'
+  const isLeverageSymbol = (symbol: string) => /TQQQ|SOXL|SPXL|TECL|FNGU|UPRO|UDOW|TNA|LABU|UYG/i.test(symbol)
 
   const selectableTabs = useMemo(() => {
     const tabs = (tabsMeta?.tabs || []).filter((t) => !t.excluded)
@@ -805,207 +816,330 @@ export default function MyPage() {
 
   const positionBars = useMemo(() => {
     const symbolKeys = ['symbol', 'Symbol', '\uC885\uBAA9', '\uD2F0\uCEE4', 'Ticker']
-    const valueKeys = ['\uD3C9\uAC00\uC561', 'equity', 'Equity', 'market_value', 'value', '\uC2DC\uC7A5\uAC00\uCE58', '\uD3C9\uAC00\uAE08\uC561']
-    const avgKeys = ['\uD3C9\uB2E8\uAC00', 'avg_cost', 'Avg Cost', '\uD3C9\uADE0\uB2E8\uAC00', '\uB9E4\uC218\uAC00']
+    const valuationKeys = ['\uD3C9\uAC00\uC561', 'equity', 'Equity', 'market_value', 'value', '\uC2DC\uC7A5\uAC00\uCE58', '\uD3C9\uAC00\uAE08\uC561']
+    const buyAmountKeys = ['\uB9E4\uC218\uC561', '\uB9E4\uC218\uCD1D\uC561', 'buy_total', 'buy_amount', 'cost_basis', '\uD22C\uC785\uC561']
 
-    const rows = activePositionsRows.length
-      ? activePositionsRows
-      : positionTabs.flatMap((t) => positionsByTab[t] || [])
+    const rows = activePositionsRows
 
     const data = rows
       .map((row) => {
         const symbol = getFirstString(row, symbolKeys)
-        const equity = getFirstNumber(row, valueKeys)
-        const avg = getFirstNumber(row, avgKeys)
-        if (!symbol || (equity === null && avg === null)) return null
+        const valuation = getFirstNumber(row, valuationKeys)
+        const buyAmount = getFirstNumber(row, buyAmountKeys)
+        if (!symbol || (valuation === null && buyAmount === null)) return null
         return {
           symbol,
-          equity: equity ?? 0,
-          avg: avg ?? 0,
+          valuation: valuation ?? 0,
+          buyAmount: buyAmount ?? 0,
         }
       })
-      .filter((r): r is { symbol: string; equity: number; avg: number } => !!r)
+      .filter((r): r is { symbol: string; valuation: number; buyAmount: number } => !!r)
 
-    return data.sort((a, b) => (b.equity || 0) - (a.equity || 0)).slice(0, 12)
-  }, [activePositionsRows, positionTabs.join('|')])
+    return data.sort((a, b) => (b.valuation || 0) - (a.valuation || 0)).slice(0, 12)
+  }, [activePositionsRows])
 
   const donutRows = useMemo(() => {
-    if (activePositionsRows.length) {
-      const symbolKeys = ['symbol', 'Symbol', '\uC885\uBAA9', '\uD2F0\uCEE4', 'Ticker']
-      const pctKeys = ['position_pct', 'Position %', '\uD3EC\uC9C0\uC158(%)', '\uBE44\uC911', '\uBE44\uC911(%)']
-      const equityKeys = ['equity', 'Equity', '\uD3C9\uAC00\uC561', '\uC2DC\uC7A5\uAC00\uCE58', 'value', 'market_value']
+    const symbolKeys = ['symbol', 'Symbol', '\uC885\uBAA9', '\uD2F0\uCEE4', 'Ticker']
+    const pctKeys = ['position_pct', 'Position %', '\uD3EC\uC9C0\uC158(%)', '\uBE44\uC911', '\uBE44\uC911(%)']
+    const equityKeys = ['equity', 'Equity', '\uD3C9\uAC00\uC561', '\uC2DC\uC7A5\uAC00\uCE58', 'value', 'market_value']
 
-      const entries = activePositionsRows
-        .map((row) => {
-          const symbol = getFirstString(row, symbolKeys)
-          const pct = getFirstNumber(row, pctKeys)
-          const equity = getFirstNumber(row, equityKeys)
-          return { symbol, pct, equity }
-        })
-        .filter((r) => r.symbol)
-
-      const hasPct = entries.some((e) => typeof e.pct === 'number' && e.pct > 0)
-      let rows = []
-      if (hasPct) {
-        rows = entries
-          .map((e) => ({ symbol: e.symbol, pct: Math.max(0, e.pct || 0) }))
-          .filter((x) => x.pct > 0)
-      } else {
-        const total = entries.reduce((sum, e) => sum + (e.equity || 0), 0)
-        rows = entries
-          .map((e) => ({
-            symbol: e.symbol,
-            pct: total > 0 && e.equity ? (e.equity / total) * 100 : 0,
-          }))
-          .filter((x) => x.pct > 0)
-      }
-      rows.sort((a, b) => b.pct - a.pct)
-      if (rows.length <= DONUT_MAX_SLICES) return rows
-      const head = rows.slice(0, DONUT_MAX_SLICES - 1)
-      const rest = rows.slice(DONUT_MAX_SLICES - 1)
-      const restPct = rest.reduce((sum, r) => sum + r.pct, 0)
-      if (restPct > 0) head.push({ symbol: 'Others', pct: restPct })
-      return head
-    }
-
-    const rows = filteredSortedRows
-      .map((r) => {
-        const symbol = asText(r.symbol)
-        const pct =
-          typeof r.position_pct === 'number'
-            ? r.position_pct
-            : totalEquity > 0 && typeof r.equity === 'number'
-            ? (r.equity / totalEquity) * 100
-            : 0
-        return { symbol, pct: Math.max(0, pct) }
+    const entries = activePositionsRows
+      .map((row) => {
+        const symbol = getFirstString(row, symbolKeys)
+        const pct = getFirstNumber(row, pctKeys)
+        const equity = getFirstNumber(row, equityKeys)
+        return { symbol, pct, equity }
       })
-      .filter((x) => x.symbol && x.pct > 0)
-      .sort((a, b) => b.pct - a.pct)
+      .filter((r) => r.symbol)
 
-    if (rows.length > 0) {
-      if (rows.length <= DONUT_MAX_SLICES) return rows
-      const head = rows.slice(0, DONUT_MAX_SLICES - 1)
-      const rest = rows.slice(DONUT_MAX_SLICES - 1)
-      const restPct = rest.reduce((sum, r) => sum + r.pct, 0)
-      if (restPct > 0) head.push({ symbol: 'Others', pct: restPct })
-      return head
+    if (entries.length === 0) return []
+
+    const hasPct = entries.some((e) => typeof e.pct === 'number' && e.pct > 0)
+    let rows: Array<{ symbol: string; pct: number }>
+    if (hasPct) {
+      rows = entries
+        .map((e) => ({ symbol: e.symbol, pct: Math.max(0, e.pct || 0) }))
+        .filter((x) => x.pct > 0)
+    } else {
+      const total = typeof activeTabTotalEquity === 'number' && activeTabTotalEquity > 0
+        ? activeTabTotalEquity
+        : entries.reduce((sum, e) => sum + (e.equity || 0), 0)
+      rows = entries
+        .map((e) => ({
+          symbol: e.symbol,
+          pct: total > 0 && e.equity ? (e.equity / total) * 100 : 0,
+        }))
+        .filter((x) => x.pct > 0)
     }
 
-    const sourceRows = positionTabs.flatMap((t) => positionsByTab[t] || [])
-    const bySymbol = new Map<string, number>()
-    for (const row of sourceRows) {
-      const sym = getFirstString(row, ['symbol', 'Symbol', '\uC885\uBAA9', '\uD2F0\uCEE4', 'Ticker'])
-      const val = getFirstNumber(row, ['equity', 'Equity', '\uD3C9\uAC00\uC561', '\uC2DC\uC7A5\uAC00\uCE58', 'value', 'market_value'])
-      if (!sym || typeof val !== 'number' || val <= 0) continue
-      bySymbol.set(sym, (bySymbol.get(sym) || 0) + val)
-    }
-
-    const total = Array.from(bySymbol.values()).reduce((a, b) => a + b, 0)
-    if (total <= 0) return []
-    const merged = Array.from(bySymbol.entries())
-      .map(([symbol, value]) => ({ symbol, pct: (value / total) * 100 }))
-      .filter((x) => x.pct > 0)
-      .sort((a, b) => b.pct - a.pct)
-    if (merged.length <= DONUT_MAX_SLICES) return merged
-    const head = merged.slice(0, DONUT_MAX_SLICES - 1)
-    const rest = merged.slice(DONUT_MAX_SLICES - 1)
+    rows.sort((a, b) => b.pct - a.pct)
+    if (rows.length <= DONUT_MAX_SLICES) return rows
+    const head = rows.slice(0, DONUT_MAX_SLICES - 1)
+    const rest = rows.slice(DONUT_MAX_SLICES - 1)
     const restPct = rest.reduce((sum, r) => sum + r.pct, 0)
     if (restPct > 0) head.push({ symbol: 'Others', pct: restPct })
     return head
-  }, [filteredSortedRows, totalEquity, activePositionsRows, positionTabs.join('|')])
-
-  const donutBg = useMemo(() => {
-    const top = donutRows.slice(0, 10)
-    if (!top.length) return 'conic-gradient(#374151 0% 100%)'
-    const colors = ['#22c55e', '#60a5fa', '#f59e0b', '#ef4444', '#14b8a6', '#a78bfa', '#eab308', '#f43f5e', '#38bdf8', '#4ade80']
-    let acc = 0
-    const chunks = top.map((row, i) => {
-      const start = acc
-      acc += row.pct
-      return `${colors[i % colors.length]} ${start}% ${Math.min(acc, 100)}%`
-    })
-    if (acc < 100) chunks.push(`#334155 ${acc}% 100%`)
-    return `conic-gradient(${chunks.join(', ')})`
-  }, [donutRows])
-
-  const visibleColumns = COLUMNS.filter((c) => visibleMap[c.key])
-
-  function toggleColumn(key: ColumnKey) {
-    setVisibleMap((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
-
-  function selectSort(key: ColumnKey, direction: 'asc' | 'desc') {
-    setSortKey(key)
-    setSortDir(direction)
-  }
-
-  function renderCell(row: HoldingPosition, col: ColumnDef) {
-    if (col.key === 'symbol') return <span style={{ color: '#f3f4f6', fontWeight: 700 }}>{asText(row.symbol) || '-'}</span>
-    if (col.key === 'note') return <span style={{ color: '#c7cede' }}>{asText(row.note) || '-'}</span>
-    if (col.key === 'sparkline_30') return <Sparkline values={row.sparkline_30} />
-    const value = row[col.key] as number | null | undefined
-    if (col.kind === 'money') return <span style={{ color: '#d1d5db' }}>{fmtMoney(value)}</span>
-    if (col.kind === 'pct') {
-      const color = typeof value === 'number' ? (value >= 0 ? '#22c55e' : '#ef4444') : '#9ca3af'
-      return <span style={{ color }}>{fmtPct(value)}</span>
-    }
-    if (col.kind === 'num') return <span style={{ color: '#d1d5db' }}>{fmtNum(value, col.key === 'shares' ? 4 : 2)}</span>
-    return <span style={{ color: '#d1d5db' }}>{asText(value ?? '-')}</span>
-  }
+  }, [activePositionsRows, activeTabTotalEquity])
 
   const topWeight = donutRows[0]
-  const snapshotNormalized = (data.snapshot_summary && typeof data.snapshot_summary === 'object' ? data.snapshot_summary.normalized : null) as
-    | Record<string, number | string | null | undefined>
-    | null
-  const snapshotRawRows = (data.snapshot_summary && typeof data.snapshot_summary === 'object' && Array.isArray(data.snapshot_summary.raw)
-    ? data.snapshot_summary.raw
-    : []) as Array<{ label?: string; value?: string }>
-  const snapshotNum = (key: string): number | null => {
-    if (!snapshotNormalized) return null
-    const v = snapshotNormalized[key]
-    if (typeof v === 'number' && Number.isFinite(v)) return v
-    if (typeof v === 'string') {
-      const n = Number(String(v).replace(/[,%$,\s]/g, ''))
-      return Number.isFinite(n) ? n : null
-    }
-    return null
-  }
+  const snapshotNormalized = activeTabSnapshotNormalized
+  const snapshotRawRows = activeTabSnapshotRawRows
+  const snapshotNum = activeTabSnapshotNum
   const top3WeightPct = donutRows.slice(0, 3).reduce((sum, r) => sum + (Number.isFinite(r.pct) ? r.pct : 0), 0)
-  const cashRatioPct =
-    (() => {
-      const cashBase = snapshotNum('cash')
-      const equityBase = snapshotNum('account_total') ?? snapshotNum('total_equity') ?? (typeof summary.total_equity === 'number' ? summary.total_equity : null)
-      const cashVal = cashBase ?? (typeof summary.cash === 'number' ? summary.cash : null)
-      return typeof cashVal === 'number' && typeof equityBase === 'number' && equityBase > 0 ? (cashVal / equityBase) * 100 : null
-    })()
-  const concentrationTone =
-    top3WeightPct >= 65 ? 'high' : top3WeightPct >= 45 ? 'mid' : 'low'
+  const cashRatioPct = activeTabCashRatioPct
+  const cashRatioText = cashRatioPct != null ? `${cashRatioPct.toFixed(1)}%` : '-'
+  const concentrationTone = top3WeightPct >= 65 ? 'high' : top3WeightPct >= 45 ? 'mid' : 'low'
   const diversificationText =
     concentrationTone === 'high'
       ? '상위 종목 집중도가 높아 개별 종목 변동 영향이 큽니다.'
       : concentrationTone === 'mid'
         ? '집중도는 중간 수준이며 상위 종목 흐름이 성과를 좌우합니다.'
         : '비중이 비교적 분산되어 개별 종목 충격 완화에 유리합니다.'
-  const pnlTone = typeof summary.total_pnl_pct === 'number' ? (summary.total_pnl_pct >= 0 ? 'plus' : 'minus') : 'na'
-  const todayPnlValue =
-    typeof snapshotNum('today_pnl') === 'number'
-      ? (snapshotNum('today_pnl') as number)
-      : typeof summary.today_pnl === 'number'
-        ? summary.today_pnl
-      : activePositionsRows.reduce((sum, row) => sum + (typeof row.pnl_today === 'number' ? row.pnl_today : 0), 0)
-  const todayPnlPct =
-    typeof snapshotNum('today_pnl_pct') === 'number'
-      ? (snapshotNum('today_pnl_pct') as number)
-      : typeof todayPnlValue === 'number' &&
-    Number.isFinite(todayPnlValue) &&
-    typeof summary.total_equity === 'number' &&
-    Number.isFinite(summary.total_equity) &&
-    summary.total_equity - todayPnlValue > 0
-      ? (todayPnlValue / (summary.total_equity - todayPnlValue)) * 100
-      : null
+  const pnlTone = activeTabPnlTone
+  const todayPnlValue = activeTabTodayPnlValue
+  const todayPnlPct = activeTabTodayPnlPct
   const activeSymbolCount = Array.isArray(activePositionsRows)
     ? activePositionsRows.filter((r) => !!asText(r.symbol)).length
     : 0
+  const activeTabSummary = useMemo(
+    () => ({
+      total_equity: activeTabTotalEquity,
+      total_cost: activeTabTotalCost,
+      total_pnl: activeTabTotalPnl,
+      total_pnl_pct: activeTabReturnPct,
+      today_pnl: activeTabTodayPnlValue,
+      today_pnl_pct: activeTabTodayPnlPct,
+      cash: activeTabCash,
+      cash_ratio_pct: activeTabCashRatioPct,
+      position_count: activeSymbolCount,
+      as_of_date: activeTabAsOfDate,
+    }),
+    [
+      activeTabCash,
+      activeTabCashRatioPct,
+      activeTabReturnPct,
+      activeTabTodayPnlPct,
+      activeTabTodayPnlValue,
+      activeTabTotalCost,
+      activeTabTotalEquity,
+      activeTabTotalPnl,
+      activeSymbolCount,
+      activeTabAsOfDate,
+    ],
+  )
+
+  const tabPositionBars = useMemo(() => {
+    const symbolKeys = ['symbol', 'Symbol', '\uC885\uBAA9', '\uD2F0\uCEE4', 'Ticker']
+    const valuationKeys = ['\uD3C9\uAC00\uC561', 'equity', 'Equity', 'market_value', 'value', '\uC2DC\uC7A5\uAC00\uCE58', '\uD3C9\uAC00\uAE08\uC561']
+    const buyAmountKeys = ['\uB9E4\uC218\uC561', '\uB9E4\uC218\uCD1D\uC561', 'buy_total', 'buy_amount', 'cost_basis', '\uD22C\uC785\uC561']
+
+    const rows = activePositionsRows
+
+    const data = rows
+      .map((row) => {
+        const symbol = getFirstString(row, symbolKeys)
+        const valuation = getFirstNumber(row, valuationKeys)
+        const buyAmount = getFirstNumber(row, buyAmountKeys)
+        if (!symbol || (valuation === null && buyAmount === null)) return null
+        return {
+          symbol,
+          valuation: valuation ?? 0,
+          buyAmount: buyAmount ?? 0,
+        }
+      })
+      .filter((r): r is { symbol: string; valuation: number; buyAmount: number } => !!r)
+
+    return data.sort((a, b) => (b.valuation || 0) - (a.valuation || 0)).slice(0, 12)
+  }, [activePositionsRows])
+
+  const tabDonutRows = useMemo(() => {
+    const symbolKeys = ['symbol', 'Symbol', '\uC885\uBAA9', '\uD2F0\uCEE4', 'Ticker']
+    const pctKeys = ['position_pct', 'Position %', '\uD3EC\uC9C0\uC158(%)', '\uBE44\uC911', '\uBE44\uC911(%)']
+    const equityKeys = ['equity', 'Equity', '\uD3C9\uAC00\uC561', '\uC2DC\uC7A5\uAC00\uCE58', 'value', 'market_value']
+
+    const entries = activePositionsRows
+      .map((row) => {
+        const symbol = getFirstString(row, symbolKeys)
+        const pct = getFirstNumber(row, pctKeys)
+        const equity = getFirstNumber(row, equityKeys)
+        return { symbol, pct, equity }
+      })
+      .filter((r) => r.symbol)
+
+    if (entries.length === 0) return []
+
+    const hasPct = entries.some((e) => typeof e.pct === 'number' && e.pct > 0)
+    let rows: Array<{ symbol: string; pct: number }>
+    if (hasPct) {
+      rows = entries
+        .map((e) => ({ symbol: e.symbol, pct: Math.max(0, e.pct || 0) }))
+        .filter((x) => x.pct > 0)
+    } else {
+      const snapshotTotalEquity =
+        activeTabSnapshotNum('account_total') ??
+        activeTabSnapshotNum('total_equity') ??
+        null
+      const total =
+        typeof snapshotTotalEquity === 'number' && snapshotTotalEquity > 0
+          ? snapshotTotalEquity
+          : entries.reduce((sum, e) => sum + (e.equity || 0), 0)
+      rows = entries
+        .map((e) => ({
+          symbol: e.symbol,
+          pct: total > 0 && e.equity ? (e.equity / total) * 100 : 0,
+        }))
+        .filter((x) => x.pct > 0)
+    }
+
+    rows.sort((a, b) => b.pct - a.pct)
+    return rows
+  }, [activePositionsRows, activeTabSnapshotNormalized])
+
+  const tabTopWeight = tabDonutRows[0]
+  const tabTop3WeightPct = tabDonutRows.slice(0, 3).reduce((sum, r) => sum + (Number.isFinite(r.pct) ? r.pct : 0), 0)
+  const tabTotalEquity =
+    activeTabSnapshotNum('account_total') ??
+    activeTabSnapshotNum('total_equity') ??
+    activePositionsRows.reduce((sum, row) => sum + (typeof row.equity === 'number' ? row.equity : 0), 0)
+  const tabSnapshotTotalPnl = activeTabSnapshotNum('total_pnl') ?? activeTabSnapshotNum('today_pnl')
+  const tabSnapshotTotalCost = activeTabSnapshotNum('buy_total') ?? activeTabSnapshotNum('total_invested')
+  const tabSnapshotCash = activeTabSnapshotNum('cash')
+  const tabSnapshotTodayPnlValue = activeTabSnapshotNum('today_pnl')
+  const tabSnapshotTodayPnlPct = activeTabSnapshotNum('today_pnl_pct')
+  const tabReturnPct =
+    activeTabSnapshotNum('total_pnl_pct') ??
+    activeTabSnapshotNum('account_return_pct') ??
+    (typeof tabSnapshotTotalPnl === 'number' && typeof tabSnapshotTotalCost === 'number' && tabSnapshotTotalCost !== 0
+      ? (tabSnapshotTotalPnl / tabSnapshotTotalCost) * 100
+      : null)
+  const tabCashRatioPct =
+    typeof tabSnapshotCash === 'number' && typeof tabTotalEquity === 'number' && tabTotalEquity > 0
+      ? (tabSnapshotCash / tabTotalEquity) * 100
+      : null
+  const tabCashRatioText = tabCashRatioPct != null ? `${tabCashRatioPct.toFixed(1)}%` : '-'
+  const tabConcentrationTone = tabTop3WeightPct >= 65 ? 'high' : tabTop3WeightPct >= 45 ? 'mid' : 'low'
+  const tabDiversificationText =
+    tabConcentrationTone === 'high'
+      ? '상위 종목 집중도가 높아 개별 종목 변동이 탭 성과에 크게 영향을 줍니다.'
+      : tabConcentrationTone === 'mid'
+        ? '집중도는 중간 구간이며 상위 종목의 흐름이 성과를 좌우합니다.'
+        : '비중이 비교적 분산되어 있어 개별 종목 충격에 대한 완충이 있습니다.'
+  const tabPnlTone = typeof tabReturnPct === 'number' ? (tabReturnPct >= 0 ? 'plus' : 'minus') : 'na'
+  const tabTodayPnlValue =
+    typeof tabSnapshotTodayPnlValue === 'number'
+      ? tabSnapshotTodayPnlValue
+      : activePositionsRows.reduce(
+          (sum, row) => sum + (typeof row.pnl_today === 'number' ? row.pnl_today : 0),
+          0,
+        )
+  const tabTodayPnlPct =
+    typeof tabSnapshotTodayPnlPct === 'number'
+      ? tabSnapshotTodayPnlPct
+      : typeof tabTodayPnlValue === 'number' && typeof tabTotalEquity === 'number' && tabTotalEquity - tabTodayPnlValue > 0
+        ? (tabTodayPnlValue / (tabTotalEquity - tabTodayPnlValue)) * 100
+        : null
+  const tabActiveSymbolCount = Array.isArray(activePositionsRows)
+    ? activePositionsRows.filter((r) => !!asText(r.symbol)).length
+    : 0
+  const leverageExposureWeightPct = donutRows.reduce(
+    (sum, row) => (isLeverageSymbol(row.symbol) ? sum + row.pct : sum),
+    0,
+  )
+  const spyMarketChangePct =
+    typeof marketIndices?.indices?.SPY?.change_pct === 'number' ? marketIndices.indices.SPY.change_pct : null
+  const topHoldingRow = topWeight
+    ? activePositionsRows.find((row) => asText(row.symbol) === topWeight.symbol)
+    : null
+  const topHoldingChangePct = typeof topHoldingRow?.change_pct === 'number' ? topHoldingRow.change_pct : null
+  const topHoldingVsSpyPct =
+    spyMarketChangePct != null && topHoldingChangePct != null ? topHoldingChangePct - spyMarketChangePct : null
+  const topHoldingVsSpyText =
+    topHoldingVsSpyPct != null && topWeight
+      ? `${topWeight.symbol} is ${topHoldingVsSpyPct >= 0 ? 'above' : 'below'} SPY by ${Math.abs(topHoldingVsSpyPct).toFixed(2)}pp today.`
+      : ''
+  const activeTabPortfolioData = useMemo(
+    () => ({
+      tab_name: activePositionsTab || null,
+      summary: activeTabSummary,
+      portfolio_snapshot: {
+        total_value: activeTabSummary.total_equity,
+        cash_weight: activeTabSummary.cash_ratio_pct,
+        daily_pnl_pct: activeTabSummary.today_pnl_pct,
+        total_pnl_pct: activeTabSummary.total_pnl_pct,
+        top3_weight: top3WeightPct,
+        leverage_exposure_weight: leverageExposureWeightPct,
+        sector_exposure: [],
+        position_count: activeTabSummary.position_count,
+      },
+      market_reference: marketIndices?.indices?.SPY
+        ? {
+            symbol: 'SPY',
+            name: asText(marketIndices.indices.SPY.name) || 'S&P 500',
+            price:
+              typeof marketIndices.indices.SPY.price === 'number'
+                ? marketIndices.indices.SPY.price
+                : parseLooseNumber(marketIndices.indices.SPY.price),
+            daily_change_pct:
+              typeof marketIndices.indices.SPY.change_pct === 'number'
+                ? marketIndices.indices.SPY.change_pct
+                : parseLooseNumber(marketIndices.indices.SPY.change_pct),
+            as_of: asText(marketIndices.timestamp),
+          }
+        : null,
+      portfolio_daily_change: {
+        daily_pnl: activeTabSummary.today_pnl,
+        daily_pnl_pct: activeTabSummary.today_pnl_pct,
+      },
+      holdings: activePositionsRows.map((row) => ({
+        symbol: asText(row.symbol),
+        weight: typeof row.position_pct === 'number' ? row.position_pct : null,
+        daily_change_pct: typeof row.change_pct === 'number' ? row.change_pct : null,
+        total_return_pct: typeof row.cum_return_pct === 'number' ? row.cum_return_pct : null,
+        contribution_today:
+          typeof row.pnl_today === 'number' && typeof activeTabSummary.total_equity === 'number' && activeTabSummary.total_equity > 0
+            ? (row.pnl_today / activeTabSummary.total_equity) * 100
+            : null,
+        is_leverage: isLeverageSymbol(asText(row.symbol)),
+        sector: '',
+        trend_5d: '',
+        avg_price: typeof row.avg_cost === 'number' ? row.avg_cost : null,
+        current_price: typeof row.today_close === 'number' ? row.today_close : null,
+        avg_cost: typeof row.avg_cost === 'number' ? row.avg_cost : null,
+        rsi: typeof row.rsi === 'number' ? row.rsi : null,
+        volume_k: typeof row.volume_k === 'number' ? row.volume_k : null,
+        mdd_pct: typeof row.mdd_pct === 'number' ? row.mdd_pct : null,
+        ma5: typeof row.ma5 === 'number' ? row.ma5 : null,
+        ma120: typeof row.ma120 === 'number' ? row.ma120 : null,
+        ma200: typeof row.ma200 === 'number' ? row.ma200 : null,
+        note: asText(row.note),
+        name: asText(row.symbol),
+      })),
+      watchlist_snapshot: {
+        focus: [],
+        moves: [],
+        symbols: [],
+      },
+      watchlist: [],
+      index_summary: [],
+      sector_summary: {
+        portfolio_exposure: [],
+        market_leaders: [],
+        market_laggards: [],
+      },
+      symbol_news: [],
+      positions: activePositionsRows,
+      positions_columns: activePositionsColumns,
+    }),
+    [
+      activePositionsRows,
+      activePositionsColumns,
+      activeTabSummary,
+      activePositionsTab,
+      leverageExposureWeightPct,
+      marketIndices,
+      top3WeightPct,
+    ],
+  )
 
   useEffect(() => {
     if (loading) return
@@ -1015,25 +1149,77 @@ export default function MyPage() {
     setPortfolioNarrative(null)
 
     const fallbackPayload = {
-      summary: concentrationTone === 'high' ? 'Overexposed' : concentrationTone === 'mid' ? 'Aligned' : 'Defensive',
+      headline:
+        concentrationTone === 'high'
+          ? topWeight
+            ? `Fragile: ${topWeight.symbol} dominates the account and needs trimming before new risk.`
+            : 'Fragile: the account is too concentrated and needs trimming before new risk.'
+          : concentrationTone === 'mid'
+            ? 'Overexposed: the core is fine, but concentration needs to be reduced before adding new risk.'
+            : 'Defensive: preserve cash and keep leverage separate until the structure is cleaner.',
+      daily_brief:
+        typeof activeTabTotalPnl === 'number'
+          ? `Account PnL is ${fmtMoney(activeTabTotalPnl)}${typeof activeTabReturnPct === 'number' ? ` (${fmtPct(activeTabReturnPct)})` : ''}.${spyMarketChangePct != null ? ` SPY is ${fmtPct(spyMarketChangePct)} today.` : ''}`
+          : 'Account structure matters more than adding fresh risk today.',
+      stock_focus: [
+        topWeight
+          ? {
+              symbol: topWeight.symbol,
+              type: concentrationTone === 'high' ? 'risk' : 'core',
+              summary: `Largest holding at ${topWeight.pct.toFixed(1)}% requires active management.${topHoldingVsSpyText ? ` ${topHoldingVsSpyText}` : ''}`,
+            }
+          : null,
+        donutRows[1]
+          ? {
+              symbol: donutRows[1].symbol,
+              type: 'supporting',
+              summary: `Second-largest sleeve adds to the same account theme.`,
+            }
+          : null,
+      ].filter(Boolean),
+      portfolio_structure: diversificationText,
+      watchlist_insight:
+        concentrationTone === 'high'
+          ? 'Use watchlist names as possible replacements or complements, not as fresh risk to add blindly.'
+          : 'Use watchlist names as comparison points and keep them tied to the current account theme.',
+      action_advice:
+        concentrationTone === 'high'
+          ? 'Trim the largest position first and avoid adding leverage.'
+          : concentrationTone === 'mid'
+            ? 'Rebalance the biggest sleeve before adding new exposure.'
+            : 'Maintain the defensive tilt and wait for a cleaner setup before increasing exposure.',
+      risk_flags: [
+        concentrationTone === 'high' ? 'single_stock_concentration' : null,
+        concentrationTone !== 'low' ? 'top3_concentration' : null,
+        cashRatioPct !== null && cashRatioPct < 10 ? 'low_cash_buffer' : null,
+      ].filter(Boolean),
+      summary:
+        concentrationTone === 'high'
+          ? topWeight
+            ? `Fragile: ${topWeight.symbol} dominates the book, so trim the largest line before adding fresh risk.`
+            : 'Fragile: the book is too concentrated, so trim the largest line before adding fresh risk.'
+          : concentrationTone === 'mid'
+            ? 'Overexposed: keep the core, but rebalance concentration before adding new risk.'
+            : 'Defensive: preserve the cash buffer and keep leverage separate until the structure is cleaner.',
       structure: diversificationText,
       risk: topWeight
-        ? `Risk is concentrated in ${topWeight.symbol} at ${topWeight.pct.toFixed(1)}%.`
-        : 'Risk concentration is not available.',
+        ? `The main risk is concentration in ${topWeight.symbol} at ${topWeight.pct.toFixed(1)}%.`
+        : 'The main risk is that the portfolio is still concentrated across a few positions.',
       alignment:
-        typeof cashRatioPct === 'number'
-          ? `Cash buffer is ${cashRatioPct.toFixed(1)}%.`
-          : 'Cash buffer is not available.',
+        cashRatioPct != null
+          ? `Cash buffer is ${cashRatioText}, so it can help absorb volatility if you keep new risk small.`
+          : 'Cash buffer is not available, so the advice is to stay conservative until the structure is clearer.',
       action:
         concentrationTone === 'high'
-          ? 'Reduce the largest concentration first and keep sizing tight.'
+          ? 'Trim the largest position first and avoid adding leverage.'
           : concentrationTone === 'mid'
-            ? 'Keep the current structure under MSS + Track and watch concentration.'
-            : 'Maintain the defensive tilt and avoid adding leverage too early.',
+            ? 'Rebalance the biggest sleeve before adding new exposure.'
+            : 'Maintain the defensive tilt and wait for a cleaner setup before increasing exposure.',
       tqqq:
         pnlTone === 'plus'
-          ? 'TQQQ remains a separate leverage decision from the core stock basket.'
-          : 'TQQQ should stay separate from the core basket until structure improves.',
+          ? 'Treat TQQQ as a separate tactical sleeve, not part of the core basket.'
+            : 'Keep TQQQ separate from the core basket until the structure improves.',
+      footerLabel: 'RISK FLAGS',
     }
 
     const loadPortfolioNarrative = async () => {
@@ -1042,15 +1228,18 @@ export default function MyPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            portfolio_data: data,
+            portfolio_data: activeTabPortfolioData,
             engine_data: {
-              as_of_date: data.as_of_date,
-              total_equity: summary.total_equity,
-              total_cost: summary.total_cost,
-              total_pnl: summary.total_pnl,
-              total_pnl_pct: summary.total_pnl_pct,
-              cash: summary.cash,
-              cash_ratio_pct: cashRatioPct,
+              tab_name: activePositionsTab || null,
+              as_of_date: activeTabSummary.as_of_date,
+              total_equity: activeTabSummary.total_equity,
+              total_cost: activeTabSummary.total_cost,
+              total_pnl: activeTabSummary.total_pnl,
+              total_pnl_pct: activeTabSummary.total_pnl_pct,
+              today_pnl: activeTabSummary.today_pnl,
+              today_pnl_pct: activeTabSummary.today_pnl_pct,
+              cash: activeTabSummary.cash,
+              cash_ratio_pct: activeTabSummary.cash_ratio_pct,
               top_weight_symbol: topWeight?.symbol || null,
               top_weight_pct: topWeight?.pct ?? null,
               top3_weight_pct: top3WeightPct,
@@ -1083,17 +1272,14 @@ export default function MyPage() {
     }
   }, [
     API_BASE,
+    activePositionsTab,
+    activeTabPortfolioData,
+    activeTabSummary,
     cashRatioPct,
     concentrationTone,
-    data,
     diversificationText,
     loading,
     pnlTone,
-    summary.cash,
-    summary.total_cost,
-    summary.total_equity,
-    summary.total_pnl,
-    summary.total_pnl_pct,
     top3WeightPct,
     topWeight?.pct,
     topWeight?.symbol,
@@ -1103,53 +1289,92 @@ export default function MyPage() {
     () =>
       portfolioNarrative ??
       mapPortfolioNarrative({
-        summary: concentrationTone === 'high' ? 'Overexposed' : concentrationTone === 'mid' ? 'Aligned' : 'Defensive',
+        headline:
+          concentrationTone === 'high'
+            ? topWeight
+              ? `Fragile: ${topWeight.symbol} dominates the account and needs trimming before new risk.`
+              : 'Fragile: the account is too concentrated and needs trimming before new risk.'
+            : concentrationTone === 'mid'
+              ? 'Overexposed: the core is fine, but concentration needs to be reduced before adding new risk.'
+              : 'Defensive: preserve cash and keep leverage separate until the structure is cleaner.',
+        daily_brief:
+          typeof activeTabTotalPnl === 'number'
+            ? `Account PnL is ${fmtMoney(activeTabTotalPnl)}${typeof activeTabReturnPct === 'number' ? ` (${fmtPct(activeTabReturnPct)})` : ''}.${spyMarketChangePct != null ? ` SPY is ${fmtPct(spyMarketChangePct)} today.` : ''}`
+            : 'Account structure matters more than adding fresh risk today.',
+        stock_focus: [
+          topWeight
+            ? {
+                symbol: topWeight.symbol,
+                type: concentrationTone === 'high' ? 'risk' : 'core',
+                summary: `Largest holding at ${topWeight.pct.toFixed(1)}% requires active management.${topHoldingVsSpyText ? ` ${topHoldingVsSpyText}` : ''}`,
+              }
+            : null,
+        ].filter(Boolean),
+        portfolio_structure: diversificationText,
+        watchlist_insight: 'Use watchlist names as comparison points and keep them tied to the current account theme.',
+        action_advice:
+          concentrationTone === 'high'
+            ? 'Trim the largest position first and avoid adding leverage.'
+            : concentrationTone === 'mid'
+              ? 'Rebalance the biggest sleeve before adding new exposure.'
+              : 'Maintain the defensive tilt and wait for a cleaner setup before increasing exposure.',
+        risk_flags: [concentrationTone === 'high' ? 'single_stock_concentration' : null].filter(Boolean),
+        summary:
+          concentrationTone === 'high'
+            ? topWeight
+              ? `Fragile: ${topWeight.symbol} dominates the book, so trim the largest line before adding fresh risk.`
+              : 'Fragile: the book is too concentrated, so trim the largest line before adding fresh risk.'
+            : concentrationTone === 'mid'
+              ? 'Overexposed: keep the core, but rebalance concentration before adding new risk.'
+              : 'Defensive: preserve the cash buffer and keep leverage separate until the structure is cleaner.',
         structure: diversificationText,
         risk: topWeight
-          ? `Risk is concentrated in ${topWeight.symbol} at ${topWeight.pct.toFixed(1)}%.`
-          : 'Risk concentration is not available.',
+          ? `The main risk is concentration in ${topWeight.symbol} at ${topWeight.pct.toFixed(1)}%.`
+          : 'The main risk is that the portfolio is still concentrated across a few positions.',
         alignment:
-          typeof cashRatioPct === 'number'
-            ? `Cash buffer is ${cashRatioPct.toFixed(1)}%.`
-            : 'Cash buffer is not available.',
+          cashRatioPct != null
+            ? `Cash buffer is ${cashRatioText}, so it can help absorb volatility if you keep new risk small.`
+            : 'Cash buffer is not available, so the advice is to stay conservative until the structure is clearer.',
         action:
           concentrationTone === 'high'
-            ? 'Reduce the largest concentration first and keep sizing tight.'
+            ? 'Trim the largest position first and avoid adding leverage.'
             : concentrationTone === 'mid'
-              ? 'Keep the current structure under MSS + Track and watch concentration.'
-              : 'Maintain the defensive tilt and avoid adding leverage too early.',
+              ? 'Rebalance the biggest sleeve before adding new exposure.'
+              : 'Maintain the defensive tilt and wait for a cleaner setup before increasing exposure.',
         tqqq:
           pnlTone === 'plus'
-            ? 'TQQQ remains a separate leverage decision from the core stock basket.'
-            : 'TQQQ should stay separate from the core basket until structure improves.',
+            ? 'Treat TQQQ as a separate tactical sleeve, not part of the core basket.'
+            : 'Keep TQQQ separate from the core basket until the structure improves.',
       }),
-    [cashRatioPct, concentrationTone, diversificationText, pnlTone, portfolioNarrative, topWeight],
+    [cashRatioPct, concentrationTone, diversificationText, marketIndices, pnlTone, portfolioNarrative, topHoldingVsSpyText, topWeight],
   )
 
   const snapshotExtraRows = useMemo(() => {
-    const duplicateKeys = [
-      '평가액',
-      '매수액',
-      '매수원금',
-      '계좌수익률',
-      '현금잔고',
-      '현금 비중',
-      '금일수익',
-      '금일 변동',
-      '금일변동',
-      '보유 종목수',
+    return [
+      { label: '총 평가액', value: fmtMoney(activeTabTotalEquity) },
+      { label: '총 매수액', value: fmtMoney(activeTabTotalCost) },
+      {
+        label: '금일손익',
+        value:
+          typeof todayPnlValue === 'number'
+            ? `${fmtMoney(todayPnlValue)}${typeof todayPnlPct === 'number' ? ` (${fmtPct(todayPnlPct)})` : ''}`
+            : '-',
+      },
+      { label: '누적손익', value: fmtMoney(activeTabTotalPnl) },
+      { label: 'Top1 비중', value: topWeight ? `${topWeight.symbol} ${topWeight.pct.toFixed(1)}%` : '-' },
+      { label: 'Top3 비중', value: donutRows.length ? `${top3WeightPct.toFixed(1)}%` : '-' },
+      { label: '현금 비중', value: cashRatioText },
     ]
-    const filtered = snapshotRawRows.filter((r) => {
-      const label = asText(r.label)
-      if (!label) return false
-      return !duplicateKeys.some((d) => label.includes(d))
-    })
-    if (filtered.length > 0) return filtered.slice(0, 4)
+    // Just map the raw box values from the Sheet snapshot
+    const rows = snapshotRawRows.filter(r => asText(r.label))
+    if (rows.length > 0) return rows
+    
+    // Fallback if data is not available
     return [
       { label: 'Top1 비중', value: topWeight ? `${topWeight.symbol} ${topWeight.pct.toFixed(1)}%` : '-' },
       { label: 'Top3 비중', value: donutRows.length ? `${top3WeightPct.toFixed(1)}%` : '-' },
       { label: '집중도', value: concentrationTone === 'high' ? '집중 높음' : concentrationTone === 'mid' ? '집중 중간' : '분산 양호' },
-      { label: '현금 비중', value: typeof cashRatioPct === 'number' ? `${cashRatioPct.toFixed(1)}%` : '-' },
+      { label: '현금 비중', value: cashRatioText },
     ]
   }, [snapshotRawRows, activeSymbolCount, cashRatioPct, topWeight, donutRows, top3WeightPct])
 
@@ -1157,9 +1382,15 @@ export default function MyPage() {
     <div style={{ padding: '1.5rem 1.75rem 2rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.9rem', fontWeight: 800, color: '#f3f4f6' }}>
-            My <span style={{ color: '#00D9FF' }}>Holdings v2</span>
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <h1 style={{ margin: 0, fontSize: '1.9rem', fontWeight: 800, color: '#f3f4f6' }}>
+              My <span style={{ color: '#00D9FF' }}>Holdings v2</span>
+            </h1>
+            <ContentLangToggle
+              value={contentLang}
+              onChange={(next) => { setContentLang(next); persistContentLang(next) }}
+            />
+          </div>
           <div style={{ color: '#8b93a8', fontSize: '0.78rem', marginTop: 4 }}>
             As of: {asText(data.as_of_date) || '-'} | Generated: {asText(data.generated_at) || '-'} | Status: {asText(data.status) || '-'}
           </div>
@@ -1266,31 +1497,20 @@ export default function MyPage() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7, borderRight: '1px solid rgba(255,255,255,0.06)', paddingRight: 10 }}>
-          <div style={{ color: '#dce9f8', fontWeight: 800, fontSize: '0.9rem' }}>오늘의 포트폴리오 요약</div>
-          <div style={{ color: '#b9c9dd', fontSize: '0.72rem' }}>Portfolio Snapshot</div>
+          <div style={{ color: '#dce9f8', fontWeight: 800, fontSize: '0.9rem' }}>주요 요소 및 성과 요약</div>
+          <div style={{ color: '#b9c9dd', fontSize: '0.72rem' }}>Performance Snapshot</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 8, marginTop: 2 }}>
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.45rem 0.55rem' }}>
-              <div style={{ color: '#b9c9dd', fontSize: '0.68rem' }}>금일 손익</div>
-              <div style={{ color: todayPnlValue >= 0 ? '#34d399' : '#f87171', fontWeight: 800, fontSize: '0.92rem', marginTop: 2 }}>
-                {fmtMoney(todayPnlValue)}
-              </div>
-            </div>
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.45rem 0.55rem' }}>
-              <div style={{ color: '#b9c9dd', fontSize: '0.68rem' }}>금일 변동</div>
-              <div style={{ color: typeof todayPnlPct === 'number' ? (todayPnlPct >= 0 ? '#34d399' : '#f87171') : '#dce9f8', fontWeight: 800, fontSize: '0.92rem', marginTop: 2 }}>
-                {typeof todayPnlPct === 'number' ? fmtPct(todayPnlPct) : '-'}
-              </div>
-            </div>
+            {snapshotExtraRows.length > 0 ? (
+              snapshotExtraRows.map((item, idx) => (
+                <div key={`${asText(item.label)}-${idx}`} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.45rem 0.55rem' }}>
+                  <div style={{ color: '#b9c9dd', fontSize: '0.68rem', marginBottom: 2 }}>{asText(item.label) || '-'}</div>
+                  <div style={{ color: '#dce9f8', fontWeight: 800, fontSize: '0.92rem' }}>{asText(item.value) || '-'}</div>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: '#8b93a8', fontSize: '0.75rem', gridColumn: 'span 2' }}>시트에서 주요 요소 데이터를 가져오지 못했습니다.</div>
+            )}
           </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 8, borderRight: '1px solid rgba(255,255,255,0.06)', paddingRight: 10 }}>
-          {snapshotExtraRows.map((item, idx) => (
-            <div key={`${asText(item.label)}-${idx}`} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.45rem 0.55rem' }}>
-              <div style={{ color: '#b9c9dd', fontSize: '0.68rem' }}>{asText(item.label) || '-'}</div>
-              <div style={{ color: '#dce9f8', fontWeight: 800, fontSize: '0.88rem', marginTop: 2 }}>{asText(item.value) || '-'}</div>
-            </div>
-          ))}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -1319,8 +1539,8 @@ export default function MyPage() {
             </div>
           </div>
           <div style={{ color: '#dce9f8', fontSize: '0.78rem', lineHeight: 1.45, display: 'none' }}>
-            {diversificationText} {typeof cashRatioPct === 'number' ? `현금 ${cashRatioPct.toFixed(1)}%.` : ''}{' '}
-            {typeof summary.total_pnl_pct === 'number' ? `누적 수익률 ${fmtPct(summary.total_pnl_pct)}.` : ''}
+            {diversificationText} {cashRatioPct != null ? `현금 ${cashRatioText}.` : ''}{' '}
+            {typeof activeTabSummary.total_pnl_pct === 'number' ? `누적 수익률 ${fmtPct(activeTabSummary.total_pnl_pct)}.` : ''}
           </div>
           {resolvedPortfolioNarrative ? (
             <NarrativeBlocks data={resolvedPortfolioNarrative} density="compact" />
@@ -1332,40 +1552,27 @@ export default function MyPage() {
         </div>
       </section>
 
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-        {[
-          { title: 'Total Equity', value: fmtMoney(summary.total_equity), color: '#f3f4f6' },
-          { title: 'Total Cost', value: fmtMoney(summary.total_cost), color: '#9cdcfe' },
-          { title: 'Total PnL', value: fmtMoney(summary.total_pnl), color: (summary.total_pnl || 0) >= 0 ? '#22c55e' : '#ef4444' },
-          { title: 'PnL %', value: fmtPct(summary.total_pnl_pct), color: (summary.total_pnl_pct || 0) >= 0 ? '#22c55e' : '#ef4444' },
-          { title: 'MDD (Port)', value: fmtPct(summary.mdd_portfolio_pct), color: '#f59e0b' },
-          { title: 'Cash %', value: typeof cashRatioPct === 'number' ? `${cashRatioPct.toFixed(1)}%` : '-', color: '#93c5fd' },
-        ].map((kpi) => (
-          <div key={kpi.title} style={panelStyle()}>
-            <div style={{ color: '#9ca3af', fontSize: '0.72rem', marginBottom: 6 }}>{kpi.title}</div>
-            <div style={{ color: kpi.color, fontWeight: 800, fontSize: '1.03rem' }}>{kpi.value}</div>
-          </div>
-        ))}
-      </section>
-
       <section style={{ ...panelStyle(), display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ color: '#d1d5db', fontWeight: 700, minWidth: 120 }}>Position Charts</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ color: '#d1d5db', fontWeight: 700, minWidth: 120 }}>Position Charts</div>
+          <div style={{ color: '#9ca3af', fontSize: '0.72rem' }}>Selected tab: {asText(activePositionsTab) || '-'}</div>
+        </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'stretch' }}>
           <div style={{ flex: 1.7, minWidth: 260 }}>
-            <div style={{ color: '#b9c9dd', fontSize: '0.72rem', marginBottom: 5 }}>Portfolio vs Avg Cost</div>
-            {positionBars.length === 0 ? (
+            <div style={{ color: '#b9c9dd', fontSize: '0.72rem', marginBottom: 5 }}>평가액 / 매수액</div>
+            {tabPositionBars.length === 0 ? (
               <div style={{ color: '#8b93a8', fontSize: '0.82rem' }}>No position values.</div>
             ) : (
               <div style={{ width: '100%', height: 205 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={positionBars} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <BarChart data={tabPositionBars} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
                     <XAxis dataKey="symbol" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                     <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
                     <Tooltip />
                     <Legend />
-                      <Bar dataKey="equity" name="Portfolio" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="avg" name="Avg Cost" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="valuation" name="평가액" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="buyAmount" name="매수액" fill="#ef4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1373,14 +1580,14 @@ export default function MyPage() {
           </div>
           <div style={{ flex: 0.95, minWidth: 240, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ color: '#b9c9dd', fontSize: '0.72rem', minWidth: 120 }}>Weights Donut</div>
-            {donutRows.length === 0 ? (
+            {tabDonutRows.length === 0 ? (
               <div style={{ color: '#8b93a8', fontSize: '0.82rem' }}>No position weights.</div>
             ) : (
-              <div style={{ width: '100%', height: 205 }}>
+              <div style={{ width: '100%', height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 26, right: 28, left: 28, bottom: 26 }}>
                     <Pie
-                      data={donutRows}
+                      data={tabDonutRows}
                       dataKey="pct"
                       nameKey="symbol"
                       innerRadius="55%"
@@ -1389,7 +1596,7 @@ export default function MyPage() {
                       labelLine={false}
                       label={renderPieLabel}
                     >
-                      {donutRows.map((entry, index) => (
+                      {tabDonutRows.map((entry, index) => (
                         <Cell key={`cell-${entry.symbol}-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
                       ))}
                     </Pie>
@@ -1414,43 +1621,43 @@ export default function MyPage() {
           >
             <div>
               <div style={{ color: '#dce9f8', fontWeight: 700, fontSize: '0.92rem' }}>내 포트폴리오 분석</div>
-              <div style={{ color: '#b9c9dd', fontSize: '0.72rem', marginTop: 2 }}>Portfolio Read</div>
+              <div style={{ color: '#b9c9dd', fontSize: '0.72rem', marginTop: 2 }}>Evidence Summary</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 8 }}>
               <div style={{ padding: '0.45rem 0.55rem', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ color: '#b9c9dd', fontSize: '0.68rem' }}>Top Holding</div>
                 <div style={{ color: '#f3f4f6', fontWeight: 800, fontSize: '0.95rem', marginTop: 2 }}>
-                  {topWeight ? topWeight.symbol : '-'}
+                  {tabTopWeight ? tabTopWeight.symbol : '-'}
                 </div>
                 <div style={{ color: '#8fe8ff', fontSize: '0.72rem', marginTop: 2 }}>
-                  {topWeight ? `${topWeight.pct.toFixed(1)}%` : '—'}
+                  {tabTopWeight ? `${tabTopWeight.pct.toFixed(1)}%` : '-'}
                 </div>
               </div>
               <div style={{ padding: '0.45rem 0.55rem', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ color: '#b9c9dd', fontSize: '0.68rem' }}>Top 3 Weight</div>
                 <div style={{ color: '#f3f4f6', fontWeight: 800, fontSize: '0.95rem', marginTop: 2 }}>
-                  {donutRows.length ? `${top3WeightPct.toFixed(1)}%` : '-'}
+                  {tabDonutRows.length ? `${tabTop3WeightPct.toFixed(1)}%` : '-'}
                 </div>
-                <div style={{ color: concentrationTone === 'high' ? '#f59e0b' : concentrationTone === 'mid' ? '#93c5fd' : '#34d399', fontSize: '0.72rem', marginTop: 2 }}>
-                  {concentrationTone === 'high' ? '집중 높음' : concentrationTone === 'mid' ? '집중 중간' : '분산 양호'}
+                <div style={{ color: tabConcentrationTone === 'high' ? '#f59e0b' : tabConcentrationTone === 'mid' ? '#93c5fd' : '#34d399', fontSize: '0.72rem', marginTop: 2 }}>
+                  {tabConcentrationTone === 'high' ? '집중 높음' : tabConcentrationTone === 'mid' ? '집중 중간' : '분산 양호'}
                 </div>
               </div>
             </div>
 
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 7 }}>
               <div style={{ color: '#dce9f8', fontSize: '0.79rem', lineHeight: 1.45 }}>
-                {diversificationText}
+                {tabDiversificationText}
               </div>
               <div style={{ color: '#dce9f8', fontSize: '0.79rem', lineHeight: 1.45 }}>
-                {typeof cashRatioPct === 'number'
-                  ? `현금 비중은 약 ${cashRatioPct.toFixed(1)}%로 ${cashRatioPct >= 15 ? '완충 여력이 있는 편입니다.' : '완충 여력이 크지 않을 수 있습니다.'}`
-                  : '현금 비중 데이터가 없어 완충 여력 평가는 제한됩니다.'}
+                {tabCashRatioPct != null
+                  ? `현금 비중은 약 ${tabCashRatioText}로 ${tabCashRatioPct >= 15 ? '완충 여력이 있는 편입니다.' : '완충 여력이 크지 않을 수 있습니다.'}`
+                  : '현금 비중 데이터가 없어 완충 여력을 제한적으로 봅니다.'}
               </div>
-              <div style={{ color: pnlTone === 'plus' ? '#34d399' : pnlTone === 'minus' ? '#f87171' : '#b9c9dd', fontSize: '0.79rem', lineHeight: 1.45 }}>
-                {typeof summary.total_pnl_pct === 'number'
-                  ? `누적 성과는 ${fmtPct(summary.total_pnl_pct)} 수준이며, 상위 비중 종목의 변동이 체감 수익률에 크게 반영됩니다.`
-                  : '누적 성과 데이터가 충분하지 않아 성과 해석은 제한됩니다.'}
+              <div style={{ color: tabPnlTone === 'plus' ? '#34d399' : tabPnlTone === 'minus' ? '#f87171' : '#b9c9dd', fontSize: '0.79rem', lineHeight: 1.45 }}>
+                {typeof tabReturnPct === 'number'
+                  ? `누적 성과는 ${fmtPct(tabReturnPct)} 수준이며, 상위 비중 종목의 변동이 체감 수익률에 크게 반영됩니다.`
+                  : '누적 성과 데이터가 충분하지 않아 해석을 제한합니다.'}
               </div>
             </div>
           </div>
@@ -1460,7 +1667,7 @@ export default function MyPage() {
       {positionTabs.length > 0 ? (
         <section style={panelStyle()}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-            <div style={{ color: '#e5e7eb', fontWeight: 700 }}>Positions (Sheet)</div>
+            <div style={{ color: '#e5e7eb', fontWeight: 700 }}>Active Tab Selector</div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <div style={{ color: '#9ca3af', fontSize: '0.76rem' }}>Active tab: {asText(activePositionsTab) || '-'}</div>
               <button
@@ -1472,7 +1679,7 @@ export default function MyPage() {
               </button>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {positionTabs.map((tab) => (
               <button
                 key={tab}
@@ -1491,7 +1698,7 @@ export default function MyPage() {
               </button>
             ))}
           </div>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ marginTop: 10, overflowX: 'auto' }}>
             {activePositionsRows.length === 0 ? (
               <div style={{ color: '#8b93a8', fontSize: '0.82rem' }}>No positions for selected tab.</div>
             ) : positionsColumnsView.length === 0 ? (
@@ -1519,18 +1726,7 @@ export default function MyPage() {
                   {activePositionsRows.map((row, idx) => (
                     <tr key={`${activePositionsTab}-${idx}`} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       {positionsColumnsView.map((col) => {
-                        if (col === '__sparkline') {
-                          const sym = symbolColumnKey ? String(row?.[symbolColumnKey] || '').trim() : ''
-                          const values = sym ? sparklineMap[sym] : undefined
-                          return (
-                            <td
-                              key={`${activePositionsTab}-${idx}-${col}`}
-                              style={{ padding: '0.42rem 0.3rem', textAlign: 'left', whiteSpace: 'nowrap' }}
-                            >
-                              <Sparkline values={values} />
-                            </td>
-                          )
-                        }
+                        const rawValue = col === '순서' ? (row?.순서 ?? row?.col_1 ?? idx + 1) : row?.[col]
                         return (
                           <td
                             key={`${activePositionsTab}-${idx}-${col}`}
@@ -1540,7 +1736,7 @@ export default function MyPage() {
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {asText(row?.[col]) || '-'}
+                            {renderSheetCellValue(rawValue, col)}
                           </td>
                         )
                       })}
@@ -1556,7 +1752,7 @@ export default function MyPage() {
       <section style={panelStyle()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
           <div>
-            <div style={{ color: '#e5e7eb', fontWeight: 800, fontSize: '1.1rem' }}>Account History (Cumulative)</div>
+            <div style={{ color: '#e5e7eb', fontWeight: 800, fontSize: '1.1rem' }}>Active Tab History (Cumulative)</div>
             <div style={{ color: '#9ca3af', fontSize: '0.78rem' }}>
               Cache-only | generated: {tsData?.generated_at || '-'} | tabs: {(tsData?.active_tabs || []).join(', ') || '-'}
             </div>
@@ -1774,125 +1970,14 @@ export default function MyPage() {
         )}
 
         <div style={{ marginBottom: 12 }}>
-          {tsLoading ? <div style={{ color: '#9ca3af' }}>Loading history...</div> : <AccountHistoryChart history={tsGoalHistory} />}
+          {tsLoading ? <div style={{ color: '#9ca3af' }}>Loading history...</div> : <AccountHistoryChart history={tsActiveHistory} />}
         </div>
         {tsRerun ? <div style={{ color: '#8b93a8', fontSize: '0.75rem' }}>rerun: {tsRerun}</div> : null}
       </section>
 
-      <section style={panelStyle()}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
-          <button
-            onClick={() => selectSort('change_pct', 'desc')}
-            style={{ border: '1px solid rgba(34,197,94,0.35)', background: 'rgba(34,197,94,0.12)', color: '#86efac', borderRadius: 8, padding: '0.25rem 0.55rem', fontSize: '0.74rem', cursor: 'pointer' }}
-          >
-              rise (change% desc)
-          </button>
-          <button
-            onClick={() => selectSort('volume_k', 'desc')}
-            style={{ border: '1px solid rgba(59,130,246,0.35)', background: 'rgba(59,130,246,0.12)', color: '#93c5fd', borderRadius: 8, padding: '0.25rem 0.55rem', fontSize: '0.74rem', cursor: 'pointer' }}
-          >
-              volume (volume_k desc)
-          </button>
-          <button
-            onClick={() => selectSort('rsi', 'desc')}
-            style={{ border: '1px solid rgba(245,158,11,0.35)', background: 'rgba(245,158,11,0.12)', color: '#fcd34d', borderRadius: 8, padding: '0.25rem 0.55rem', fontSize: '0.74rem', cursor: 'pointer' }}
-          >
-            RSI (desc)
-          </button>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-            {(['all', 'overbought', 'oversold'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setRsiFilter(mode)}
-                style={{
-                  border: mode === rsiFilter ? '1px solid rgba(0,217,255,0.45)' : '1px solid rgba(255,255,255,0.14)',
-                  background: mode === rsiFilter ? 'rgba(0,217,255,0.14)' : 'rgba(255,255,255,0.04)',
-                  color: mode === rsiFilter ? '#67e8f9' : '#9ca3af',
-                  borderRadius: 8,
-                  padding: '0.25rem 0.55rem',
-                  fontSize: '0.74rem',
-                  cursor: 'pointer',
-                }}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <details style={{ marginBottom: 10 }}>
-          <summary style={{ color: '#cbd5e1', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>Columns (show/hide)</summary>
-          <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 }}>
-            {COLUMNS.map((col) => (
-              <label key={col.key} style={{ color: '#9ca3af', fontSize: '0.74rem', display: 'flex', gap: 6, alignItems: 'center' }}>
-                <input type="checkbox" checked={!!visibleMap[col.key]} onChange={() => toggleColumn(col.key)} />
-                {col.label}
-              </label>
-            ))}
-          </div>
-        </details>
-
-        <div style={{ overflowX: 'auto' }}>
-          {loading ? (
-            <div style={{ color: '#9ca3af', fontSize: '0.82rem' }}>Loading holdings...</div>
-          ) : filteredSortedRows.length === 0 ? (
-            <div style={{ color: '#8b93a8', fontSize: '0.82rem' }}>No positions to display.</div>
-          ) : visibleColumns.length === 0 ? (
-            <div style={{ color: '#8b93a8', fontSize: '0.82rem' }}>No visible columns selected.</div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem', minWidth: 960 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                  {visibleColumns.map((col) => (
-                    <th
-                      key={col.key}
-                      onClick={() => {
-                        if (sortKey === col.key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-                        else {
-                          setSortKey(col.key)
-                          setSortDir('desc')
-                        }
-                      }}
-                      style={{
-                        textAlign: col.kind === 'text' || col.kind === 'sparkline' ? 'left' : 'right',
-                        padding: '0.45rem 0.3rem',
-                        color: '#9ca3af',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {col.label}
-                      {sortKey === col.key ? ` ${sortDir === 'desc' ? 'v' : '^'}` : ''}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSortedRows.map((row, idx) => (
-                  <tr key={`${row.symbol}-${idx}`} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {visibleColumns.map((col) => (
-                      <td
-                        key={`${row.symbol}-${idx}-${col.key}`}
-                        style={{
-                          padding: '0.42rem 0.3rem',
-                          textAlign: col.kind === 'text' || col.kind === 'sparkline' ? 'left' : 'right',
-                          whiteSpace: col.key === 'note' ? 'normal' : 'nowrap',
-                        }}
-                      >
-                        {renderCell(row, col)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </section>
     </div>
   )
 }
-
 
 
 

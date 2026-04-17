@@ -4,6 +4,8 @@ import RiskSystemV1, { type RiskV1Data } from '@/components/crash/standard/RiskS
 import RiskV1RefreshButton from '@/components/crash/standard/RiskV1RefreshButton'
 import { UI_TEXT } from '@/lib/uiText'
 import { pickLang, type UiLang } from '@/lib/uiLang'
+import { useContentLang } from '@/lib/useLangMode'
+import ContentLangToggle from '@/components/ContentLangToggle'
 import { useUiLang } from '@/lib/useLangMode'
 
 function formatRunId(runId?: string): string {
@@ -25,6 +27,7 @@ export default function RiskV1ClientShell({
   initialUiLang: UiLang
 }) {
   const uiLang = useUiLang(initialUiLang)
+  const contentLang = useContentLang(initialUiLang)
   const dataAsOf = data?.data_as_of || data?.current?.date || '—'
   const generatedAt = formatRunId(data?.run_id)
 
@@ -43,9 +46,12 @@ export default function RiskV1ClientShell({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontSize: 12, color: '#b7c6df', letterSpacing: '0.15em', textTransform: 'uppercase' }}>MarketFlow</div>
-            <h1 style={{ fontSize: 40, fontWeight: 900, color: '#e5e7eb', margin: '2px 0 0' }}>
-              {pickLang(uiLang, UI_TEXT.riskV1.title.ko, UI_TEXT.riskV1.title.en)} <span style={{ color: '#6366f1' }}>v1</span>
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: '2px' }}>
+              <h1 style={{ fontSize: 40, fontWeight: 900, color: '#e5e7eb', margin: 0 }}>
+                {pickLang(uiLang, UI_TEXT.riskV1.title.ko, UI_TEXT.riskV1.title.en)} <span style={{ color: '#6366f1' }}>v1</span>
+              </h1>
+              <ContentLangToggle value={contentLang} />
+            </div>
             <div style={{ fontSize: 14, color: '#b7c6df', marginTop: 6 }}>
               {pickLang(uiLang, UI_TEXT.riskV1.subtitle.ko, UI_TEXT.riskV1.subtitle.en)}
             </div>
@@ -60,7 +66,7 @@ export default function RiskV1ClientShell({
           </div>
         </div>
 
-        <RiskSystemV1 data={data} uiLang={uiLang} />
+        <RiskSystemV1 data={data} uiLang={contentLang} />
 
         <div style={{ fontSize: 12, color: '#4b5563', textAlign: 'center', paddingTop: 8 }}>
           {pickLang(uiLang, `생성 시각: ${generatedAt} · MarketFlow 리스크 시스템 v1`, `Generated: ${generatedAt} · MarketFlow Risk System v1`)}

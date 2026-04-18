@@ -393,19 +393,22 @@ def load_briefs(symbol: str) -> list[dict]:
 # ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 def run_ticker(symbol: str, date_et: str) -> dict:
-    print(f"\n{'?'*52}")
+    print("\n" + "=" * 52)
     print(f"  {symbol}  {date_et}  {'(LLM)' if ANTHROPIC_KEY else '(fallback)'}")
-    print(f"{'?'*52}")
+    print("=" * 52)
 
     news   = fetch_news(symbol, date_et)
     price  = fetch_price(symbol)
     events = extract_events(news, target=symbol)
 
-    print(f"  events: {len(events)}/{len(news)} passed (d??DIRECTNESS_THRESHOLD})")
+    print(f"  events: {len(events)}/{len(news)} passed (threshold={DIRECTNESS_THRESHOLD})")
     for e in events[:5]:
-        bar = "?? * e["directness"] + "?? * (10 - e["directness"])
-        sent = {"bullish":"?윟","bearish":"?뵶","neutral":"?윞"}.get(e["sentiment"],"")
-        print(f"    {bar} {e['directness']}/10 {sent} {e['headline'][:52]}")
+        score = int(e.get("directness", 0))
+        score = max(0, min(10, score))
+        bar = "#" * score + "." * (10 - score)
+        sent = {"bullish": "+", "bearish": "-", "neutral": "="}.get(e.get("sentiment"), "")
+        headline = str(e.get("headline") or "")[:52]
+        print(f"    {bar} {score}/10 {sent} {headline}")
 
     prompt     = build_prompt(symbol, price, events, date_et)
     brief_text = call_claude(prompt) or fallback_brief(symbol, price, events)

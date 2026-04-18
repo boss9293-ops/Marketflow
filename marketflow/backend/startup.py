@@ -113,6 +113,60 @@ if _pull_turso_db_if_configured():
     _clear_risk_outputs()
 
 
+def _auto_import_holdings_from_sheets() -> bool:
+    sheet_id = _env_value("GOOGLE_SHEETS_ID", "").strip()
+    sheet_url = _env_value("GOOGLE_SHEETS_URL", "").strip()
+    if not sheet_id and not sheet_url:
+        print("[startup][SHEETS] Google Sheets source not configured; skipping holdings import.", flush=True)
+        return True
+
+    sa_json = _env_value("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+    if not sa_json:
+        print("[startup][SHEETS] GOOGLE_SERVICE_ACCOUNT_JSON missing; skipping holdings import.", flush=True)
+        return True
+
+    tabs = os.environ.get("GOOGLE_SHEETS_TABS", "Goal,미국1,미국2,미국3,미국4,미국5,미국6,한국1")
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
+    env["GOOGLE_SERVICE_ACCOUNT_JSON"] = sa_json
+
+    print("[startup][SHEETS] Importing holdings tabs before news/brief builds...", flush=True)
+    try:
+        if sheet_url:
+            import_args = ["--sheet_url", sheet_url]
+        else:
+            import_args = ["--sheet_id", sheet_id]
+        import_args += ["--tabs", tabs]
+
+        steps = [
+            ("import_holdings_tabs.py", import_args, 300),
+            ("build_holdings_ts_cache.py", [], 120),
+            ("build_my_holdings_cache_from_ts.py", [], 120),
+        ]
+        for script_name, extra_args, timeout in steps:
+            proc = subprocess.run(
+                [sys.executable, "-X", "utf8", os.path.join(SCRIPTS, script_name), *extra_args],
+                cwd=BASE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                encoding="utf-8",
+                errors="replace",
+                timeout=timeout,
+                env=env,
+            )
+            output = (proc.stdout or "").strip()
+            if proc.returncode != 0:
+                print(f"[startup][SHEETS][FAIL] {script_name} rc={proc.returncode}: {output[-3000:]}", flush=True)
+                return False
+            if output:
+                print(f"[startup][SHEETS][OK] {script_name}: {output[-3000:]}", flush=True)
+        return True
+    except Exception as exc:
+        print(f"[startup][SHEETS][FAIL] {exc}", flush=True)
+        return False
+
+
 # 2. Build scripts
 # (script, output_json_or_None)  None means startup.py writes a stamp file
 BUILDS = [
@@ -321,6 +375,10 @@ def _is_ai_briefings_fresh(out_path: str) -> bool:
 def run_builds():
     had_failure = False
     failed_scripts: list[str] = []
+
+    if not _auto_import_holdings_from_sheets():
+        had_failure = True
+        failed_scripts.append("auto_import_holdings_from_sheets")
 
     def _write_build_log(script_name: str, payload: dict) -> None:
         try:

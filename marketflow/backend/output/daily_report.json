@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-17T21:50:52",
+  "generated_at": "2026-04-17T22:52:44",
   "data_coverage": {
     "sources": {
       "market_data": true,
@@ -209,10 +209,10 @@
     }
   ],
   "sector_brief": {
-    "phase": "expansion",
-    "phase_label": "Expansion",
-    "phase_color": "#00D9FF",
-    "interp": "경기 확장 국면 — 기술/산업재/임의소비재 강세 예상",
+    "phase": "early_recovery",
+    "phase_label": "Early Recovery",
+    "phase_color": "#22c55e",
+    "interp": "경기 회복 초기 — 소재/에너지/금융 강세 예상",
     "leaders": [
       {
         "symbol": "XLE",
@@ -254,7 +254,7 @@
       }
     ],
     "lines": [
-      "현재 경기 국면: Expansion — 경기 확장 국면 — 기술/산업재/임의소비재 강세 예상",
+      "현재 경기 국면: Early Recovery — 경기 회복 초기 — 소재/에너지/금융 강세 예상",
       "리더 섹터: Energy, Utilities, Technology",
       "약세 섹터: Healthcare, Financials, Consumer Discret.",
       "DB 커버리지 97% (718/742 종목)"
@@ -272,7 +272,7 @@
       {
         "type": "VCP",
         "symbol": "SLB",
-        "message": "VCP 패턴 C등급, 피벗까지 5.6%"
+        "message": "VCP 패턴 C등급, 피벗까지 3.9%"
       },
       {
         "type": "SMART_MONEY",
@@ -285,7 +285,7 @@
   },
   "narratives": {
     "market": "미국 주식은 S&P500 +1.21%, 나스닥100 +1.31% 흐름으로 완만한 강세 톤을 보였습니다. 변동성과 금리/달러 지표는 VIX 17.5, 미국 10년물 4.25%, 달러지수 98.23 수준입니다. Gate 점수 75, 위험 추세 Stable 기준 행동 힌트는 '선별'입니다.",
-    "sector": "섹터 로테이션 국면은 'Expansion'로 집계되며, 상대 강세는 XLE, XLU, XLK, 약세는 XLV, XLF, XLY로 나타났습니다. 당일 기준 상단 섹터는 Consumer Cyclical, Industrials이며, 추세 지속 여부를 거래대금과 함께 확인하는 구간입니다. 행동 힌트는 '선별'이며, 주도 섹터 내에서도 실적/수급이 확인된 종목 위주로 접근하는 편이 안전합니다.",
+    "sector": "섹터 로테이션 국면은 'Early Recovery'로 집계되며, 상대 강세는 XLE, XLU, XLK, 약세는 XLV, XLF, XLY로 나타났습니다. 당일 기준 상단 섹터는 Consumer Cyclical, Industrials이며, 추세 지속 여부를 거래대금과 함께 확인하는 구간입니다. 행동 힌트는 '선별'이며, 주도 섹터 내에서도 실적/수급이 확인된 종목 위주로 접근하는 편이 안전합니다.",
     "risk": "리스크 레벨은 low, Gate 75로 확인됩니다. 중기 추세는 10일 평균 44.3이며 risk_trend는 Stable입니다. 최근 SNAPSHOT_ALERT 3건 중 HIGH 3건이어서 행동 힌트는 '방어'입니다."
   }
 }

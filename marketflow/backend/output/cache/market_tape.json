@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-17T22:23:54.326802",
+  "generated_at": "2026-04-18T02:17:56.903766",
   "data_date": "2026-04-17",
   "items": [
     {
@@ -121,9 +121,9 @@
     {
       "symbol": "BTCUSD",
       "name": "Bitcoin",
-      "last": 77423.05,
-      "chg": 2269.6332,
-      "chg_pct": 3.02,
+      "last": 77182.58,
+      "chg": 2029.1428,
+      "chg_pct": 2.7,
       "spark_1d": []
     },
     {

@@ -1,5 +1,5 @@
 {
-  "asof": "2026-04-18T03:02:25Z",
+  "asof": "2026-04-18T03:59:02Z",
   "snapshot_date": "2026-04-17",
   "series": {
     "HY_OAS": {
@@ -7,7 +7,7 @@
       "source": "FRED",
       "unit": "bp",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=BAMLH0A0HYM2; ICE BofA HY OAS",
       "latest": {
@@ -20,7 +20,7 @@
       "source": "FRED",
       "unit": "index",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=VIXCLS; CBOE VIX close (FRED VIXCLS)",
       "latest": {
@@ -33,7 +33,7 @@
       "source": "FRED",
       "unit": "usd",
       "freq": "W",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=WALCL; Fed balance sheet",
       "latest": {
@@ -46,7 +46,7 @@
       "source": "FRED",
       "unit": "usd",
       "freq": "M",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "PARTIAL",
       "notes": "fred_series_id=M2SL; US M2 (monthly)",
       "latest": {
@@ -59,7 +59,7 @@
       "source": "FRED",
       "unit": "usd",
       "freq": "M",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "PARTIAL",
       "notes": "fred_series_id=M2SL; US M2 (monthly)",
       "latest": {
@@ -72,7 +72,7 @@
       "source": "FRED",
       "unit": "usd",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=RRPONTSYD; ON RRP (RRPONTSYD)",
       "latest": {
@@ -85,7 +85,7 @@
       "source": "FRED",
       "unit": "pct",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=EFFR; Effective Fed Funds Rate",
       "latest": {
@@ -98,7 +98,7 @@
       "source": "FRED",
       "unit": "pct",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=DFII10; 10Y TIPS real yield",
       "latest": {
@@ -111,7 +111,7 @@
       "source": "FRED",
       "unit": "pct",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=DGS2; 2Y treasury",
       "latest": {
@@ -124,7 +124,7 @@
       "source": "FRED",
       "unit": "pct",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=DGS10; 10Y treasury",
       "latest": {
@@ -137,7 +137,7 @@
       "source": "FRED",
       "unit": "index",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=DTWEXBGS; Broad dollar index (proxy)",
       "latest": {
@@ -150,7 +150,7 @@
       "source": "FRED",
       "unit": "usd",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:41Z",
+      "last_updated": "2026-04-18T03:48:47Z",
       "quality": "OK",
       "notes": "fred_series_id=CBBTCUSD; Bitcoin price (Coindesk via FRED CBBTCUSD)",
       "latest": {
@@ -163,7 +163,7 @@
       "source": "PROXY",
       "unit": "ratio",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:56Z",
+      "last_updated": "2026-04-18T03:49:00Z",
       "quality": "PARTIAL",
       "notes": "PROXY derived from VIX (monotonic mapping). original error=RuntimeError(\"Unexpected Stooq CSV header for CBOE PC: ['Get your apikey:']\")",
       "latest": {
@@ -176,7 +176,7 @@
       "source": "STOOQ",
       "unit": "usd",
       "freq": "D",
-      "last_updated": "2026-04-18T02:46:52Z",
+      "last_updated": "2026-04-18T03:48:56Z",
       "quality": "NA",
       "notes": "ERROR: RuntimeError('Unexpected Stooq CSV format: tqqq.us'); ticker=tqqq.us",
       "latest": {
@@ -567,114 +567,114 @@
     }
   },
   "health": {
-    "asof": "2026-04-18T03:02:25Z",
+    "asof": "2026-04-18T03:59:02Z",
     "series": {
       "VIX": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">60m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "HY_OAS": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "WALCL": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">4320m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "M2SL": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">4320m",
         "base_quality": "PARTIAL",
         "quality_effective": "PARTIAL",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "RRP": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "EFFR": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "DFII10": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "DGS2": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "DGS10": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "USD_BROAD": {
-        "age_minutes": 15.75,
+        "age_minutes": 10.26,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "OK",
         "quality_effective": "OK",
-        "last_updated": "2026-04-18T02:46:41Z",
+        "last_updated": "2026-04-18T03:48:47Z",
         "source": "FRED"
       },
       "PUT_CALL": {
-        "age_minutes": 15.5,
+        "age_minutes": 10.04,
         "stale": false,
         "stale_rule": ">2880m",
         "base_quality": "PARTIAL",
         "quality_effective": "PARTIAL",
-        "last_updated": "2026-04-18T02:46:56Z",
+        "last_updated": "2026-04-18T03:49:00Z",
         "source": "PROXY"
       },
       "TQQQ": {
-        "age_minutes": 15.56,
+        "age_minutes": 10.11,
         "stale": false,
         "stale_rule": ">60m",
         "base_quality": "NA",
         "quality_effective": "NA",
-        "last_updated": "2026-04-18T02:46:52Z",
+        "last_updated": "2026-04-18T03:48:56Z",
         "source": "STOOQ"
       }
     },
@@ -694,35 +694,35 @@
     "policy_path": "D:\\Youtube_pro\\000-Code_develop\\주식분석\\us_market_complete\\marketflow\\config\\macro_policy.json",
     "policy_loaded": true,
     "sensor_latency_ms": {
-      "VIX": 3.94,
-      "PUT_CALL": 1.56,
-      "HY_OAS": 1.54,
-      "WALCL": 0.36,
-      "M2SL": 0.12,
-      "RRP": 13.06,
-      "EFFR": 4.93,
-      "DFII10": 15.52,
-      "DGS2": 8.82,
-      "DGS10": 14.08,
-      "USD_BROAD": 3.8,
-      "QQQ": 3.35,
-      "BTC": 4.9,
-      "TQQQ": 2.91
+      "VIX": 4.92,
+      "PUT_CALL": 2.7,
+      "HY_OAS": 2.78,
+      "WALCL": 0.57,
+      "M2SL": 0.2,
+      "RRP": 2.84,
+      "EFFR": 1.53,
+      "DFII10": 37.17,
+      "DGS2": 3.76,
+      "DGS10": 1.95,
+      "USD_BROAD": 30.86,
+      "QQQ": 4.95,
+      "BTC": 10.7,
+      "TQQQ": 3.41
     },
     "data_age_summary": {
-      "VIX": 15.75,
-      "HY_OAS": 15.75,
-      "WALCL": 15.75,
-      "M2SL": 15.75,
-      "RRP": 15.75,
-      "EFFR": 15.75,
-      "DFII10": 15.75,
-      "DGS2": 15.75,
-      "DGS10": 15.75,
-      "USD_BROAD": 15.75,
-      "PUT_CALL": 15.5,
-      "TQQQ": 15.56
+      "VIX": 10.26,
+      "HY_OAS": 10.26,
+      "WALCL": 10.26,
+      "M2SL": 10.26,
+      "RRP": 10.26,
+      "EFFR": 10.26,
+      "DFII10": 10.26,
+      "DGS2": 10.26,
+      "DGS10": 10.26,
+      "USD_BROAD": 10.26,
+      "PUT_CALL": 10.04,
+      "TQQQ": 10.11
     },
-    "build_time_ms": 384.68
+    "build_time_ms": 424.57
   }
 }

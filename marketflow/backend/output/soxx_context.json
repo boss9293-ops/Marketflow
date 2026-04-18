@@ -1,7 +1,7 @@
 {
   "schema_version": "soxx_context_v6",
-  "run_id": "20260417_220216",
-  "generated_at": "2026-04-18T03:02:16Z",
+  "run_id": "20260417_225854",
+  "generated_at": "2026-04-18T03:58:54Z",
   "data_as_of": "2026-04-17",
   "history_window": 252,
   "primary_symbol": "SOXX",
@@ -471,13 +471,13 @@
       }
     },
     "physical_layer": {
-      "tsmc_util_pct": 92.8,
+      "tsmc_util_pct": 93.0,
       "cowos_lead_time_months": 8.9,
-      "hbm_yield_pct": 72.1
+      "hbm_yield_pct": 72.4
     },
     "economic_layer": {
-      "capex_revenue_ratio": 1.34,
-      "token_cost_index": 53.6
+      "capex_revenue_ratio": 1.33,
+      "token_cost_index": 53.1
     },
     "financial_layer": {
       "breadth_score": 100.0,
@@ -486,8 +486,8 @@
       "soxl_atr_band_proxy": -15.0
     },
     "edge_cases": {
-      "custom_silicon_share_pct": 21.6,
-      "macro_beta_score": 46.9
+      "custom_silicon_share_pct": 21.7,
+      "macro_beta_score": 45.4
     },
     "relative_strength": {
       "soxx_vs_qqq_ratio": 0.64,
@@ -499,7 +499,7 @@
     },
     "ai_cycle": {
       "model": "semi_cycle_proxy_v1",
-      "score": 77.3,
+      "score": 78.2,
       "stage": "MONETIZATION",
       "explanation": "Price action, macro, and earnings timing are aligned well enough for monetization.",
       "components": {
@@ -512,42 +512,42 @@
         "drawdown": -0.0,
         "volatility": -0.0,
         "price": 100.0,
-        "macro": 49.6,
-        "earnings": 46.3,
+        "macro": 49.5,
+        "earnings": 52.5,
         "weight_price": 56.0,
         "weight_macro": 29.0,
         "weight_earnings": 15.0,
-        "phase_gate": 28.23,
-        "mps": 25.53,
-        "vri": 53.13,
-        "shock_probability_30d": 27.58,
-        "put_call": 56.11,
-        "csi": 15.58,
-        "rpi": 25.51,
+        "phase_gate": 29.57,
+        "mps": 26.63,
+        "vri": 54.64,
+        "shock_probability_30d": 28.18,
+        "put_call": 55.11,
+        "csi": 17.17,
+        "rpi": 27.46,
         "lpi": 10.08,
         "defensive_mode": "OFF",
-        "event_count": 3,
-        "capex_count": 0,
-        "weighted_density": 2.177,
-        "next_nvda_days": null,
+        "event_count": 4,
+        "capex_count": 2,
+        "weighted_density": 3.112,
+        "next_nvda_days": 33,
         "next_tsm_days": null
       }
     },
     "macro": {
       "model": "macro_snapshot_latest",
       "phase": "Expansion",
-      "phase_gate": 28.23,
+      "phase_gate": 29.57,
       "progress": 0.0,
-      "mps": 25.53,
-      "vri": 53.13,
+      "mps": 26.63,
+      "vri": 54.64,
       "vri_state": "Normal",
-      "shock_probability_30d": 27.58,
+      "shock_probability_30d": 28.18,
       "shock_state": "Moderate",
-      "put_call": 56.11,
+      "put_call": 55.11,
       "put_call_state": "Normal",
-      "csi": 15.58,
+      "csi": 17.17,
       "csi_state": "Normal",
-      "rpi": 25.51,
+      "rpi": 27.46,
       "rpi_state": "Normal",
       "lpi": 10.08,
       "lpi_state": "Normal",
@@ -556,46 +556,56 @@
         "Phase=Expansion -> OFF."
       ],
       "reasons": [
-        "Gate 28.23/100, progress 0.0%.",
+        "Gate 29.57/100, progress 0.0%.",
         "Drivers: VRI, RPI, CSI."
       ],
-      "score": 49.6,
+      "score": 49.5,
       "state": "RISK_ON",
-      "summary": "Phase Expansion, MPS 25.5, VRI 53.1 (Normal), Shock 27.6%, Defensive OFF",
+      "summary": "Phase Expansion, MPS 26.6, VRI 54.6 (Normal), Shock 28.2%, Defensive OFF",
       "components": {
-        "phase_gate": 28.23,
-        "mps": 25.53,
-        "vri_health": 46.9,
-        "shock_health": 72.4,
-        "csi_health": 84.4,
-        "rpi_health": 74.5,
+        "phase_gate": 29.57,
+        "mps": 26.63,
+        "vri_health": 45.4,
+        "shock_health": 71.8,
+        "csi_health": 82.8,
+        "rpi_health": 72.5,
         "lpi_health": 89.9,
-        "put_call_health": 43.9
+        "put_call_health": 44.9
       }
     },
     "earnings": {
       "model": "earnings_calendar_proxy",
       "window_days": 45,
       "as_of": "2026-04-17",
-      "event_count": 3,
-      "ai_count": 3,
-      "capex_count": 0,
-      "score": 46.3,
-      "state": "LIGHT",
-      "summary": "3 AI/semi earnings in 45D; next AMZN in 12D",
-      "next_nvda_days": null,
+      "event_count": 4,
+      "ai_count": 4,
+      "capex_count": 2,
+      "score": 52.5,
+      "state": "ACTIVE",
+      "summary": "4 AI/semi earnings in 45D; 2 capex-heavy names; next TER in 11D",
+      "next_nvda_days": 33,
       "next_tsm_days": null,
       "next_event": {
-        "ticker": "AMZN",
-        "name": "Amazon.com, Inc.",
-        "date": "2026-04-29",
-        "days_out": 12,
-        "importance": 1.0,
-        "capex": false,
+        "ticker": "TER",
+        "name": "Teradyne",
+        "date": "2026-04-28",
+        "days_out": 11,
+        "importance": 1.4,
+        "capex": true,
         "ai": true,
-        "proximity": 0.733
+        "proximity": 0.756
       },
       "events": [
+        {
+          "ticker": "TER",
+          "name": "Teradyne",
+          "date": "2026-04-28",
+          "days_out": 11,
+          "importance": 1.4,
+          "capex": true,
+          "ai": true,
+          "proximity": 0.756
+        },
         {
           "ticker": "AMZN",
           "name": "Amazon.com, Inc.",
@@ -617,17 +627,17 @@
           "proximity": 0.733
         },
         {
-          "ticker": "AAPL",
-          "name": "Apple Inc.",
-          "date": "2026-04-30",
-          "days_out": 13,
-          "importance": 1.0,
-          "capex": false,
+          "ticker": "NVDA",
+          "name": "NVIDIA Corporation",
+          "date": "2026-05-20",
+          "days_out": 33,
+          "importance": 2.2,
+          "capex": true,
           "ai": true,
-          "proximity": 0.711
+          "proximity": 0.267
         }
       ],
-      "weighted_density": 2.177
+      "weighted_density": 3.112
     },
     "risk": {
       "soxx_dd_pct": 0.0,
@@ -639,7 +649,7 @@
     },
     "guidance": {
       "headline": "SOXX can be held; SOXL stays tactical",
-      "detail": "SOXX, macro, and the catalyst calendar are aligned. Blended score 77.3 with Expansion backdrop supports controlled exposure through the current runway, but not full-size leverage."
+      "detail": "SOXX, macro, and the catalyst calendar are aligned. Blended score 78.2 with Expansion backdrop supports controlled exposure through the current runway, but not full-size leverage."
     },
     "brief": {
       "version": "v3",
@@ -647,10 +657,10 @@
       "summary": "Track 3-4Y supply/demand, industry structure, and external sensitivity before using leverage. The current boom still looks constructive through 2027, but SOXL should remain tactical because the market can price the runway early.",
       "regime": {
         "label": "MONETIZATION",
-        "score": 77.3,
+        "score": 78.2,
         "summary": "Price action, macro, and earnings timing are aligned well enough for monetization.",
         "macro_phase": "Expansion",
-        "earnings_state": "LIGHT",
+        "earnings_state": "ACTIVE",
         "lead_state": "LEADING"
       },
       "runway": {
@@ -675,12 +685,12 @@
           {
             "label": "Rates / volatility",
             "state": "RISK_ON",
-            "detail": "Phase Expansion | VRI 53.1 | MPS 25.5"
+            "detail": "Phase Expansion | VRI 54.6 | MPS 26.6"
           },
           {
             "label": "AI capex density",
-            "state": "LIGHT",
-            "detail": "3 AI/semi earnings in 45D; next AMZN in 12D"
+            "state": "ACTIVE",
+            "detail": "4 AI/semi earnings in 45D; 2 capex-heavy names; next TER in 11D"
           },
           {
             "label": "QQQ relative strength",
@@ -721,11 +731,11 @@
       },
       "action": {
         "headline": "SOXX can be held; SOXL stays tactical",
-        "detail": "SOXX, macro, and the catalyst calendar are aligned. Blended score 77.3 with Expansion backdrop supports controlled exposure through the current runway, but not full-size leverage.",
+        "detail": "SOXX, macro, and the catalyst calendar are aligned. Blended score 78.2 with Expansion backdrop supports controlled exposure through the current runway, but not full-size leverage.",
         "monitor": [
           "SOXX MA200 ABOVE",
           "Macro Expansion",
-          "Earnings LIGHT",
+          "Earnings ACTIVE",
           "Lead LEADING"
         ]
       },
@@ -736,8 +746,8 @@
       ]
     },
     "signals": [
-      "Phase Expansion, MPS 25.5, VRI 53.1 (Normal), Shock 27.6%, Defensive OFF",
-      "3 AI/semi earnings in 45D; next AMZN in 12D",
+      "Phase Expansion, MPS 26.6, VRI 54.6 (Normal), Shock 28.2%, Defensive OFF",
+      "4 AI/semi earnings in 45D; 2 capex-heavy names; next TER in 11D",
       "SOXX MA200 state: ABOVE",
       "QQQ relative strength (60D): 14.1",
       "SOXL proxy drawdown: 0.0%"

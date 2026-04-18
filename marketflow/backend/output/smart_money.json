@@ -2915,18 +2915,18 @@
   },
   "smart_flow": {
     "leaders80_count": 8,
-    "leaders80_delta_1d": 5,
+    "leaders80_delta_1d": 0,
     "rs_leader_ratio": 26.74,
     "concentration_level": "Low",
-    "acceleration_state": "Expanding",
+    "acceleration_state": "Flat",
     "Leaders80_count": 8,
-    "Leaders80_delta_1d": 5,
+    "Leaders80_delta_1d": 0,
     "RS_LEADER_ratio": 26.74,
     "Concentration_level": "Low",
-    "Acceleration_state": "Expanding",
+    "Acceleration_state": "Flat",
     "regime": "Expansion",
-    "shock_prob_30d": 0.10504999999999999,
-    "tail_sigma": 2.0760869565217392,
+    "shock_prob_30d": 0.10285000000000002,
+    "tail_sigma": 2.0326086956521743,
     "liquidity_state": "Neutral",
     "breadth_state": "Neutral",
     "trend_state": "Above200",
@@ -3336,6 +3336,6 @@
     }
   ],
   "data_version": "smart_money_v1",
-  "generated_at": "2026-04-17T21:50:52",
+  "generated_at": "2026-04-17T22:52:43",
   "rerun_hint": "python backend/scripts/build_smart_money.py"
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-17T22:23:54",
+  "generated_at": "2026-04-18T02:17:57",
   "data_date": "2026-04-17",
   "cache_policy": "daily_close",
   "phase": {
@@ -21,7 +21,7 @@
   "risk": {
     "value": "MEDIUM",
     "label": "MED",
-    "vol_pct": 14.47,
+    "vol_pct": 14.5,
     "var95": -1.59,
     "color": "#f59e0b",
     "detail": "Port.Vol 14.5% | SPY VaR95 -1.59% | QQQ VaR95 -1.96% | Level MEDIUM",

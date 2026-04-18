@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-17T21:50:56",
+  "generated_at": "2026-04-17T22:52:47",
   "data_version": "overview_v2",
   "latest_date": "2026-04-17",
   "market_phase": "NEUTRAL",
@@ -16,7 +16,7 @@
   "gate_delta5d": 5.0,
   "gate_status": "GREEN",
   "phase_shift_flag": 1,
-  "portfolio_volatility": 14.47,
+  "portfolio_volatility": 14.5,
   "cvar95_port": -1.59,
   "cvar95_qqq": -1.96,
   "trend_state": "ABOVE",

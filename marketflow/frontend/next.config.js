@@ -9,5 +9,14 @@ const nextConfig = {
     }
     return config
   },
+  async rewrites() {
+    // Proxy /api/flask/* → Railway backend (bypasses CORS + env var issues)
+    return [
+      {
+        source: '/api/flask/:path*',
+        destination: `${RAILWAY_URL}/api/:path*`,
+      },
+    ]
+  },
 }
 module.exports = nextConfig

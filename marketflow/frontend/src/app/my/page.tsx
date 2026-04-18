@@ -149,7 +149,9 @@ type PortfolioNarrativeMeta = {
   cache_namespace?: string
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5001'
+const API_BASE = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  ? '/api/flask'  // Vercel: proxy via next.config.js rewrites → Railway
+  : (process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:5001')
 const PORTFOLIO_NARRATIVE_VERSION = 'news_first_v3'
 
 function panelStyle() {

@@ -462,6 +462,7 @@ export default function MyPage() {
   const [saJsonInput, setSaJsonInput] = useState('')
   const [credsLoading, setCredsLoading] = useState(false)
   const [credsOpen, setCredsOpen] = useState(false)
+  const [credsMessage, setCredsMessage] = useState('')
   const [portfolioNarrative, setPortfolioNarrative] = useState<StructuredNarrative | null>(null)
   const [portfolioNarrativeMeta, setPortfolioNarrativeMeta] = useState<PortfolioNarrativeMeta | null>(null)
   const [portfolioNarrativeLoading, setPortfolioNarrativeLoading] = useState(false)
@@ -583,16 +584,16 @@ export default function MyPage() {
       })
       const json = await res.json().catch(() => ({}))
       if (res.ok) {
-        setMessage('Credentials saved. (Railway 재배포 시 초기화됩니다 — 영구 보존은 GOOGLE_SERVICE_ACCOUNT_JSON 환경변수 사용)')
+        setCredsMessage('저장 완료. (재배포 시 초기화됩니다 — Railway Variables에 GOOGLE_SERVICE_ACCOUNT_JSON 설정 권장)')
         setSaJsonInput('')
         setCredsOpen(false)
         await fetchCredsStatus()
         await fetchSaEmail()
       } else {
-        setMessage(json?.error || 'Failed to save credentials.')
+        setCredsMessage(json?.error || 'Failed to save credentials.')
       }
     } catch {
-      setMessage('저장 실패: 백엔드에 연결할 수 없습니다. API 연결을 확인하세요.')
+      setCredsMessage('저장 실패: 백엔드 연결 불가. API 연결을 확인하세요.')
     } finally {
       setCredsLoading(false)
     }
@@ -1996,6 +1997,11 @@ export default function MyPage() {
                   </button>
                 )}
               </div>
+              {credsMessage && (
+                <div style={{ color: credsMessage.includes('완료') || credsMessage.includes('Saved') || credsMessage.includes('saved') ? '#86efac' : '#fca5a5', fontSize: '0.68rem', marginTop: 4, padding: '0.25rem 0.4rem', background: 'rgba(0,0,0,0.3)', borderRadius: 4 }}>
+                  {credsMessage}
+                </div>
+              )}
             </div>
           </details>
         </div>

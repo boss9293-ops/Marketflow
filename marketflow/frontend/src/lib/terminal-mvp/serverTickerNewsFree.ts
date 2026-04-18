@@ -12,8 +12,10 @@ import { upsertNewsDetails } from '@/lib/terminal-mvp/serverNewsStore'
 const TICKER_NEWS_CACHE_TTL_MS = 1000 * 60 * 30
 const TICKER_NEWS_HISTORY_MAX_ITEMS = 200
 const TICKER_NEWS_HISTORY_WINDOW_HOURS = 36 // used for cache-key only, not for pruning disk history
-const TICKER_NEWS_FETCH_ATTEMPTS = 2
-const TICKER_NEWS_RETRY_DELAY_MS = 250
+const TICKER_NEWS_FETCH_ATTEMPTS = 1
+const TICKER_NEWS_RETRY_DELAY_MS = 150
+const TICKER_NEWS_HTTP_TIMEOUT_MS = 2200
+const TICKER_NEWS_CRUMB_TIMEOUT_MS = 1500
 const TICKER_NEWS_HISTORY_PATHS = resolveNewsHistoryCandidates('ticker-news-history-v2-1630.json')
 const MARKET_OPEN_MINUTES_ET = 9 * 60 + 30
 const MARKET_CLOSE_MINUTES_ET = 16 * 60 + 30
@@ -264,7 +266,11 @@ const persistTickerHistoryQueued = (): Promise<void> => {
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
-const fetchWithTimeout = async (input: string, init: RequestInit, timeoutMs = 6000): Promise<Response> => {
+const fetchWithTimeout = async (
+  input: string,
+  init: RequestInit,
+  timeoutMs = TICKER_NEWS_HTTP_TIMEOUT_MS,
+): Promise<Response> => {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -277,7 +283,7 @@ const fetchWithTimeout = async (input: string, init: RequestInit, timeoutMs = 60
 const fetchWithRetry = async (
   input: string,
   init: RequestInit,
-  timeoutMs = 6000,
+  timeoutMs = TICKER_NEWS_HTTP_TIMEOUT_MS,
   attempts = TICKER_NEWS_FETCH_ATTEMPTS,
 ): Promise<Response | null> => {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -366,12 +372,17 @@ const mapYahooFinanceItems = (symbol: string, items: YahooFinanceNewsItem[]): Ya
 
 async function fetchYahooFinanceNews(symbol: string): Promise<YahooRssItem[]> {
   try {
-    const crumbRes = await fetch('https://query2.finance.yahoo.com/v1/test/getcrumb', {
-      headers: { 'User-Agent': CHROME_UA, Accept: '*/*' },
-      cache: 'no-store',
-    })
-    const cookie = crumbRes.headers.get('set-cookie') ?? ''
-    const crumbText = crumbRes.ok ? await crumbRes.text() : ''
+    const crumbRes = await fetchWithRetry(
+      'https://query2.finance.yahoo.com/v1/test/getcrumb',
+      {
+        headers: { 'User-Agent': CHROME_UA, Accept: '*/*' },
+        cache: 'no-store',
+      },
+      TICKER_NEWS_CRUMB_TIMEOUT_MS,
+      1,
+    )
+    const cookie = crumbRes?.headers.get('set-cookie') ?? ''
+    const crumbText = crumbRes && crumbRes.ok ? await crumbRes.text() : ''
     const crumb = crumbText.trim()
     const crumbParam = crumb && !crumb.includes('<') ? `&crumb=${encodeURIComponent(crumb)}` : ''
 
@@ -379,23 +390,14 @@ async function fetchYahooFinanceNews(symbol: string): Promise<YahooRssItem[]> {
     const res = await fetchWithRetry(directUrl, {
       headers: { 'User-Agent': CHROME_UA, Accept: 'application/json', ...(cookie ? { Cookie: cookie } : {}) },
       cache: 'no-store',
-    }, 6000)
+    }, TICKER_NEWS_HTTP_TIMEOUT_MS, 1)
     if (res) {
       const json = await res.json()
       const directItems: YahooFinanceNewsItem[] = (json?.items?.result ?? json?.news ?? []) as YahooFinanceNewsItem[]
       const mapped = mapYahooFinanceItems(symbol, directItems)
       if (mapped.length) return mapped
     }
-
-    const searchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(`${symbol} stock`)}&quotesCount=0&newsCount=20&enableFuzzyQuery=false&enableNews=true${crumbParam}`
-    const searchRes = await fetchWithRetry(searchUrl, {
-      headers: { 'User-Agent': CHROME_UA, Accept: 'application/json', ...(cookie ? { Cookie: cookie } : {}) },
-      cache: 'no-store',
-    }, 6000)
-    if (!searchRes) return []
-    const searchJson = await searchRes.json()
-    const searchItems: YahooFinanceNewsItem[] = Array.isArray(searchJson?.news) ? searchJson.news : []
-    return mapYahooFinanceItems(symbol, searchItems)
+    return []
   } catch {
     return []
   }
@@ -475,7 +477,7 @@ const fetchYahooFreeNews = async (symbol: string): Promise<{ timeline: TickerNew
   }
 
   const rssUrl = `https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(symbol)}&region=US&lang=en-US`
-  const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, 4500)
+  const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, TICKER_NEWS_HTTP_TIMEOUT_MS, 1)
   if (!res) throw new Error('Yahoo Finance request failed after retries')
   const xml = await res.text()
   return buildPayloadFromYahoo(symbol, parseYahooRss(xml))
@@ -484,7 +486,7 @@ const fetchYahooFreeNews = async (symbol: string): Promise<{ timeline: TickerNew
 const fetchGoogleFreeNews = async (symbol: string): Promise<{ timeline: TickerNewsItem[]; details: NewsDetail[] }> => {
   const query = `${symbol} stock`
   const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`
-  const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, 4500)
+  const res = await fetchWithRetry(rssUrl, { next: { revalidate: 3600 } }, TICKER_NEWS_HTTP_TIMEOUT_MS, 1)
   if (!res) throw new Error('Google News RSS request failed after retries')
   const xml = await res.text()
   return buildPayloadFromYahoo(symbol, parseGoogleNewsRss(xml))
@@ -532,7 +534,12 @@ export async function fetchTickerNewsFromYahoo(symbol: string, dateET: ETDateStr
           details: sortNewsItems(Array.from(stale.detailsById.values())),
         })
       }
-      throw error
+      // Hard-fail creates empty center panel in production. Return empty payload safely.
+      console.warn('[terminal-ticker-news] all providers failed', {
+        symbol,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return { timeline: [], details: [] }
     }
   }
 

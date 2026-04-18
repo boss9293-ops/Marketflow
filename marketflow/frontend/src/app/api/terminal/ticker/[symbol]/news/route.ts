@@ -42,12 +42,23 @@ export async function GET(req: NextRequest, { params }: Params) {
       },
     })
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to fetch ticker news.',
+    console.error('[terminal/ticker/news] failed', {
+      symbol,
+      dateET,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return NextResponse.json({
+      data: {
+        symbol,
+        news: [],
       },
-      { status: 502 },
-    )
+      meta: {
+        timezone: ET_TIMEZONE,
+        dateET,
+        degraded: true,
+        message: error instanceof Error ? error.message : 'Failed to fetch ticker news.',
+      },
+    })
   }
 }
 

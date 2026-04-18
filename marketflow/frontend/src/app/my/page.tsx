@@ -583,13 +583,16 @@ export default function MyPage() {
       })
       const json = await res.json().catch(() => ({}))
       if (res.ok) {
-        setMessage('Google credentials saved.')
+        setMessage('Credentials saved. (Railway 재배포 시 초기화됩니다 — 영구 보존은 GOOGLE_SERVICE_ACCOUNT_JSON 환경변수 사용)')
         setSaJsonInput('')
         setCredsOpen(false)
         await fetchCredsStatus()
+        await fetchSaEmail()
       } else {
         setMessage(json?.error || 'Failed to save credentials.')
       }
+    } catch {
+      setMessage('저장 실패: 백엔드에 연결할 수 없습니다. API 연결을 확인하세요.')
     } finally {
       setCredsLoading(false)
     }
@@ -1965,6 +1968,9 @@ export default function MyPage() {
               Admin: Service Account 설정 ({credsStatus === null ? '...' : credsStatus?.configured ? `configured (${credsStatus.source})` : 'not configured'})
             </summary>
             <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{ color: '#6b7280', fontSize: '0.65rem', marginBottom: 3 }}>
+                서비스 계정 JSON 전체를 붙여넣기 후 저장. 재배포 시 초기화되므로 <strong style={{ color: '#fbbf24' }}>Railway 대시보드 → Variables → <code>GOOGLE_SERVICE_ACCOUNT_JSON</code></strong> 에 설정하면 영구 보존됩니다.
+              </div>
               <textarea
                 value={saJsonInput}
                 onChange={(e) => setSaJsonInput(e.target.value)}

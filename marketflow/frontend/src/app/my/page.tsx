@@ -1971,8 +1971,8 @@ export default function MyPage() {
               위 URL 입력란에 내 Google Sheet 주소 붙여넣기 → Load → Import
             </div>
           </div>
-          {/* 관리자 전용: SA JSON 설정 (접기/펼치기) */}
-          <details style={{ marginTop: 8 }}>
+          {/* 관리자 전용: SA JSON 설정 — Railway Variables로 관리, 구독자 UI 숨김 */}
+          {false && <details style={{ marginTop: 8 }}>
             <summary style={{ color: '#6b7280', fontSize: '0.68rem', cursor: 'pointer' }}>
               Admin: Service Account 설정 ({credsStatus === null ? '...' : credsStatus?.configured ? `configured (${credsStatus.source})` : 'not configured'})
             </summary>
@@ -2011,7 +2011,7 @@ export default function MyPage() {
                 </div>
               )}
             </div>
-          </details>
+          </details>}
         </div>
 
         {tabsMeta?.tabs ? (

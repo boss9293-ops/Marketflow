@@ -1966,9 +1966,57 @@ export default function MyPage() {
             ) : (
               <div style={{ color: '#6b7280', fontSize: '0.72rem' }}>이메일 로딩 중...</div>
             )}
-            <div style={{ color: '#cbd5e1', fontSize: '0.73rem', marginTop: 2 }}>
-              <span style={{ color: '#7dd3fc', fontWeight: 700 }}>Step 2.</span>{' '}
-              위 URL 입력란에 내 Google Sheet 주소 붙여넣기 → Load → Import
+            <div style={{ marginTop: 4 }}>
+              <div style={{ color: '#cbd5e1', fontSize: '0.73rem', marginBottom: 6 }}>
+                <span style={{ color: '#7dd3fc', fontWeight: 700 }}>Step 2.</span>{' '}
+                Google Sheet 주소 붙여넣기 → Load → Import
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
+                  style={{
+                    flex: '1 1 200px',
+                    padding: '0.28rem 0.5rem',
+                    background: 'rgba(31,41,55,0.8)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#e5e7eb',
+                    borderRadius: 6,
+                    fontSize: '0.72rem',
+                  }}
+                />
+                <button
+                  onClick={handleLoadTabs}
+                  style={{
+                    border: '1px solid rgba(14,165,233,0.4)',
+                    background: 'rgba(14,165,233,0.15)',
+                    color: '#7dd3fc',
+                    borderRadius: 6,
+                    padding: '0.28rem 0.6rem',
+                    fontSize: '0.7rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {tabsLoading ? 'Loading...' : 'Load'}
+                </button>
+                <button
+                  onClick={handleImportTabs}
+                  style={{
+                    border: '1px solid rgba(16,185,129,0.4)',
+                    background: 'rgba(16,185,129,0.16)',
+                    color: '#6ee7b7',
+                    borderRadius: 6,
+                    padding: '0.28rem 0.6rem',
+                    fontSize: '0.7rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Import
+                </button>
+              </div>
             </div>
           </div>
           {/* 관리자 전용: SA JSON 설정 — Railway Variables로 관리, 구독자 UI 숨김 */}

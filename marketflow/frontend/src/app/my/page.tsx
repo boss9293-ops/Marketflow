@@ -470,6 +470,7 @@ export default function MyPage() {
   const [portfolioNarrativeLoading, setPortfolioNarrativeLoading] = useState(false)
   const portfolioNarrativeAbortRef = useRef<AbortController | null>(null)
   const portfolioNarrativeLoadedSignatureRef = useRef<string>('')
+  const holdingsAutoImportSignatureRef = useRef<string>('')
   const [marketIndices, setMarketIndices] = useState<MarketIndicesPayload | null>(null)
 
   async function fetchHoldings() {
@@ -618,6 +619,36 @@ export default function MyPage() {
     }
   }
 
+  async function importTabs(sheetId: string, tabsCsv: string, successMessage?: string) {
+    if (!tabsCsv) {
+      setMessage('Select at least one tab to import.')
+      return false
+    }
+    setTabsLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/my/holdings/import-tabs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sheet_id: sheetId, tabs: tabsCsv }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessage(cleanMessage(json?.error || json?.stderr_import || 'Import tabs failed.'))
+        return false
+      }
+      setSheetUrl(sheetId)
+      setMessage(cleanMessage(successMessage || `Imported tabs: ${tabsCsv}`))
+      await refreshTabs(true)
+      await refreshTs()
+      return true
+    } catch {
+      setMessage('Import failed (network).')
+      return false
+    } finally {
+      setTabsLoading(false)
+    }
+  }
+
   async function handleLoadTabs() {
     const sheetId = extractSheetId(sheetUrl)
     if (!sheetId) {
@@ -637,8 +668,9 @@ export default function MyPage() {
         setMessage(cleanMessage(json?.error || tmeta?.error || json?.stderr || 'Failed to load tabs.'))
         return
       }
+      const nextSelectedTabs = defaultSelectedTabs(tmeta)
       setTabsMeta(tmeta)
-      setSelectedTabs(defaultSelectedTabs(tmeta))
+      setSelectedTabs(nextSelectedTabs)
       setSheetUrl(sheetId)
       setMessage(cleanMessage(tmeta?.error || 'Tabs loaded.'))
     } catch {
@@ -655,31 +687,7 @@ export default function MyPage() {
       return
     }
     const tabsCsv = selectedTabs.join(',')
-    if (!tabsCsv) {
-      setMessage('Select at least one tab to import.')
-      return
-    }
-    setTabsLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/api/my/holdings/import-tabs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sheet_id: sheetId, tabs: tabsCsv }),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setMessage(cleanMessage(json?.error || json?.stderr_import || 'Import tabs failed.'))
-        return
-      }
-      setSheetUrl(sheetId)
-      setMessage(cleanMessage(`Imported tabs: ${tabsCsv}`))
-      await refreshTabs(true)
-      await refreshTs()
-    } catch {
-      setMessage('Import failed (network).')
-    } finally {
-      setTabsLoading(false)
-    }
+    await importTabs(sheetId, tabsCsv)
   }
 
   // localStorage에 sheetUrl 저장
@@ -699,6 +707,39 @@ export default function MyPage() {
     refreshTs()
     fetchCredsStatus()
   }, [])
+
+  useEffect(() => {
+    if (tabsLoading) return
+    if (!tabsMeta?.tabs?.length) return
+
+    const selectable = Array.from(
+      new Set(
+        (tabsMeta.tabs || [])
+          .filter((t) => !t.excluded)
+          .map((t) => asText(t.title || t.name || ''))
+          .filter((name) => name),
+      ),
+    )
+    const nextSelectedTabs = selectedTabs.filter((tab) => selectable.includes(tab))
+    const tabsToImport = nextSelectedTabs.length > 0 ? nextSelectedTabs : defaultSelectedTabs(tabsMeta)
+    const sheetId =
+      extractSheetId(sheetUrl) ||
+      extractSheetId(asText(tabsMeta.sheet_id)) ||
+      extractSheetId(asText(tsData?.sheet_id || ''))
+
+    if (!sheetId || tabsToImport.length === 0) return
+
+    const hasHoldingsRows = Object.keys(data.positions_by_tab || {}).length > 0
+    const hasTsHistory = (tsData?.tabs?.length || 0) > 0 || (tsData?.goal?.positions?.length || 0) > 0
+    if (hasHoldingsRows && hasTsHistory) return
+
+    const signature = `${sheetId}:${tabsToImport.join(',')}`
+    if (holdingsAutoImportSignatureRef.current === signature) return
+    holdingsAutoImportSignatureRef.current = signature
+
+    setMessage('Tabs loaded. Building holdings data...')
+    void importTabs(sheetId, tabsToImport.join(','), 'Tabs loaded. Holdings data ready.')
+  }, [data.positions_by_tab, selectedTabs, sheetUrl, tabsLoading, tabsMeta?.sheet_id, tabsMeta?.tabs, tsData?.goal?.positions, tsData?.sheet_id, tsData?.tabs])
 
   async function onChooseFile(file: File | null) {
     if (!file) return

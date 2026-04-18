@@ -9914,7 +9914,7 @@ def _auto_import_holdings_from_sheets() -> None:
             print(f"[auto-import] Cache is fresh ({age_hours:.1f}h old), skipping.")
             return
 
-    tabs = os.environ.get("GOOGLE_SHEETS_TABS", "sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8")
+    tabs = os.environ.get("GOOGLE_SHEETS_TABS", "Goal,미국1,미국2,미국3,미국4,미국5,미국6,한국1")
     print(f"[auto-import] Starting Google Sheets import: sheet_id={sheet_id}, tabs={tabs}")
 
     try:

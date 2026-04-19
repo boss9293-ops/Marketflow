@@ -8046,6 +8046,16 @@ def my_holdings_import_tabs():
 
         tdata = load_json_or_none('sheet_tabs.json') or {}
         selectable = tdata.get('selectable') or []
+
+        # If sheet_tabs.json is missing or empty on this instance, regenerate it
+        # using the sheet context from the current request so we can enumerate
+        # all selectable tabs instead of falling through to a single "Goal".
+        if not selectable:
+            list_args = ['--sheet_url', sheet_url] if sheet_url else ['--sheet_id', sheet_id]
+            _run_sheets_script('list_sheet_tabs.py', extra_args=list_args, timeout=120)
+            tdata = load_json_or_none('sheet_tabs.json') or {}
+            selectable = tdata.get('selectable') or []
+
         if selectable:
             tabs = ",".join(selectable)
 

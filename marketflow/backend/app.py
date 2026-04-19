@@ -8031,6 +8031,12 @@ def my_holdings_import_tabs():
 
     tabs = _parse_tabs_from_request(data or {}) or (request.form.get('tabs') or '')
 
+    try:
+        _raw_tabs_field = (data or {}).get('tabs') if isinstance(data, dict) else None
+        print(f"[import-tabs] incoming body: sheet_id={sheet_id!r} sheet_url={sheet_url!r} raw_tabs_field={_raw_tabs_field!r} parsed_tabs={tabs!r}", flush=True)
+    except Exception:
+        pass
+
 
     if not sheet_url and not sheet_id:
 

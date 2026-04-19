@@ -16,12 +16,27 @@ def _candidate_paths(path: str) -> list[Path]:
     if raw.is_absolute():
         return [raw]
 
-    return [
-        Path.cwd() / raw,
-        _REPO_ROOT / raw,
-        _MARKETFLOW_ROOT / raw,
-        _PROMPTS_ROOT / raw,
-    ]
+    text = str(raw).replace("\\", "/").strip("/")
+    variants = [raw]
+
+    if text.startswith("marketflow/prompts/"):
+        variants.append(Path(text.removeprefix("marketflow/prompts/")))
+    if text.startswith("marketflow/"):
+        variants.append(Path(text.removeprefix("marketflow/")))
+    if text.startswith("prompts/"):
+        variants.append(Path(text.removeprefix("prompts/")))
+
+    roots = (Path.cwd(), _REPO_ROOT, _MARKETFLOW_ROOT, _PROMPTS_ROOT)
+    candidates: list[Path] = []
+    seen: set[str] = set()
+    for variant in variants:
+        for root in roots:
+            candidate = (root / variant).resolve()
+            key = str(candidate)
+            if key not in seen:
+                seen.add(key)
+                candidates.append(candidate)
+    return candidates
 
 
 def _resolve_prompt_path(path: str) -> Path:
@@ -45,18 +60,18 @@ def load_prompt(path: str) -> str:
 
 def get_engine_knowledge() -> Dict[str, str]:
     return {
-        "transmission_map": load_prompt("marketflow/prompts/engine_knowledge/transmission/transmission_map.md"),
-        "track_b_velocity": load_prompt("marketflow/prompts/engine_knowledge/tracks/track_b_velocity.md"),
-        "track_a_credit": load_prompt("marketflow/prompts/engine_knowledge/tracks/track_a_credit.md"),
-        "track_c_event": load_prompt("marketflow/prompts/engine_knowledge/tracks/track_c_event.md"),
-        "mss_engine": load_prompt("marketflow/prompts/engine_knowledge/core/mss_engine.md"),
+        "transmission_map": load_prompt("engine_knowledge/transmission/transmission_map.md"),
+        "track_b_velocity": load_prompt("engine_knowledge/tracks/track_b_velocity.md"),
+        "track_a_credit": load_prompt("engine_knowledge/tracks/track_a_credit.md"),
+        "track_c_event": load_prompt("engine_knowledge/tracks/track_c_event.md"),
+        "mss_engine": load_prompt("engine_knowledge/core/mss_engine.md"),
     }
 
 
 def get_narrative_templates() -> Dict[str, str]:
     return {
-        "briefing_v1": load_prompt("marketflow/prompts/engine_narrative/briefing_v1.md"),
-        "watchlist_v1": load_prompt("marketflow/prompts/engine_narrative/watchlist_v1.md"),
-        "portfolio_v1": load_prompt("marketflow/prompts/engine_narrative/portfolio_v1.md"),
-        "account_manager_v1": load_prompt("marketflow/prompts/engine_narrative/account_manager_v1.md"),
+        "briefing_v1": load_prompt("engine_narrative/briefing_v1.md"),
+        "watchlist_v1": load_prompt("engine_narrative/watchlist_v1.md"),
+        "portfolio_v1": load_prompt("engine_narrative/portfolio_v1.md"),
+        "account_manager_v1": load_prompt("engine_narrative/account_manager_v1.md"),
     }

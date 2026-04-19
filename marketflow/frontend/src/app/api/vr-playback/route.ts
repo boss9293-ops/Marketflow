@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { readCacheJson } from '@/lib/readCacheJson'
 import {
   buildVRPlaybackTransportView,
@@ -7,11 +7,14 @@ import {
   type VRPlaybackEventOverrides,
 } from '../../../../../../vr/playback/vr_playback_loader'
 
-export async function GET(request: Request) {
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+export async function GET(request: NextRequest) {
   let debugMode = false
 
   try {
-    const { searchParams } = new URL(request.url)
+    const searchParams = request.nextUrl.searchParams
     const eventId = searchParams.get('event_id')
     const playbackEventId = searchParams.get('playback_event_id')
     debugMode = searchParams.get('debug') === '1'

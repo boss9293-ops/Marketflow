@@ -3,6 +3,7 @@ import os, sys, subprocess, threading, urllib.request, datetime, json
 from zoneinfo import ZoneInfo
 
 from services.data_contract import live_db_path
+from services.google_sa_store import resolve_google_service_account_json
 
 PORT = os.environ.get("PORT", "8080")
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -120,7 +121,7 @@ def _auto_import_holdings_from_sheets() -> bool:
         print("[startup][SHEETS] Google Sheets source not configured; skipping holdings import.", flush=True)
         return True
 
-    sa_json = _env_value("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+    sa_json, sa_source = resolve_google_service_account_json()
     if not sa_json:
         print("[startup][SHEETS] GOOGLE_SERVICE_ACCOUNT_JSON missing; skipping holdings import.", flush=True)
         return True
@@ -131,7 +132,7 @@ def _auto_import_holdings_from_sheets() -> bool:
     env["PYTHONUTF8"] = "1"
     env["GOOGLE_SERVICE_ACCOUNT_JSON"] = sa_json
 
-    print("[startup][SHEETS] Importing holdings tabs before news/brief builds...", flush=True)
+    print(f"[startup][SHEETS] Importing holdings tabs before news/brief builds... (sa_source={sa_source})", flush=True)
     try:
         if sheet_url:
             import_args = ["--sheet_url", sheet_url]

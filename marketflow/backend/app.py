@@ -86,6 +86,12 @@ from ai import gpt_client, gemini_client
 
 
 from services.prompt_manager import PromptManager
+from services.google_sa_store import (
+    delete_google_service_account_json,
+    get_google_service_account_json,
+    get_google_service_account_status,
+    save_google_service_account_json,
+)
 from services.script_env import build_script_env
 
 try:
@@ -428,7 +434,6 @@ CACHE_DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'cache.db'
 MY_HOLDINGS_PATH = os.path.join(OUTPUT_DIR, 'my_holdings.json')
 MY_HOLDINGS_SNAPSHOT_PATH = os.path.join(OUTPUT_DIR, 'my_holdings_cache.json')
 HOLDINGS_IMPORT_SCRIPT = os.path.join(os.path.dirname(__file__), 'scripts', 'import_holdings_csv.py')
-SA_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config', 'google_sa.json')
 
 
 
@@ -813,39 +818,8 @@ def _ensure_data_artifact(filename: str) -> bool:
 
 
 def _get_sa_json() -> str:
-
-
-    """Return Google SA JSON from env var or stored config file."""
-
-
-    v = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON', '').strip()
-
-
-    if v:
-
-
-        return v
-
-
-    if os.path.exists(SA_CONFIG_PATH):
-
-
-        try:
-
-
-            with open(SA_CONFIG_PATH, 'r', encoding='utf-8') as f:
-
-
-                return f.read().strip()
-
-
-        except Exception:
-
-
-            pass
-
-
-    return ''
+    """Return Google SA JSON from env, DB, or legacy file mirror."""
+    return get_google_service_account_json().strip()
 
 
 
@@ -8652,20 +8626,7 @@ def my_template_csv_v2():
 
 
 def my_holdings_credentials_status():
-
-
-    from_env = bool(os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON', '').strip())
-
-
-    from_file = os.path.exists(SA_CONFIG_PATH)
-
-
-    configured = from_env or from_file
-
-
-    source = 'env' if from_env else ('file' if from_file else 'none')
-
-
+    configured, source = get_google_service_account_status()
     return jsonify({'configured': configured, 'source': source})
 
 
@@ -8717,16 +8678,13 @@ def my_holdings_credentials_save():
         return jsonify({'error': f'Invalid JSON: {e}'}), 400
 
 
-    os.makedirs(os.path.dirname(SA_CONFIG_PATH), exist_ok=True)
+    canonical = json.dumps(parsed, ensure_ascii=False, indent=2)
+    try:
+        save_google_service_account_json(canonical)
+    except Exception as e:
+        return jsonify({'error': f'Failed to save credentials: {e}'}), 500
 
-
-    with open(SA_CONFIG_PATH, 'w', encoding='utf-8') as f:
-
-
-        json.dump(parsed, f, ensure_ascii=False, indent=2)
-
-
-    return jsonify({'ok': True, 'message': 'Credentials saved.'})
+    return jsonify({'ok': True, 'message': 'Credentials saved.', 'source': 'db'})
 
 
 
@@ -8739,14 +8697,7 @@ def my_holdings_credentials_save():
 
 
 def my_holdings_credentials_delete():
-
-
-    if os.path.exists(SA_CONFIG_PATH):
-
-
-        os.remove(SA_CONFIG_PATH)
-
-
+    delete_google_service_account_json()
     return jsonify({'ok': True, 'message': 'Credentials removed.'})
 
 

@@ -482,7 +482,13 @@ export default function MyPage() {
   const [selectedTabs, setSelectedTabs] = useState<string[]>([])
   const [activePositionsTab, setActivePositionsTab] = useState<string>('')
   const [credsStatus, setCredsStatus] = useState<{ configured: boolean; source: string } | null>(null)
-  const [saJsonInput, setSaJsonInput] = useState('')
+  const [saJsonInput, setSaJsonInput] = useState<string>(() => {
+    try {
+      return localStorage.getItem('holdings_sa_json') || ''
+    } catch {
+      return ''
+    }
+  })
   const [credsLoading, setCredsLoading] = useState(false)
   const [credsOpen, setCredsOpen] = useState(false)
   const [credsMessage, setCredsMessage] = useState('')
@@ -601,8 +607,8 @@ export default function MyPage() {
         json = JSON.parse(rawBody)
       } catch { /* non-json body */ }
       if (res.ok) {
-        setCredsMessage('저장 완료. (재배포 시 초기화됩니다 — Railway Variables에 GOOGLE_SERVICE_ACCOUNT_JSON 설정 권장)')
-        setSaJsonInput('')
+        setCredsMessage('저장 완료. 서버 DB와 브라우저에 보관합니다.')
+        setSaJsonInput(saJsonInput.trim())
         setCredsOpen(false)
         await fetchCredsStatus()
         await fetchSaEmail()
@@ -621,7 +627,8 @@ export default function MyPage() {
     setCredsLoading(true)
     try {
       await fetch(`${API_BASE}/api/my/holdings/credentials`, { method: 'DELETE' })
-      setMessage('Credentials removed.')
+      setCredsMessage('Credentials removed.')
+      setSaJsonInput('')
       await fetchCredsStatus()
     } finally {
       setCredsLoading(false)
@@ -722,6 +729,29 @@ export default function MyPage() {
   useEffect(() => {
     if (sheetUrl) try { localStorage.setItem('holdings_sheet_url', sheetUrl) } catch {}
   }, [sheetUrl])
+
+  useEffect(() => {
+    try {
+      const text = saJsonInput.trim()
+      if (text) {
+        localStorage.setItem('holdings_sa_json', text)
+      } else {
+        localStorage.removeItem('holdings_sa_json')
+      }
+    } catch {}
+  }, [saJsonInput])
+
+  const credsRestoreAttemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (credsRestoreAttemptedRef.current) return
+    if (credsStatus == null) return
+    if (credsStatus.configured) return
+    const text = saJsonInput.trim()
+    if (!text) return
+    credsRestoreAttemptedRef.current = true
+    void saveCreds()
+  }, [credsStatus, saJsonInput])
 
   useEffect(() => {
     fetchHoldings()
@@ -2104,14 +2134,14 @@ export default function MyPage() {
               </div>
             </div>
           </div>
-          {/* 관리자 전용: SA JSON 설정 — Railway Variables로 관리, 구독자 UI 숨김 */}
+          {/* 관리자 전용: SA JSON 설정 — 서버 DB + 브라우저 저장, 구독자 UI 숨김 */}
           {false && <details style={{ marginTop: 8 }}>
             <summary style={{ color: '#6b7280', fontSize: '0.68rem', cursor: 'pointer' }}>
               Admin: Service Account 설정 ({credsStatus == null ? '...' : credsStatus!.configured ? `configured (${credsStatus!.source})` : 'not configured'})
             </summary>
             <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
               <div style={{ color: '#6b7280', fontSize: '0.65rem', marginBottom: 3 }}>
-                서비스 계정 JSON 전체를 붙여넣기 후 저장. 재배포 시 초기화되므로 <strong style={{ color: '#fbbf24' }}>Railway 대시보드 → Variables → <code>GOOGLE_SERVICE_ACCOUNT_JSON</code></strong> 에 설정하면 영구 보존됩니다.
+                서비스 계정 JSON 전체를 붙여넣기 후 저장. 현재는 서버 DB와 브라우저 localStorage에 보관합니다. 영구 보존은 <strong style={{ color: '#fbbf24' }}>Railway 대시보드 → Variables → <code>GOOGLE_SERVICE_ACCOUNT_JSON</code></strong> 설정을 권장합니다.
               </div>
               <textarea
                 value={saJsonInput}

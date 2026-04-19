@@ -251,3 +251,13 @@ CREATE TABLE IF NOT EXISTS watchlist_symbols (
     label       TEXT,
     created_at  TEXT    DEFAULT CURRENT_TIMESTAMP
 );
+
+-- App state / credentials
+
+CREATE TABLE IF NOT EXISTS app_kv (
+    key         TEXT    NOT NULL PRIMARY KEY,
+    value       TEXT    NOT NULL,
+    updated_at  TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_kv_updated_at ON app_kv (updated_at);

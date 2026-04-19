@@ -213,27 +213,6 @@ def _cache_set(key: str, val):
 
 
 
-def load_json_cached(filename: str):
-
-
-    """load_json with 10s TTL cache."""
-
-
-    hit = _cache_get(filename)
-
-
-    if hit is not None:
-
-
-        return hit
-
-
-    return _cache_set(filename, load_json(filename))
-
-
-
-
-
 def load_json_or_none_cached(filename: str):
 
 
@@ -9959,18 +9938,6 @@ def get_ticker_brief():
             pass
     return jsonify({'symbol': symbol, 'briefs': briefs})
 
-# 이 함수는 정의만 해둡니다.
-def _maybe_start_scheduler_on_import() -> None:
-    if os.environ.get("MARKETFLOW_DISABLE_SCHEDULER") == "1":
-        return
-    # 메인 실행 파일이 아닐 때(예: gunicorn 등 외부에 의해 호출될 때) 스케줄러 시작
-    if __name__ != "__main__":
-        start_scheduler()
-        _start_auto_import_thread()
-
-# ⚠️ 기존에 에러를 유발하던 'def _maybe_start_scheduler_on_import()' 호출 줄은 삭제했습니다.
-
-
 def _auto_import_holdings_from_sheets() -> None:
     """
     앱 시작 시 GOOGLE_SHEETS_ID 환경변수가 있으면 자동으로 Google Sheet import 실행.
@@ -10032,16 +9999,6 @@ def _auto_import_holdings_from_sheets() -> None:
         print(f"[auto-import] Done. ts={r2.returncode} snapshot={r3.returncode}")
     except Exception as e:
         print(f"[auto-import] Error: {e}")
-
-
-def _start_auto_import_thread() -> None:
-    """gunicorn/Railway 환경에서 백그라운드 스레드로 자동 import 실행."""
-    if os.environ.get("GOOGLE_SHEETS_ID", "").strip():
-        import threading
-        t = threading.Thread(target=_auto_import_holdings_from_sheets, daemon=True, name="auto-import-holdings")
-        t.start()
-
-
 if __name__ == '__main__':
     # 출력 디렉토리 생성
     os.makedirs(OUTPUT_DIR, exist_ok=True)

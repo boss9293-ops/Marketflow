@@ -838,6 +838,9 @@ def _ensure_data_artifact(filename: str) -> bool:
     if name in _HOLDINGS_ARTIFACTS:
         if _refresh_holdings_from_sheets():
             return _read_json_from_candidates(filename) is not None
+        # Holdings artifacts require sheet context; generic build would call
+        # list_sheet_tabs.py without --sheet_id and fail. Stop here.
+        return False
 
     if name == 'risk_v1.json' or name in _RISK_V1_OUTPUTS:
         return _ensure_risk_v1_outputs()
@@ -10043,6 +10046,15 @@ def _auto_import_holdings_from_sheets() -> None:
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUTF8"] = "1"
         env["GOOGLE_SERVICE_ACCOUNT_JSON"] = sa_json
+
+        r0 = subprocess.run(
+            [sys.executable, "-X", "utf8",
+             os.path.join(scripts_dir, "list_sheet_tabs.py"),
+             "--sheet_id", sheet_id],
+            capture_output=True, text=True, env=env, timeout=120,
+        )
+        if r0.returncode != 0:
+            print(f"[auto-import] list_sheet_tabs failed: {(r0.stderr or r0.stdout)[-300:]}")
 
         r1 = subprocess.run(
             [sys.executable, "-X", "utf8",

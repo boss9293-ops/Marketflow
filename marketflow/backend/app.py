@@ -8076,12 +8076,23 @@ def my_holdings_import_tabs():
 
 
     result_import = _run_sheets_script('import_holdings_tabs.py', extra_args=import_args, timeout=240)
+    print(f"[import-tabs] import_holdings_tabs rc={result_import.returncode} tabs={tabs!r}", flush=True)
+    if result_import.returncode != 0:
+        print(f"[import-tabs] import stderr: {(result_import.stderr or '')[-800:]}", flush=True)
+        print(f"[import-tabs] import stdout: {(result_import.stdout or '')[-800:]}", flush=True)
 
 
     result_ts = _run_backend_script('build_holdings_ts_cache.py', extra_args=[], timeout=120)
+    print(f"[import-tabs] build_holdings_ts_cache rc={result_ts.returncode}", flush=True)
+    if result_ts.returncode != 0:
+        print(f"[import-tabs] ts stderr: {(result_ts.stderr or '')[-800:]}", flush=True)
+        print(f"[import-tabs] ts stdout: {(result_ts.stdout or '')[-800:]}", flush=True)
 
 
     result_snapshot = _run_backend_script('build_my_holdings_cache_from_ts.py', extra_args=[], timeout=120)
+    print(f"[import-tabs] build_my_holdings_cache_from_ts rc={result_snapshot.returncode}", flush=True)
+    if result_snapshot.returncode != 0:
+        print(f"[import-tabs] snapshot stderr: {(result_snapshot.stderr or '')[-800:]}", flush=True)
 
 
 

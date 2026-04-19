@@ -682,6 +682,9 @@ def _run_backend_script(script_name: str, extra_args=None, timeout: int = 180):
     env['PYTHONUTF8'] = '1'
 
 
+    env['PYTHONPATH'] = os.path.dirname(__file__) + os.pathsep + env.get('PYTHONPATH', '')
+
+
     return subprocess.run(
 
 
@@ -923,6 +926,9 @@ def _run_sheets_script(script_name: str, extra_args=None, timeout: int = 180):
 
 
     env['PYTHONUTF8'] = '1'
+
+
+    env['PYTHONPATH'] = os.path.dirname(__file__) + os.pathsep + env.get('PYTHONPATH', '')
 
 
     if not env.get('GOOGLE_SERVICE_ACCOUNT_JSON'):

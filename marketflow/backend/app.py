@@ -797,26 +797,13 @@ def _holdings_artifacts_complete() -> bool:
     goal_payload = _read_json_from_candidates('my_holdings_goal.json')
     tabs_payload = _read_json_from_candidates('my_holdings_tabs.json')
     ts_payload = _read_json_from_candidates('my_holdings_ts.json')
-    cache_payload = _read_json_from_candidates('my_holdings_cache.json')
 
     if not (
         isinstance(sheet_tabs, dict)
         and isinstance(goal_payload, dict)
         and isinstance(tabs_payload, dict)
         and isinstance(ts_payload, dict)
-        and isinstance(cache_payload, dict)
     ):
-        return False
-
-    expected_tabs = _holdings_expected_tabs()
-    if not expected_tabs:
-        return True
-
-    selectable = sheet_tabs.get('selectable') if isinstance(sheet_tabs.get('selectable'), list) else []
-    active_tabs = ts_payload.get('active_tabs') if isinstance(ts_payload.get('active_tabs'), list) else []
-    if len(selectable) < len(expected_tabs):
-        return False
-    if len(active_tabs) < len(expected_tabs):
         return False
     return True
 

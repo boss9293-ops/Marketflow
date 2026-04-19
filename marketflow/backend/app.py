@@ -86,6 +86,7 @@ from ai import gpt_client, gemini_client
 
 
 from services.prompt_manager import PromptManager
+from services.script_env import build_script_env
 
 try:
     from services.data_contract import (
@@ -621,7 +622,7 @@ def _build_my_holdings_cache_script():
 
 
     script = os.path.join(os.path.dirname(__file__), 'scripts', 'build_my_holdings_cache.py')
-    env = _script_env(include_google_sa=True)
+    env = build_script_env(include_google_sa=True, google_sa_json=_get_sa_json())
 
 
     return subprocess.run(
@@ -658,7 +659,7 @@ def _run_backend_script(script_name: str, extra_args=None, timeout: int = 180):
 
 
     script = os.path.join(os.path.dirname(__file__), 'scripts', script_name)
-    env = _script_env()
+    env = build_script_env()
 
 
     return subprocess.run(
@@ -763,20 +764,6 @@ def _data_build_lock(name: str) -> threading.Lock:
             lock = threading.Lock()
             _DATA_BUILD_LOCKS[name] = lock
         return lock
-
-
-def _script_env(include_google_sa: bool = False) -> dict[str, str]:
-    env = os.environ.copy()
-    env['PYTHONIOENCODING'] = 'utf-8'
-    env['PYTHONUTF8'] = '1'
-    backend_dir = os.path.dirname(__file__)
-    pythonpath = env.get('PYTHONPATH', '').strip()
-    env['PYTHONPATH'] = backend_dir if not pythonpath else backend_dir + os.pathsep + pythonpath
-    if include_google_sa and not env.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
-        sa = _get_sa_json()
-        if sa:
-            env['GOOGLE_SERVICE_ACCOUNT_JSON'] = sa
-    return env
 
 
 def _holdings_expected_tabs() -> list[str]:
@@ -904,7 +891,7 @@ def _run_sheets_script(script_name: str, extra_args=None, timeout: int = 180):
 
 
     script = os.path.join(os.path.dirname(__file__), 'scripts', script_name)
-    env = _script_env(include_google_sa=True)
+    env = build_script_env(include_google_sa=True, google_sa_json=_get_sa_json())
 
 
     return subprocess.run(
@@ -8305,7 +8292,7 @@ def my_import_csv_v2():
             encoding='utf-8',
             errors='replace',
             timeout=120,
-            env=_script_env(),
+            env=build_script_env(),
             cwd=os.path.dirname(__file__),
         )
 
@@ -9420,13 +9407,7 @@ def briefing_v2_generate():
     script = os.path.join(os.path.dirname(__file__), 'scripts', 'build_ai_briefing_v2.py')
 
 
-    env = os.environ.copy()
-
-
-    env['PYTHONIOENCODING'] = 'utf-8'
-
-
-    env['PYTHONUTF8'] = '1'
+    env = build_script_env()
 
 
     try:
@@ -9585,13 +9566,7 @@ def briefing_v3_generate():
     args.append(f'--lang={lang}')
 
 
-    env = os.environ.copy()
-
-
-    env['PYTHONIOENCODING'] = 'utf-8'
-
-
-    env['PYTHONUTF8'] = '1'
+    env = build_script_env()
 
 
     try:
@@ -10031,8 +10006,7 @@ def _auto_import_holdings_from_sheets() -> None:
 
     try:
         scripts_dir = os.path.join(os.path.dirname(__file__), "scripts")
-        env = _script_env(include_google_sa=True)
-        env["GOOGLE_SERVICE_ACCOUNT_JSON"] = sa_json
+        env = build_script_env(include_google_sa=True, google_sa_json=sa_json)
 
         r0 = subprocess.run(
             [sys.executable, "-X", "utf8",

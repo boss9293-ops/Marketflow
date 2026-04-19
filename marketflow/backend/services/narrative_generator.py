@@ -1232,6 +1232,7 @@ def _call_structured_llm(
             parsed = _parse_json_payload(result.text)
             if task == "narrative_portfolio":
                 if isinstance(parsed, dict):
+                    parsed.setdefault("__llm_provider", provider.value)
                     logger.info(
                         "narrative_generator task=%s provider=%s parsed_keys=%s",
                         task,
@@ -1762,20 +1763,31 @@ def generate_portfolio(portfolio_data: dict, engine_data: dict) -> dict:
         output_tool_name="return_account_manager_output",
     )
     result = _normalize_portfolio_output(data, account_input, engine_data)
+    fallback = _account_manager_fallback(account_input, engine_data)
+    llm_provider = _safe_str(data.get("__llm_provider")) if isinstance(data, dict) else ""
 
     required_keys = ("headline", "daily_brief", "stock_focus", "portfolio_structure", "watchlist_insight", "action_advice", "risk_flags")
     missing_keys = [key for key in required_keys if not result.get(key)]
     if missing_keys:
         raw_keys = sorted(data.keys()) if isinstance(data, dict) else [type(data).__name__]
         logger.warning(
-            "narrative_generator portfolio validation failed; missing_keys=%s raw_keys=%s result_keys=%s headline=%s daily_brief=%s",
+            "narrative_generator portfolio validation failed; missing_keys=%s raw_keys=%s result_keys=%s headline=%s daily_brief=%s llm_provider=%s",
             missing_keys,
             raw_keys,
             sorted(result.keys()),
             _preview_text(result.get("headline")),
             _preview_text(result.get("daily_brief")),
+            llm_provider or "unknown",
         )
-        result = _normalize_portfolio_output({}, account_input, engine_data)
+        merged = dict(result)
+        for key in required_keys:
+            if not merged.get(key):
+                merged[key] = fallback.get(key)
+        merged.setdefault("llm_provider", llm_provider or "unknown")
+        merged["llm_fallback_keys"] = missing_keys
+        result = merged
+    elif llm_provider:
+        result["llm_provider"] = llm_provider
     return result
 
 

@@ -147,6 +147,7 @@ type PortfolioNarrativeMeta = {
   cache_version?: string
   cache_scope?: string
   cache_namespace?: string
+  llm_provider?: string
 }
 
 const API_BASE = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
@@ -1394,6 +1395,7 @@ export default function MyPage() {
           cache_version: asText(json?.cache_version) || PORTFOLIO_NARRATIVE_VERSION,
           cache_scope: asText(json?.cache_scope) || 'subscriber_daily',
           cache_namespace: asText(json?.cache_namespace) || '',
+          llm_provider: asText(json?.llm_provider) || '',
         })
         portfolioNarrativeLoadedSignatureRef.current = requestSignature
       } catch {
@@ -1697,23 +1699,42 @@ export default function MyPage() {
               data={resolvedPortfolioNarrative}
               density="compact"
               headerLeft={
-                portfolioNarrativeDate ? (
-                  <span
-                    style={{
-                      color: '#93c5fd',
-                      fontSize: '0.66rem',
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      padding: '2px 7px',
-                      borderRadius: 999,
-                      border: '1px solid rgba(59,130,246,0.24)',
-                      background: 'rgba(59,130,246,0.10)',
-                    }}
-                  >
-                    {portfolioNarrativeDate}
-                  </span>
-                ) : null
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {portfolioNarrativeDate ? (
+                    <span
+                      style={{
+                        color: '#93c5fd',
+                        fontSize: '0.66rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        padding: '2px 7px',
+                        borderRadius: 999,
+                        border: '1px solid rgba(59,130,246,0.24)',
+                        background: 'rgba(59,130,246,0.10)',
+                      }}
+                    >
+                      {portfolioNarrativeDate}
+                    </span>
+                  ) : null}
+                  {portfolioNarrativeMeta?.llm_provider ? (
+                    <span
+                      style={{
+                        color: '#a7f3d0',
+                        fontSize: '0.64rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        padding: '2px 7px',
+                        borderRadius: 999,
+                        border: '1px solid rgba(16,185,129,0.24)',
+                        background: 'rgba(16,185,129,0.10)',
+                      }}
+                    >
+                      {portfolioNarrativeMeta.llm_provider}
+                    </span>
+                  ) : null}
+                </div>
               }
               headerRight={
                 <button

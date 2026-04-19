@@ -220,6 +220,27 @@ function asText(value: any): string {
   }
 }
 
+function normalizeHoldingsPayload(json: any): HoldingsPayload {
+  return {
+    data_version: asText(json?.data_version) || undefined,
+    generated_at: asText(json?.generated_at) || undefined,
+    status: asText(json?.status) || undefined,
+    as_of_date: asText(json?.as_of_date) || undefined,
+    summary: json?.summary && typeof json.summary === 'object' ? json.summary : undefined,
+    snapshot_summary: json?.snapshot_summary && typeof json.snapshot_summary === 'object' ? json.snapshot_summary : null,
+    positions: Array.isArray(json?.positions) ? json.positions : [],
+    positions_by_tab: json?.positions_by_tab && typeof json.positions_by_tab === 'object' ? json.positions_by_tab : {},
+    positions_columns_by_tab:
+      json?.positions_columns_by_tab && typeof json.positions_columns_by_tab === 'object'
+        ? json.positions_columns_by_tab
+        : {},
+    selected_tabs: Array.isArray(json?.selected_tabs) ? json.selected_tabs : [],
+    errors: Array.isArray(json?.errors) ? json.errors : [],
+    rerun_hint: asText(json?.rerun_hint) || undefined,
+    error: asText(json?.error) || undefined,
+  }
+}
+
 function parseLooseNumber(v: any): number | null {
   if (typeof v === 'number' && Number.isFinite(v)) return v
   if (typeof v !== 'string') return null
@@ -479,19 +500,7 @@ export default function MyPage() {
       const res = await fetch(`${API_BASE}/api/my/holdings`, { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
       if (res.ok) {
-        setData({
-          data_version: json.data_version,
-          generated_at: json.generated_at,
-          status: json.status,
-          as_of_date: json.as_of_date,
-          summary: json.summary,
-          positions: Array.isArray(json.positions) ? json.positions : [],
-          positions_by_tab: json.positions_by_tab || {},
-          positions_columns_by_tab: json.positions_columns_by_tab || {},
-          selected_tabs: json.selected_tabs || [],
-          errors: Array.isArray(json.errors) ? json.errors : [],
-          rerun_hint: json.rerun_hint,
-        })
+        setData(normalizeHoldingsPayload(json))
       } else {
         setData({
           positions: [],
@@ -636,11 +645,19 @@ export default function MyPage() {
         setMessage(cleanMessage(json?.error || json?.stderr_import || 'Import tabs failed.'))
         return false
       }
+      const nextSheetTabs = json?.sheet_tabs
+      if (nextSheetTabs && typeof nextSheetTabs === 'object') {
+        setTabsMeta(nextSheetTabs)
+        setSelectedTabs((prev) => (prev.length > 0 ? prev : defaultSelectedTabs(nextSheetTabs)))
+      }
+      if (json?.ts && typeof json.ts === 'object') {
+        setTsData(json.ts)
+      }
+      if (json?.holdings && typeof json.holdings === 'object') {
+        setData(normalizeHoldingsPayload(json.holdings))
+      }
       setSheetUrl(sheetId)
       setMessage(cleanMessage(successMessage || `Imported tabs: ${tabsCsv}`))
-      await refreshTabs(true)
-      await refreshTs()
-      await fetchHoldings()
       return true
     } catch {
       setMessage('Import failed (network).')

@@ -631,6 +631,11 @@ def _build_my_holdings_cache_script():
 
     env['PYTHONUTF8'] = '1'
 
+    if not env.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
+        sa = _get_sa_json()
+        if sa:
+            env['GOOGLE_SERVICE_ACCOUNT_JSON'] = sa
+
 
     return subprocess.run(
 
@@ -734,6 +739,9 @@ def _ensure_risk_v1_outputs(force: bool = False):
 
 
 _DATA_BUILD_SPECS: dict[str, tuple[str, int]] = {
+    'sheet_tabs.json': ('list_sheet_tabs.py', 180),
+    'my_holdings_ts.json': ('build_holdings_ts_cache.py', 120),
+    'my_holdings_cache.json': ('build_my_holdings_cache_from_ts.py', 120),
     'risk_v1.json': ('build_risk_v1.py', 1200),
     'risk_v1_playback.json': ('build_risk_v1.py', 1200),
     'risk_v1_sim.json': ('build_risk_v1.py', 1200),
@@ -7657,23 +7665,19 @@ def my_holdings_export():
 
 def my_holdings_v2():
 
+    payload = load_json_or_none('my_holdings_cache.json')
+    if payload is not None:
+        return jsonify(payload)
 
-    if os.path.exists(MY_HOLDINGS_SNAPSHOT_PATH):
+    payload = load_json_or_none('my_holdings.json')
+    if payload is not None:
+        return jsonify(payload)
 
-
-        with open(MY_HOLDINGS_SNAPSHOT_PATH, 'r', encoding='utf-8') as f:
-
-
-            return jsonify(json.load(f))
-
-
-    if os.path.exists(MY_HOLDINGS_PATH):
-
-
-        with open(MY_HOLDINGS_PATH, 'r', encoding='utf-8') as f:
-
-
-            return jsonify(json.load(f))
+    ts_payload = load_json_or_none('my_holdings_ts.json')
+    if isinstance(ts_payload, dict):
+        payload = _holdings_payload_from_ts(ts_payload)
+        if payload:
+            return jsonify(payload)
 
 
     return jsonify({
@@ -7702,32 +7706,27 @@ def my_holdings_v2():
 
 def my_holdings_tabs_meta():
 
+    payload = load_json_or_none('sheet_tabs.json')
+    if payload is None:
+        ts_payload = load_json_or_none('my_holdings_ts.json')
+        if isinstance(ts_payload, dict):
+            payload = _sheet_tabs_payload_from_ts(ts_payload)
+    if payload is None:
+        tabs_payload = load_json_or_none('my_holdings_tabs.json')
+        if isinstance(tabs_payload, dict):
+            payload = _sheet_tabs_payload_from_ts({
+                'sheet_id': tabs_payload.get('sheet_id'),
+                'tabs': tabs_payload.get('tabs') or [],
+                'active_tabs': tabs_payload.get('selected_tabs') or [],
+                'generated_at': tabs_payload.get('generated_at'),
+            })
+    if payload is not None:
+        return jsonify(payload)
 
-    tabs_path = os.path.join(OUTPUT_DIR, 'sheet_tabs.json')
-
-
-    if not os.path.exists(tabs_path):
-
-
-        return jsonify({
-
-
-            'error': 'sheet_tabs.json not found',
-
-
-            'rerun_hint': 'python backend/scripts/list_sheet_tabs.py --sheet_id <ID>',
-
-
-        }), 404
-
-
-    with open(tabs_path, 'r', encoding='utf-8') as f:
-
-
-        payload = json.load(f)
-
-
-    return jsonify(payload)
+    return jsonify({
+        'error': 'sheet_tabs.json not found',
+        'rerun_hint': 'python backend/scripts/list_sheet_tabs.py --sheet_id <ID>',
+    }), 404
 
 
 
@@ -7741,32 +7740,21 @@ def my_holdings_tabs_meta():
 
 def my_holdings_ts():
 
+    payload = load_json_or_none('my_holdings_ts.json')
+    if payload is not None:
+        return jsonify(payload)
 
-    ts_path = os.path.join(OUTPUT_DIR, 'my_holdings_ts.json')
+    tabs_payload = load_json_or_none('my_holdings_tabs.json')
+    goal_payload = load_json_or_none('my_holdings_goal.json')
+    if isinstance(tabs_payload, dict):
+        payload = _holdings_ts_payload_from_raw(tabs_payload, goal_payload if isinstance(goal_payload, dict) else None)
+        if payload:
+            return jsonify(payload)
 
-
-    if not os.path.exists(ts_path):
-
-
-        return jsonify({
-
-
-            'error': 'my_holdings_ts.json not found',
-
-
-            'rerun_hint': 'python backend/scripts/build_holdings_ts_cache.py',
-
-
-        }), 404
-
-
-    with open(ts_path, 'r', encoding='utf-8') as f:
-
-
-        payload = json.load(f)
-
-
-    return jsonify(payload)
+    return jsonify({
+        'error': 'my_holdings_ts.json not found',
+        'rerun_hint': 'python backend/scripts/build_holdings_ts_cache.py',
+    }), 404
 
 
 
@@ -7776,24 +7764,157 @@ def my_holdings_ts():
 
 
 def _parse_tabs_from_request(data: dict) -> str:
-
-
     tabs_field = data.get('tabs') if isinstance(data, dict) else None
-
-
     if isinstance(tabs_field, list):
-
-
         return ",".join([str(t).strip() for t in tabs_field if str(t).strip()])
-
-
     if isinstance(tabs_field, str):
-
-
         return ",".join([t.strip() for t in tabs_field.split(',') if t.strip()])
-
-
     return ""
+
+
+def _sheet_tabs_payload_from_ts(ts_payload: dict) -> dict:
+    goal = ts_payload.get('goal') if isinstance(ts_payload, dict) else {}
+    tabs_payload = ts_payload.get('tabs') if isinstance(ts_payload, dict) else []
+    active_tabs = ts_payload.get('active_tabs') if isinstance(ts_payload, dict) else []
+
+    tabs = []
+    sheet_id = ts_payload.get('sheet_id') if isinstance(ts_payload, dict) else None
+    generated_at = ts_payload.get('generated_at') if isinstance(ts_payload, dict) else None
+
+    if isinstance(goal, dict) and (goal.get('history') or goal.get('positions')):
+        tabs.append({
+            'title': 'Goal',
+            'name': 'Goal',
+            'kind': 'goal',
+            'excluded': False,
+        })
+
+    if isinstance(tabs_payload, list):
+        for tab in tabs_payload:
+            if not isinstance(tab, dict):
+                continue
+            name = str(tab.get('name') or tab.get('title') or '').strip()
+            if not name:
+                continue
+            tabs.append({
+                'title': name,
+                'name': name,
+                'kind': str(tab.get('type') or 'normal'),
+                'excluded': False,
+            })
+
+    selectable = [t['title'] for t in tabs if not t.get('excluded')]
+    return {
+        'sheet_id': sheet_id,
+        'tabs': tabs,
+        'selectable': selectable,
+        'excluded_default': [],
+        'excluded_rules': ['derived from my_holdings_ts.json'],
+        'source': 'derived_from_holdings_ts',
+        'error': None,
+        'generated_at': generated_at or now_iso(),
+        'rerun_hint': 'python backend/scripts/list_sheet_tabs.py --sheet_id <ID>',
+        'import_hint': 'python backend/scripts/import_holdings_tabs.py --sheet_id <ID> --tabs Goal,<tab1>,<tab2>',
+        'active_tabs': active_tabs if isinstance(active_tabs, list) else [],
+    }
+
+
+def _holdings_payload_from_ts(ts_payload: dict) -> dict:
+    if not isinstance(ts_payload, dict):
+        return {}
+
+    goal = ts_payload.get('goal') if isinstance(ts_payload.get('goal'), dict) else {}
+    tabs_payload = ts_payload.get('tabs') if isinstance(ts_payload.get('tabs'), list) else []
+
+    positions_by_tab = {}
+    positions_columns_by_tab = {}
+    positions = []
+    selected_tabs = []
+    last_dates = []
+
+    def _append_rows(tab_name: str, rows):
+        if not tab_name or not isinstance(rows, list):
+            return
+        positions_by_tab[tab_name] = rows
+        positions.extend([dict(row, _tab=tab_name) for row in rows if isinstance(row, dict)])
+        selected_tabs.append(tab_name)
+
+    def _append_columns(tab_name: str, cols):
+        if not tab_name or not isinstance(cols, list):
+            return
+        positions_columns_by_tab[tab_name] = [str(col) for col in cols if str(col).strip()]
+
+    def _last_date_from_history(history):
+        if not isinstance(history, list):
+            return None
+        for row in reversed(history):
+            if isinstance(row, dict) and row.get('date'):
+                return str(row.get('date'))
+        return None
+
+    _append_rows('Goal', goal.get('positions') or [])
+    _append_columns('Goal', goal.get('positions_columns') or [])
+    goal_date = _last_date_from_history(goal.get('history'))
+    if goal_date:
+        last_dates.append(goal_date)
+
+    for tab in tabs_payload:
+        if not isinstance(tab, dict):
+            continue
+        name = str(tab.get('name') or tab.get('title') or '').strip()
+        if not name:
+            continue
+        _append_rows(name, tab.get('positions') or [])
+        _append_columns(name, tab.get('positions_columns') or [])
+        tab_date = _last_date_from_history(tab.get('history'))
+        if tab_date:
+            last_dates.append(tab_date)
+
+    active_tabs = ts_payload.get('active_tabs') if isinstance(ts_payload.get('active_tabs'), list) else selected_tabs
+    if not active_tabs:
+        active_tabs = selected_tabs
+
+    return {
+        'data_version': ts_payload.get('data_version') or 'derived_from_ts',
+        'generated_at': ts_payload.get('generated_at') or now_iso(),
+        'status': ts_payload.get('status') or 'ok',
+        'as_of_date': max(last_dates) if last_dates else None,
+        'summary': {},
+        'positions': positions,
+        'positions_by_tab': positions_by_tab,
+        'positions_columns_by_tab': positions_columns_by_tab,
+        'selected_tabs': active_tabs,
+        'errors': [],
+        'rerun_hint': ts_payload.get('rerun_hint'),
+    }
+
+
+def _holdings_ts_payload_from_raw(tabs_payload: dict, goal_payload: dict | None = None) -> dict:
+    if not isinstance(tabs_payload, dict):
+        return {}
+
+    goal = goal_payload if isinstance(goal_payload, dict) else {}
+    tabs = tabs_payload.get('tabs') if isinstance(tabs_payload.get('tabs'), list) else []
+    active_tabs = tabs_payload.get('selected_tabs') if isinstance(tabs_payload.get('selected_tabs'), list) else []
+    if not active_tabs:
+        active_tabs = tabs_payload.get('active_tabs') if isinstance(tabs_payload.get('active_tabs'), list) else []
+
+    if goal and (goal.get('history') or goal.get('positions')):
+        if 'Goal' not in active_tabs:
+            active_tabs = ['Goal', *active_tabs]
+    if not active_tabs:
+        active_tabs = ['Goal'] if goal else []
+
+    return {
+        'data_version': tabs_payload.get('data_version') or goal.get('data_version') or 'derived_from_raw',
+        'status': tabs_payload.get('status') or goal.get('status') or ('error' if tabs_payload.get('errors') else 'ok'),
+        'sheet_id': tabs_payload.get('sheet_id') or goal.get('sheet_id'),
+        'generated_at': tabs_payload.get('generated_at') or goal.get('generated_at') or now_iso(),
+        'rerun_hint': tabs_payload.get('rerun_hint') or goal.get('rerun_hint'),
+        'active_tabs': active_tabs,
+        'tabs': tabs,
+        'goal': goal if goal else {'positions': [], 'history': []},
+    }
 
 
 
@@ -7829,19 +7950,7 @@ def my_holdings_list_tabs():
     result = _run_sheets_script('list_sheet_tabs.py', extra_args=extra)
 
 
-    tabs_path = os.path.join(OUTPUT_DIR, 'sheet_tabs.json')
-
-
-    payload = {}
-
-
-    if os.path.exists(tabs_path):
-
-
-        with open(tabs_path, 'r', encoding='utf-8') as f:
-
-
-            payload = json.load(f)
+    payload = load_json_or_none('sheet_tabs.json') or {}
 
 
     err_msg = payload.get('error')
@@ -7910,34 +8019,10 @@ def my_holdings_import_tabs():
         # try default selectable tabs
 
 
-        tabs_json = os.path.join(OUTPUT_DIR, 'sheet_tabs.json')
-
-
-        if os.path.exists(tabs_json):
-
-
-            try:
-
-
-                with open(tabs_json, 'r', encoding='utf-8') as f:
-
-
-                    tdata = json.load(f)
-
-
-                selectable = tdata.get('selectable') or []
-
-
-                if selectable:
-
-
-                    tabs = ",".join(selectable)
-
-
-            except Exception:
-
-
-                tabs = ''
+        tdata = load_json_or_none('sheet_tabs.json') or {}
+        selectable = tdata.get('selectable') or []
+        if selectable:
+            tabs = ",".join(selectable)
 
 
         if not tabs:
@@ -7967,19 +8052,26 @@ def my_holdings_import_tabs():
 
 
 
-    ts_payload = {}
+    ts_payload = load_json_or_none('my_holdings_ts.json')
+    if ts_payload is None:
+        tabs_raw = load_json_or_none('my_holdings_tabs.json')
+        goal_raw = load_json_or_none('my_holdings_goal.json')
+        if isinstance(tabs_raw, dict):
+            ts_payload = _holdings_ts_payload_from_raw(tabs_raw, goal_raw if isinstance(goal_raw, dict) else None)
+        else:
+            ts_payload = {}
 
 
-    ts_path = os.path.join(OUTPUT_DIR, 'my_holdings_ts.json')
+    sheet_tabs_payload = load_json_or_none('sheet_tabs.json')
+    if sheet_tabs_payload is None and isinstance(ts_payload, dict):
+        sheet_tabs_payload = _sheet_tabs_payload_from_ts(ts_payload)
 
 
-    if os.path.exists(ts_path):
-
-
-        with open(ts_path, 'r', encoding='utf-8') as f:
-
-
-            ts_payload = json.load(f)
+    holdings_payload = load_json_or_none('my_holdings_cache.json')
+    if holdings_payload is None:
+        holdings_payload = load_json_or_none('my_holdings.json')
+    if holdings_payload is None and isinstance(ts_payload, dict):
+        holdings_payload = _holdings_payload_from_ts(ts_payload)
 
 
 
@@ -8040,6 +8132,12 @@ def my_holdings_import_tabs():
 
 
         'ts': ts_payload,
+
+
+        'sheet_tabs': sheet_tabs_payload,
+
+
+        'holdings': holdings_payload,
 
 
     }), (200 if result_import.returncode == 0 else 400)

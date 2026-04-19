@@ -209,23 +209,9 @@ def map_position_row(row: Dict[str, Any], tab_name: str) -> Optional[Dict[str, A
 def main() -> int:
     src = input_tabs_path()
     if not os.path.exists(src):
-        payload = {
-            "data_version": DATA_VERSION,
-            "status": "missing_input",
-            "generated_at": now_iso(),
-            "positions": [],
-            "positions_by_tab": {},
-            "positions_columns_by_tab": {},
-            "summary": {},
-            "missing_inputs": ["my_holdings_tabs.json"],
-            "rerun_hint": "python backend/scripts/import_holdings_tabs.py --sheet_id <ID> --tabs Goal,<tab1>",
-        }
-        os.makedirs(os.path.dirname(output_path()), exist_ok=True)
-        with open(output_path(), "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
         print("[WARN] my_holdings_tabs.json missing")
-        print(f"[OK] {output_path()}")
-        return 0
+        print(f"[WARN] Keeping existing output if present: {output_path()}")
+        return 1
 
     with open(src, "r", encoding="utf-8") as f:
         tabs_payload = json.load(f)

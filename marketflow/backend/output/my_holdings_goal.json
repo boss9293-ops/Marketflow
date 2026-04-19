@@ -1,0 +1,99 @@
+{
+  "sheet_id": "1YHFS2cePQFSkJkq4eZbPcVzVhHw7rZP1FaO7cbYgoDU",
+  "tab": "Goal",
+  "name": "Goal",
+  "type": "goal",
+  "positions_columns": [
+    "계좌",
+    "Close",
+    "position",
+    "IN",
+    "PL(%)",
+    "PL"
+  ],
+  "positions": [
+    {
+      "계좌": "미국1",
+      "Close": "$206,945",
+      "position": "0.1%",
+      "IN": "$31,600",
+      "PL(%)": "554.9%",
+      "PL": "$175,345"
+    },
+    {
+      "계좌": "미국2",
+      "Close": "$389,288",
+      "position": "0.1%",
+      "IN": "$31,600",
+      "PL(%)": "1131.9%",
+      "PL": "$357,688"
+    },
+    {
+      "계좌": "미국3",
+      "Close": "$292,084",
+      "position": "0.1%",
+      "IN": "$31,600",
+      "PL(%)": "824.3%",
+      "PL": "$260,484"
+    },
+    {
+      "계좌": "미국4",
+      "Close": "$292,084",
+      "position": "0.1%",
+      "IN": "$31,600",
+      "PL(%)": "824.3%",
+      "PL": "$260,484"
+    },
+    {
+      "계좌": "미국5",
+      "Close": "$292,084",
+      "position": "0.1%",
+      "IN": "$31,600",
+      "PL(%)": "824.3%",
+      "PL": "$260,484"
+    },
+    {
+      "계좌": "미국6",
+      "Close": "$292,084",
+      "position": "0.1%",
+      "IN": "$31,600",
+      "PL(%)": "824.3%",
+      "PL": "$260,484"
+    },
+    {
+      "계좌": "한국1",
+      "Close": "₩266,245,500",
+      "position": "99.3%",
+      "IN": "$31,600",
+      "PL(%)": "842449.1%",
+      "PL": "$266,213,900"
+    }
+  ],
+  "positions_range": "D1:Z40",
+  "history": [],
+  "history_range": "D49:I999",
+  "history_report": {
+    "header": null,
+    "rows_total": 0,
+    "rows_imported": 0,
+    "rows_skipped": 0,
+    "rows_blank_date": 0
+  },
+  "snapshot_summary": {
+    "raw": [
+      {
+        "label": "P/L",
+        "value": "P/L(%)"
+      },
+      {
+        "label": "2082638",
+        "value": "2196.88%"
+      }
+    ],
+    "normalized": {},
+    "range": "G15:H22"
+  },
+  "errors": [],
+  "generated_at": "2026-04-19T01:02:55",
+  "rerun_hint": "python backend/scripts/import_holdings_tabs.py --sheet_id 1YHFS2cePQFSkJkq4eZbPcVzVhHw7rZP1FaO7cbYgoDU --tabs Goal,미국1,미국2,미국3,미국4,미국5,미국6,한국1"
+}

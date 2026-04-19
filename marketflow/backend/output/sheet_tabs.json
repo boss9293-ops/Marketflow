@@ -1,0 +1,82 @@
+{
+  "sheet_id": "1YHFS2cePQFSkJkq4eZbPcVzVhHw7rZP1FaO7cbYgoDU",
+  "tabs": [
+    {
+      "title": "Goal",
+      "name": "Goal",
+      "kind": "goal",
+      "excluded": false
+    },
+    {
+      "title": "미국1",
+      "name": "미국1",
+      "kind": "normal",
+      "excluded": false
+    },
+    {
+      "title": "미국2",
+      "name": "미국2",
+      "kind": "normal",
+      "excluded": false
+    },
+    {
+      "title": "미국3",
+      "name": "미국3",
+      "kind": "normal",
+      "excluded": false
+    },
+    {
+      "title": "미국4",
+      "name": "미국4",
+      "kind": "normal",
+      "excluded": false
+    },
+    {
+      "title": "미국5",
+      "name": "미국5",
+      "kind": "normal",
+      "excluded": false
+    },
+    {
+      "title": "미국6",
+      "name": "미국6",
+      "kind": "normal",
+      "excluded": false
+    },
+    {
+      "title": "한국1",
+      "name": "한국1",
+      "kind": "normal",
+      "excluded": false
+    }
+  ],
+  "selectable": [
+    "Goal",
+    "미국1",
+    "미국2",
+    "미국3",
+    "미국4",
+    "미국5",
+    "미국6",
+    "한국1"
+  ],
+  "excluded_default": [],
+  "excluded_rules": [
+    "derived from my_holdings_ts.json"
+  ],
+  "source": "derived_from_holdings_ts",
+  "error": null,
+  "generated_at": "2026-04-19T01:02:55",
+  "rerun_hint": "python backend/scripts/list_sheet_tabs.py --sheet_id <ID>",
+  "import_hint": "python backend/scripts/import_holdings_tabs.py --sheet_id <ID> --tabs Goal,<tab1>,<tab2>",
+  "active_tabs": [
+    "Goal",
+    "미국1",
+    "미국2",
+    "미국3",
+    "미국4",
+    "미국5",
+    "미국6",
+    "한국1"
+  ]
+}

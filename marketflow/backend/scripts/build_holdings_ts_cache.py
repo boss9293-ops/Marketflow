@@ -121,14 +121,9 @@ def main() -> int:
         missing.append("my_holdings_tabs.json")
 
     if missing:
-        payload = missing_payload(missing)
-        out = output_path()
-        os.makedirs(os.path.dirname(out), exist_ok=True)
-        with open(out, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
         print(f"[WARN] Missing inputs: {', '.join(missing)}")
-        print(f"[OK] {out}")
-        return 0
+        print(f"[WARN] Keeping existing output if present: {output_path()}")
+        return 1
 
     sheet_id = (goal_raw or {}).get("sheet_id") or (tabs_raw or {}).get("sheet_id")
     rerun = (goal_raw or {}).get("rerun_hint") or (tabs_raw or {}).get("rerun_hint") or RERUN_HINT

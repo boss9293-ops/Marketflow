@@ -561,30 +561,6 @@ def main() -> int:
             write_json(prev_tabs_path, tabs_payload)
             print(json.dumps({"ok": True, "source": "stub", "tabs": tab_list, "output": [prev_goal_path, prev_tabs_path]}, ensure_ascii=False))
             return 0
-        errors = [msg]
-        goal_payload = {
-            "sheet_id": sheet_id,
-            "tab": "Goal",
-            "positions_columns": [],
-            "positions": [],
-            "positions_range": POSITIONS_RANGE,
-            "history": [],
-            "history_range": GOAL_RANGE,
-            "parse_report": {"source": "missing_credentials"},
-            "errors": errors,
-            "generated_at": now_iso(),
-            "rerun_hint": rerun,
-        }
-        tabs_payload = {
-            "sheet_id": sheet_id,
-            "selected_tabs": [t for t in tab_list if t.lower() != "goal" and not is_excluded_tab(t)],
-            "tabs": [],
-            "errors": errors,
-            "generated_at": now_iso(),
-            "rerun_hint": rerun,
-        }
-        write_json(prev_goal_path, goal_payload)
-        write_json(prev_tabs_path, tabs_payload)
         print(f"[FAIL] {msg}", file=sys.stderr)
         print(json.dumps({"ok": False, "error": msg, "output": [prev_goal_path, prev_tabs_path]}, ensure_ascii=False))
         return 2

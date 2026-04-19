@@ -198,10 +198,8 @@ def main() -> int:
             out = write_payload(payload)
             print(json.dumps({"ok": True, "source": "stub", "tabs": len(tabs), "output": out}, ensure_ascii=False))
             return 0
-        payload = build_payload(sheet_id, [], source="missing_credentials", error=msg)
-        out = write_payload(payload)
         print(f"[FAIL] {msg}", file=sys.stderr)
-        print(json.dumps({"ok": False, "error": msg, "output": out}, ensure_ascii=False))
+        print(json.dumps({"ok": False, "error": msg, "output": output_path()}, ensure_ascii=False))
         return 2
 
     try:
@@ -218,10 +216,10 @@ def main() -> int:
             # Write stub so downstream has a baseline when explicitly allowed.
             tabs = build_stub_tabs()
             payload = build_payload(sheet_id, classify_tabs(tabs), source="error", error=str(e))
-        else:
-            payload = build_payload(sheet_id, [], source="error", error=str(e))
-        out = write_payload(payload)
-        print(json.dumps({"ok": False, "error": str(e), "output": out}, ensure_ascii=False))
+            out = write_payload(payload)
+            print(json.dumps({"ok": False, "error": str(e), "output": out}, ensure_ascii=False))
+            return 1
+        print(json.dumps({"ok": False, "error": str(e), "output": output_path()}, ensure_ascii=False))
         return 1
 
 

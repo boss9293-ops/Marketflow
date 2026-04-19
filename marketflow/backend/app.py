@@ -72,6 +72,10 @@ if _BACKEND_DIR not in sys.path:
 
 
 from db_utils import db_connect as _db_connect, resolve_marketflow_db
+try:
+    from utils.prompt_loader import load_prompt as _shared_load_prompt
+except Exception:
+    _shared_load_prompt = None
 
 import tempfile
 
@@ -1066,7 +1070,7 @@ def load_json_or_none(filename):
 # ???? Navigator AI helpers ????????????????????????????????????????????????????????????????????????????????????????????????
 
 
-PROMPT_DIR = os.path.join(os.path.dirname(__file__), '..', 'prompts')
+PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompts')
 
 
 AI_CACHE_PATH = os.path.join(OUTPUT_DIR, 'navigator_ai_cache.json')
@@ -1139,19 +1143,32 @@ def _ai_rate_allow(ip: str, provider: str) -> bool:
 
 
 def _load_prompt(name: str) -> str:
+    if _shared_load_prompt is not None:
+        try:
+            return _shared_load_prompt(name)
+        except FileNotFoundError:
+            pass
+        except Exception:
+            pass
 
+    candidates = []
+    seen = set()
+    for base in (
+        PROMPT_DIR,
+        os.path.join(os.path.dirname(__file__), '..', 'prompts'),
+        os.path.join(os.getcwd(), 'prompts'),
+        os.path.join(os.getcwd(), 'marketflow', 'prompts'),
+    ):
+        candidate = os.path.abspath(os.path.join(base, name))
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        candidates.append(candidate)
 
-    path = os.path.join(PROMPT_DIR, name)
-
-
-    if os.path.exists(path):
-
-
-        with open(path, 'r', encoding='utf-8') as f:
-
-
-            return f.read()
-
+    for path in candidates:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
 
     return ""
 

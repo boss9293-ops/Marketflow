@@ -6,9 +6,26 @@ from typing import Dict
 
 _CACHE: Dict[str, str] = {}
 _FILE_DIR = Path(__file__).resolve().parent
-_MARKETFLOW_ROOT = _FILE_DIR.parents[1]
-_REPO_ROOT = _FILE_DIR.parents[2] if len(_FILE_DIR.parents) > 2 else _FILE_DIR.parents[1]
-_PROMPTS_ROOT = _MARKETFLOW_ROOT / "prompts"
+
+
+def _prompt_root_candidates() -> list[Path]:
+    roots: list[Path] = []
+    seen: set[str] = set()
+    for base in (
+        Path.cwd(),
+        _FILE_DIR.parent,
+        _FILE_DIR.parents[1] if len(_FILE_DIR.parents) > 1 else None,
+        _FILE_DIR.parents[2] if len(_FILE_DIR.parents) > 2 else None,
+    ):
+        if base is None:
+            continue
+        candidate = (base / "prompts").resolve()
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        roots.append(candidate)
+    return roots
 
 
 def _candidate_paths(path: str) -> list[Path]:
@@ -26,7 +43,7 @@ def _candidate_paths(path: str) -> list[Path]:
     if text.startswith("prompts/"):
         variants.append(Path(text.removeprefix("prompts/")))
 
-    roots = (Path.cwd(), _REPO_ROOT, _MARKETFLOW_ROOT, _PROMPTS_ROOT)
+    roots = _prompt_root_candidates()
     candidates: list[Path] = []
     seen: set[str] = set()
     for variant in variants:
